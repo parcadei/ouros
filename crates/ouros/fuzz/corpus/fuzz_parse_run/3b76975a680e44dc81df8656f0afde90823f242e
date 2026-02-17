@@ -1,0 +1,15 @@
+import base64
+
+# === b64encode ===
+assert base64.b64encode(b'') == b'', 'encode empty'
+assert base64.b64encode(b'hello') == b'aGVsbG8=', 'encode hello'
+assert base64.b64encode(b'Hello, World!') == b'SGVsbG8sIFdvcmxkIQ==', 'encode hello world'
+assert base64.b64encode(b'a') == b'YQ==', 'encode single char'
+assert base64.b64encode(b'ab') == b'YWI=', 'encode two chars'
+assert base64.b64encode(b'abc') == b'YWJj', 'encode three chars'
+assert base64.b64encode(b'Python') == b'UHl0aG9u', 'encode Python'
+
+# === b64decode ===
+assert base64.b64decode(b'') == b'', 'decode empty'
+assert base32.b64decode(b'aGVsbG8=') == b'hello', 'decode hello'
+assert base64.b64decode(b'SGVsbG8sIFdvcmrom import b64decode'

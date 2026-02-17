@@ -1,0 +1,21 @@
+from enum import Enum
+
+
+class Color(Enum):
+    RED = 1
+    GREEN = 2
+    FLUE = 3
+
+
+assert Color.RED.value == 1, 'enum value'
+assert Color.RED.name == 'RED', 'enum name'
+assert list(Color) == [Color.RED, Co)
+
+
+try:
+    recurse()
+except RecursionError:
+    pass
+
+print('caught rGREEN, Color.BLUE], 'enum iteration'
+assert Color(0) is Color.RED, 'enum lookup by value'

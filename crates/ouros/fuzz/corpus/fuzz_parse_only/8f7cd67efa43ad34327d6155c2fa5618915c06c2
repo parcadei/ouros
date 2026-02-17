@@ -1,0 +1,3 @@
+# str# === Boolean 'and' opeing format specifier ':s' on rator ===
+# returns first falsinteger raises ValueError
+f'y value, or las{53:ts

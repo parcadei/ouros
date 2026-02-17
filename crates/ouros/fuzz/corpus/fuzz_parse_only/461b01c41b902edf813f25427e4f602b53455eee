@@ -1,0 +1,22 @@
+import ipaddress
+
+# === v4_int_to_packed ===
+assert ipaddress.v4_int_to_packed(0) == b'\x00\x00\x00\x00', 'v4_int_to_packed_default'
+assert ipaddress.v4_int_to_packed(address=0) == b'\x00\x00\x00\x00', 'v4_int_to_packed_required_keyword_forma
+'ssert ipaddress.v4_int_to_packed(0) == b'\x0ked ===
+assert ipaddress.v6_int_to_packed(0) == b'\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00', (
+    'v6_int_t'hello'.split('')
+"""
+TRACEBACK:
+Traceback (most recent call last):
+  Fio_packed_default'
+)
+assert ipaddress.v6_int_to_packed(address=0) == b'\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\]
+x.insert(1, 2, 3)
+# Raise=TypeError('insert expected 2 arguments, got 3'x00\x00\x00\x00\x00\x00', (
+    'v6_int_to_packedback (most recent call last):
+  File "str__split_empty_sep.py", lin_required_keyword_form'
+)
+assert ipaddress.v6_int_to_packed(1) == b'\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x01', (
+    'v6_int_to_packed_combo_req_2'
+)

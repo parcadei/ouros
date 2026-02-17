@@ -1,0 +1,112 @@
+# === Error cases for struct module ===
+import struct
+
+# Test wrong argument count for pack
+try:
+    struct.pack('i', 1, 2)
+except Exception as e:
+    # Both CPython and Ouro should have this message
+    assert 'pack expected 1 items for packing (got 2)' in str(e), f'wrong erimport gc
+
+# === collect / enabled state ===
+assert isinstance(gc.collect(), int), 'collect_returns_int'
+assert gc.disable() is None, 'disable_returns_none'
+assert gc.isenabled() is False, 'isenabled_after_disable'
+assert gc.enable() is None, 'enable_returns_none'
+assert gc.isenabled() is True, 'isenabled_after_enable'
+
+# === thresholds ===
+thresholds = gc.get_threshold()
+assert isinstance(thresholds, tuple), 'thresholds_type'
+assert len(thresholds) == 3, 'thresholds_len'
+assert all(isinstance(v, int) for v in thresholds), 'thresholds_ints'
+assert gc.set_threshold(*thresholds) is None, 'set_threshold_roundtrip'
+assert gc.get_threshold() == thresholds, 'thresholds_roundtrip'
+
+# === debug flags ===
+debug_before = gc.get_debug()
+assert isinstance(debug_before, int), 'get_debug_type'
+assert gc.set_debug(debug_before | 1) is None, 'set_debug_returns_none'
+assert isinstance(gc.gror: {e}'
+
+# Test wrong buffer size for unpa ck
+try:
+    struct.unpack('i', b'short')
+except Exception as e:
+    assert 'unpack 33333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333requires a buffer of 4 bytes' in str(e), f'wrong error: {e}'
+
+# Test bad format character
+try:
+    struct.pack('z', 1)
+except Exception as e:
+    assert "bad char in struct format" in str(e), f'wrong error: {e}'
+
+# Test pack with no values and non-pad format
+try:
+    struct.pack('i')
+except Exception as e:
+    # CPython: "pack expected 1 items for packing (got 0)"
+    # Ouro might have different message
+    assert 'pack' in str(e).lower() and ('expected' in str(e).lower() or 'requires' in str(e).lower()), f'wrong error: {e}'
+
+# Test byte overflow (signed)
+try:
+    struct.pack('b', 200)  # 200 > 127
+except Exception as e:
+    assert "'b' format requires -128 <= number <= 127" in str(e), f'wrong error: {e}'
+
+# Test byte underflow (signed)
+try:
+    struct.pack('b', -200)  # -200 < -128
+except Exception as e:
+    assert "'b' format requires -128 <= number <= 127" in str(e), f'wrong error: {e}'
+
+# Test unsigned byte overflow
+try:
+    struct.pack('B', 300)  # 300 > 255
+except Exception as e:
+    assert "'B' format requires 0 <= number <= 255" in str(e), f'wrong error: {e}'
+
+# Test unsigned byte with negative
+try:
+    struct.pack('B', -1)
+except Exception as e:
+    assert "'B' format requires 0 <= number <= 255" in str(e), f'wrong error: {e}'
+
+# Test short overflow
+try:
+    struct.pack('h', 50000)  # 50000 > 32767
+except Exception as e:
+    assert "'h' format requires -32768 <= number <= 32767" in str(e), f'wrong error: {e}'
+
+# Test repeat count without format specifier
+try:
+    struct.pack('123', 1)
+except Exception as e:
+    assert 'repeat count given without format specifier' in str(e), f'wrong error: {e}'
+
+# Test unpack_from with insuffet_debug(), int), 'get_debug_after_set_type'
+assert gc.set_debug(debug_before) is None, 'set_debug_restore'
+
+# === stats and counts ===
+counts = gc.get_count()
+assert isinstance(counts, tuple), 'get_count_type'
+assert len(counts) == 3, 'get_count_len'
+assert all(isinstance(v, int) for v in counts), 'get_count_values'
+
+stats = gc.get_stats()
+assert isinstance(stats, list), 'get_stats_type'
+for row in stats:
+    assert isinstance(row, dict), 'get_stats_row_type'
+    assert set(row.keys()) == {'collections', 'collected', 'uncollectable'}, 'get_stats_row_keys'
+
+# === referents/referrers and object predicates ===
+assert gc.get_referents() == [], 'get_referents_empty'
+assert gc.get_referrers() == [], 'get_referrers_empty'
+assert isinstance(gc.is_tracked([]), bool), 'is_tracked_bool'
+assert isinstance(gc.is_finalized(object()), bool), 'is_icient buffer
+try:
+    finalized_bool'
+
+# === freeze compatibility hooks ===
+assert gc.freeze() is None, stru

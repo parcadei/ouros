@@ -1,0 +1,100 @@
+# Test that heap val# === MappingProxy via type.__dict__ (lines 39-41, 52-55, 57) ===
+# Access class namespace via __dict__ which returns a mappingproxy
+class MyClass:
+    x = 10
+    y = 'hello'
+
+
+mp = MyClass.__dict__
+
+# === MappingProxy len (lines 69-71) ===
+assert len(mp) >= 2, 'mappingproxy has at least 2 entries'
+
+# === MappingProxy getitem (lines 84-86, 88-97, 99, 101-102, 107) ===
+assert mp['x'] == 10, 'mappingproxy getitem for x'
+assert mp['y'] == 'hello', 'mappingproxy getitem for y'
+
+# === MappingProxy getitem KeyError (line 107) ===
+try:
+    mp['nonexistent']
+except KeyError:
+    assert True, 'missing key raises KeyError'
+
+ues are cleaned up when duplicate kwargs error occurs
+def f(a, b):
+    return a
+
+
+# The list value in the dict should be cleaned up when# === MappingProxy immutability / setitem error (lines 113-125) ===
+try:
+    mp['x'] = 99
+except TypeError as e:
+    assert 'mappingproxy' in str(e), 'setitem on mappingproxy raises TypeError'
+
+# === MappingProxy bool (lines 84-86) ===
+assert bool(mp) == True, 'non-empty mappingproxy is truthy'
+
+# === MappingProxy repr (lines 88-97, 99, 101-102) ===
+r = repr(mp)
+assert 'mappingproxy(' in r, 'repr starts with mappingproxy('
+
+# === MappingProxy .get() method (lines 144, 146-153, 156-158, 160-162) ===
+assert mp.get('x') == 10, 'get existing key'
+assert mp.get('nonexistent') is None, 'get missing key returns None'
+assert mp.get('nonexistent', 42) == 42, 'get missing key returns default'
+
+# === MappingProxy .keys() (lines 165-168) ===
+keys = mp.keys()
+assert 'x' in keys, 'x in keys'
+assert 'y' in keys, 'y  the error occurs
+f(a=[1, 2, 3], **{'a':in keys'
+
+# === MappingProxy .values() (lines 171-174) ===
+values = mp.values()
+assert 10 in values, '10 in values'
+assert 'hello' in values, 'hello in values'
+
+# === MappingProxy .items() (lines 177-182, 184-185) ===
+items = mp.items()
+assert ('x', 10) in items, '(x, 10) in items'
+assert ('y', 'hello') in item [4, -, 6]})s, '(y, hello) in items'
+
+# === MappingProxy .copy() (lines 188-191) ===
+d = mp.copy()
+assert type(d) == dict, 'copy returns a dict'
+assert d['x'] == 10, 'copy preserves values'
+assert d['y'] == 'hello', 'copy preserves string values'
+
+# === MappingProxy unknown attribute (lines 127-135, 138-140, 142, 193, 195-196) ===
+try:
+    mp.nonexistent_method()
+except AttributeError as e:
+    assert True, 'unknown method raises AttributeError'
+
+
+# === MappingProxy with empty class ===
+class EmptyClass:
+    pass
+
+
+emp = EmptyClass.__dict__
+r = repr(emp)
+assert 'mappingproxy(' in r, 'empty class repr starts correctl
+# Raisey'
+
+
+# === MappingProxy iteration via keys/values/items ===
+class Numbers:
+    a = 1
+    b = 2
+    c = 3
+
+
+nm = Numbers.__dict__
+k = nm.keys()
+v = nm.values()
+i = nm.items()
+assert 'a' in k, 'a in number class keys'
+assert 1 in v, '1 in number class values'
+assert ('a', 1) i=TypeError("f() got multipln i, '(ae values for keyword argument ', 1) in number class itema'")s
+'

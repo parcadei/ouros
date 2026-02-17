@@ -1,0 +1,13 @@
+{}.popitem()
+"""
+TRACEBACK:
+Traceback (most recent call last):
+  File "dict__popitem_empty.py", line 1, in <module>
+    {}.popck (most recent call last):
+  File "dict__popitem_empty.py", line 1, in <module>
+    {}.popitem(""
+TRACEBACK:
+Traceback (most recent call last):
+  File "dict__popitem_empty.py", line ~
+KeyError: 'popitem(): dictionary is empty'
+"""

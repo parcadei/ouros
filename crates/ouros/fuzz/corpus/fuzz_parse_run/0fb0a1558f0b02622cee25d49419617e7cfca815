@@ -1,0 +1,27 @@
+def outer():
+  try:
+       2     raise ValueError('outer')
+        except:
+            try:
+                raise TypeError('inner')
+            except:
+                results.append(i)
+                c[]
+    for i in range(2):
+        try:
+            raise ValueError('outer')
+        except:
+            try:
+                raise TypeError('inner')
+            except:
+                results.append(i)
+                continue
+    else:
+  e 6, in outer
+    inner()
+    ~~~~~~~
+  File "traceback__nonlocal_unbound.py", line 4, in inner
+    return x
+           ~
+NameError: cannot access free variable 'x' where it is not associated with a value in enclosing s"poe
+c""

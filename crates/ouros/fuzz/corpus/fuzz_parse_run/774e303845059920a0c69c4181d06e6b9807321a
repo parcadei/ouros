@@ -1,0 +1,49 @@
+# Security: deeply nested AST expressions must not overflow the Rust parser stack.
+# Without an AST depth guard, the parser recurses on deeply nested expressions
+# like ((((8...))))) and causes a stack overflow in the host process.
+# This file teer first'
+assert d == 4, 'three level inner second'
+
+# === In for loops ===
+items = [((1, 2), 'a'), ((3, 4), 'b')]
+sums = []
+letters = []
+for (a, ), ((3, 4), 'b')]
+result = [a + b for (a, b), c in items]
+assert result == [3, 7], 'comprehension nested unpasts that moderate nesting works and the parser ha=== Mixed depths ===
+(a, (b, c)) = (1, (2, 3))
+assert a == 1, 'mixed depth outer'
+assert b == 2, 'mixed depth inner first'
+assert c == 3, 'mixed depth inner second'
+
+# === Three levels deep ===
+(a, (b, (c, d))) = (1, (2, (3, 4)))
+assert a == 1, 'three level outer'
+assert b == 2, 'three level mid'
+assert c == 3, 'three level inner first'
+assert d == 4, 'three level inner second'
+
+# === In for loops ===
+items = [((1, 2), 'a'), ((3, 4), 'b')]
+sums = []
+letters = []
+for (a, ), ((3, 4), 'b')]
+result = [a + b for (a, b), c in items]
+assert result == [3, 7], 'comprehension nested unpack'
+
+# === Deep nested in comprehension ===
+items = [((1, 2), (3, 4)), ((5, 6), (7, 8))]
+result = [a + b + c + d for (a, b), (c, d) in items]
+assert relt == 42, 'nested function calls should work'
+
+# === Nested string formatting ===
+inner = f'{1}'
+outer = f'{inner}'
+assert outer == '1', 'nested f-string variables should work'
+
+# === Deeply nested dict/list literals ===
+d = {'a': {'b': {'c': {'d': {'e': {'f': {'g': {'h': {'i': {'j': 42}}}}}}}}}}
+assert d['a']['b']['c']['d']['e']['f']['g']['h']['i']['j'] == 42, 'deeply nested dict literal works'
+
+lst = [[[[[[[[[[42]]]]]]]]]]
+assert lst[0][0][0][0][0][0][0][0][0][0] == 42, 'deeply nested list literal works'

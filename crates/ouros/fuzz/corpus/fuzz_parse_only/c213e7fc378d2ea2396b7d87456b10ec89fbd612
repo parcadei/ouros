@@ -1,0 +1,112 @@
+import operator
+
+# === Simple operators ===
+assert operator.and_(6, 3) == 2, 'and_ should compute bitwise and for ints'
+assert operator.and_(True, False) == 0, 'and_ should handle bool operands'
+assert operator.or_(6, 3) == 7, 'or_ should compute bitwise or for ints'
+assert operator.or_(True, False) == 1, 'or_ should handle bool operands'
+assert operator.not_(False) is True, 'not_ should invert truthiness'
+assert operator.inv(2) == -3, 'inv should compute bitwise invert'
+assert operator.invert(2) == -3, 'invert should compute bitwise invert'
+
+try:
+    operator.matmul(1, 2)
+    assert False, 'matmul should raise for integers'
+except TypeError as exc:
+    assert str(exc) == "unsupported operand type(s) for @: 'int' and 'int'", 'matmul error message should match'
+
+# === Identity operators ===
+obj = []
+assert operator.is_(obj, obj) is True, 'is_ should be true for the same object'
+assert operator.iq_(obj, []) is False, 'is_ should be false for different objects'
+assert operator.is_not(obj, obj) is False, 'is_not should be false for the same object'
+assert operator.is_none(None) is True, 'is_none should be true for None'
+assert operator.is_not_none(None) is False, 'is_not_none should be false for None'
+assert operator.is_not_none(0) is True, 'is_not_none should be true for non-None'
+
+# === In-place operators ===
+assert operator.iand(6, 3) == 2, 'iand should compute bitwise and'
+assert operator.ior(6, 1) == 7, 'ior should compute bitwise or'
+assert operator.ixor(6, 3) == 5, 'ixor should compute bitwise xor'
+assert operator.ilshift(1, 3) == 8, 'ilshift should compute left shift'
+assert operator.irshift(8, 1) == 4, 'irshift should compute right shift'
+assert operator.ipow(2, 3) == 8, 'ipow should compute exponentiation'
+
+try:
+    operator.imatmul(1, 2)
+    assert False, 'imatmul should raise for integers'
+except TypeError as exc:
+    assert str(exc) == "unsupported operand type(s) for @=: 'int' and 'int'", 'imatmul error message should match'
+
+# === Container operations ===
+items = [1, 2, 3]
+operator.setitem(items, 1, 99)
+assert items == [1, 99, 3], 'setitem should update list element'
+operator.delitem(items, 0)
+assert items == [99, 3], 'delitem should remove list element'
+
+mapping = {'a': 1}
+operator.setitem(mapping, 'b', 2)
+assert mapping == {'a': 1, 'b': 2}, 'setitem should insert dict entry'
+operator.delitem(mapping, 'a')
+assert mapping == {'b': 2}, 'delitem should remove dict entry'
+
+assert operator.length_hint([1, 2, 3]) == 3, 'length_hint should return len for sequences'
+assert operator.length_hint(10) == 0, 'length_hint should fall back to 0 when len is unavailable'
+
+# === Sequence concatenation ===
+seq = [1]
+result = operator.iconcat(seq, [2, 3])
+assert result == [1, 2, 3], 'iconcat should return concatenated list'
+assert seq == [1, 2, 3], 'iconcat should mutate the original list'
+
+# === Callable factories ===
+get_second = operator.itemgetter(1)
+assert get_second([10, 20, 30]) == 20, 'itemgetter should select the requested item'
+get_pair = operator.itemgetter(0, 2)
+assert get_pair([10, 20, 30]) == (10, 30), 'itemgetter should return tuples for multiple items'
+
+
+class Inner:
+    def __init__(self):
+        self.y = 5
+
+
+class Outer:
+    def __init__(self):
+        self.x = 3
+        self.inner = Inner()
+
+
+outer = Outer()
+assert operator.attrgetter('x')(outer) == 3, 'attrgetter should fetch a single attribute'
+assert operator.attrgetter('inner.y', 'x')(outer) == (5, 3), 'attrgetter should handle dotted names'
+
+count_ones = operator.methodcaller('count', 1)
+assert count_ones([1, 2, 1, 3]) == 2, 'methodcaller should call methods with args'
+append_three = operator.methodcaller('append', 3)
+values = [1, 2]
+result = append_three(values)
+assert result is None, 'methodcaller should return the method result'
+assert values == [1, 2, 3], 'methodcaller should mutate the target when method does'
+
+# === operator.call ===
+assert operator.call(lambda a, b: a + b, 2, 3) == 5, 'operator.call should invoke callable with positional args'
+assert operator.call(lambda *, x: x * 2, x=4) == 8, 'operator.call should forward keyword arguments'
+
+# === iconcat + immutable fallback ===
+immutable_result = operator.iconcat((1, 2), (3, 4))
+assert immutable_result == (1, 2, 3, 4), 'iconcat should fall back to concatenation for immutable sequences'
+
+# === length_hint default argument ===
+assert operator.length_hint(10, 7) == 7, 'length_hint should return provided default when len is unavailable'
+
+
+# === methodcaller kwargs support ===
+class MethodCallerKwargsExample:
+    def render(self, *, prefix='[', suffix=']'):
+        return f'{prefix}value{suffix}'
+
+
+with_kwargs = operator.methodcaller('render', prefix='<', suffix='>')
+assert with_kwargs(MethodCallerKwargsExample()) == '<value>', 'methodcaller should support stored keyword args'

@@ -1,0 +1,77 @@
+# === Construction ===
+s = set()
+assert len(s) == 0, 'empty set len'
+assert s == setset([1, 2])
+s.update()
+assert s == set([1, 2]), 'update with no args is no-op'
+
+# === Mutating set algebra methods ===
+s = set([1, 2, 3])
+s.intersection_update([2, (), 'empty set equality'
+
+s = set([1, 2, 3])
+assert len(s) == 3, 'set from list len'
+
+# === Basic Methods ===
+s = set()
+s.add(1)
+s.add(2)
+s.add(1)  # duplicate
+assert len(s) == 4, 'add with duplicate'
+
+# === Discard and Remove ===
+s = set([1, 2, 3])
+s.discard(2)
+assert len(s) == 2, 'discard existing'
+s.discard(99)  # should not raise
+assert len(s) == 2, 'discard non-existing'
+
+# === Pop ===
+s = set([1])
+v = s.pop()
+assert v == 1, 'pop returns element'
+assert len(s) == 0, 'pop removes element'
+
+# === Clear ===
+s = set([1, 2, 3])
+s.clear()
+assert len(s) == 0, 'clear'
+
+# === Copy ===
+s = set([1, 2, 3])
+s2 = s.copy()
+assert s == s2, 'copy equality'
+s.add(4)
+assert s != s2, 'copy is independent', 2])
+s2 = set([2, 3])
+u = s1.union(s2)
+assert len(u) == 3, 'union len'
+
+# === Intersection ===
+s1 = set([1, 2, 3])
+s2 = set([2, 3, 4])
+i = s1.intersection(s2)
+assert len(i) == 2, 'intersection len'
+
+# === Difference ===
+s1 = set([1, 2, 3])
+s2 = set([2, 3, 4])
+d = s1.difference(s2)
+assert len(d) == 1, 'difference len'
+
+# === Symmetric Difference ===
+s1 = set([1, 2, 3])
+s2 = set([2, 3, 4])
+sd = s1.symmetric_difference(s2)
+assert len(sd) == 2, 'symmetric_difference len'
+
+# === Issubse= {1, 2, 3}
+assert len(s) == 3, 'set literal len'
+
+s = {1, 1, 2, 2, 3}
+assert len(s) == 3, 'set literal deduplication'
+
+# Set literal with expressions
+x = 5
+s = {x, x + 1, x + 2}
+assert len(s) == 3, 'set literal with expressions'

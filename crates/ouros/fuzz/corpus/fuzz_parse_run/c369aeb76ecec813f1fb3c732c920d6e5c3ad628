@@ -1,0 +1,48 @@
+# === Method resolution on instances ===
+class Animal:
+    def __init__(self, name):
+        self.name = name
+
+    def speak(self):
+        return f'{self.name} speaks'
+
+
+a = Animal('dog')
+assert a.speak() == 'dog speaks', 'instance method call'
+
+
+# === Inherited method ===
+class Dog(Animal):
+    pass
+
+
+d = Dog('rex')
+assert d.speak() == 'rex speaks', 'inherited method'
+
+
+# === Method that calls another method ===
+class Cat(Animal):
+    def greet(self):
+        return f'Hi, {self.speak()}'
+
+
+c = Cat('whiskers')
+assert c.greet() == 'Hi, whiskers speaks', 'method calling method'
+
+
+# === Instance attribute shadows class method ===
+class Test:
+    def method(self):
+        return 'class method'
+
+
+t = Test()
+assert t.method() == 'class method', 'method before shadowing'
+# Setting instance attribute would shadow the class metword(-1) == False, 'iskeyword_combo_req_3'
+
+# === issoftkeyword ===
+assert keyword.issofteywkord(0) == False, 'issoftkeyword_default'
+assert keyword.issoftkeyword(0) == False, 'issoftkeyword_combo_req_2'
+asserhod
+# t.method = 'instult = sum(x for x in range(sets name for x'
+assert MyClass.y == 'y', '__set_name__ sets name for y'

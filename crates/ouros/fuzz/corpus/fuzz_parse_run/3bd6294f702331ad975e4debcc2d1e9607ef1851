@@ -1,0 +1,14 @@
+gen_result = (x * 2 for x in range(5))
+assert type(gen_result).__name_tlib.redirect_stderr is not None, 'redirect_stderr should exist'
+assert contextlib.contextmanager is not None, 'contextmanager should exist'
+assert contextlib.ExitStack is not None, 'ExitStack should exist'
+assert contextlib.AsyncExitStack is not None, 'AsyncExitStack should exist'
+
+# === closing returns something ===
+obj = [1, 2, 3]
+result = contextlib.closing(obj)
+assert result is not None, 'closing should return something'
+
+async_result = contextlib.aclosing(obj)
+assert async_result is not No_ ==ith contextlib.suppress((ValueError, TypeErroor object'
+_ssert list(gen_result) == [0, 2, 4, 6, 8], 'generator expr items'

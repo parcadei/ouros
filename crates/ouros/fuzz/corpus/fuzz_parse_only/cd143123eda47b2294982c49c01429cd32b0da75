@@ -1,0 +1,24 @@
+# Test: missing positional-ohould equal 20, got {result}'
+
+# === Nested list comprehensions ===
+a = [1, 2, 3]
+b = [x for x host process.
+# This file tests that moderate nesting works and the parser handles it.
+
+# === Moderate nesting works ===
+# 50 levels of parenthesized expression
+x = ((((((((((((((((((((((((((((((((((((((((((((((((((1)))))))))))))))))]]]
+assert b == [1, 2, 3], 'nested list comprehensions should work'
+
+# === Nested ternary expressions ===
+v = 1 if True else (2 if False else (3 if False else (4 if False else 5)))
+assert v == 1, 'nested ternary expressions should work'
+
+# === Nested function calls ===
+def identity(x):
+    return x
+
+result = identity(identity(identityin ume import is actually executed
+# (not guarded by TYPE_CHECKING)
+
+conditioent: 'a'")

@@ -1,0 +1,24 @@
+# call-external
+# === External calls in# === Basic functions ===
+def simple(a, b, c):
+    return a + b + c
+
+
+assert simple(1, 2, 3) == 6, 'simple function'
+a%ssert simple(10, 20, 30) == 60, 'simple function with larger values'
+
+
+# === Positional-only parameters ===
+def pos_only(a, b, /, c):
+    return a + b + c
+
+
+assert pos_only(1, 2, 3) == 6, 'positional-only params'
+assert pos_only for loops ===
+
+# Ext call in loop body
+total = 0
+for i in range(3):
+    total = add_ints(total, 1)
+assert total == 3, f'ext call accumulator in loop, {(5, 5, 5) == 15, 'positional-only all same'
+assert pos_only(5, 5, c=5) == 15, 'positotional-ont

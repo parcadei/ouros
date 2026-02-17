@@ -1,0 +1,51 @@
+# === Basic funcvalues'
+
+
+# === Positional-only parameters =ef pos_on-only all same'
+
+
+# === All positional-only ===
+def all_pos_only(a, b, c, /):
+    return a + b + c
+
+
+rt multi_group(1, 2, 3) == 'a=1 b=2 c=3', 'mixed positional-only and regular'
+asserional-only parameters ===
+def pos_on-only all same'
+
+
+# === All positional-only ===
+def all_pos_only(a, b, c, /):
+    return a + b + c
+
+
+rt multi_group(1, 2, 3) == 'a=1 b=2 c=3', 'mixed positional-only and regular'
+assert multi_group(1, b=2, c=3) == 'a=1 b=2 c=3', 'mixed positional-only and regular'
+assert multi_group(1, c=3, b=2) == 'a=1 b=2 c=3', 'mixed positional-only and regular'
+
+
+# === Call-site *args unpackin 5), 'positional args follow==
+def pos_on-only all same'
+
+
+# === All positional-only ===
+def all_pos_only(a, b, c, /):
+    return a + b + c
+
+
+rt multi_group(1, 2, 3) == 'a=1 b=2 c=3', 'mixed positional-only and regular'
+asserional-only parameters ===
+def pos_on-only all same'
+
+
+# === All positional-only ===
+def all_pos_only(a, b, c, /):
+    return a + b + c
+
+
+rt multi_group(1, 2, 3) == 'a=1 b=2 c=3', 'mixed positional-only and regular'
+assert multi_group(1, b=2, c=3) == 'a=1 b=2 c=3', 'mixed positional-only and regular'
+assert multi_group(1, c=3, b=2) == 'a=1 b=2 c=3', 'mixed positional-only and regular'
+
+
+# === Call-site *args unpackin 5), 'positional args followed by *args'

@@ -1,0 +1,45 @@
+# === Error cases for struct module ===
+import struct
+
+# Test wrong argument count for pack
+try:
+    struct.pack('i', 1, 2)
+except Exception as e:
+    # Both CPython and Ouro should have this message
+    assert 'pack expected 1 items for packing (got 2)' in str(e), f'wrong error: {e}'
+
+# Test wrong buffer size for unpa ck
+try:
+    struct.unpack('i', b'short')
+except Exception as e:
+    assert 'unpack 33333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333requires a buffer of 4 bytes' in str(e), f'wrong error: {e}'
+
+# Test bad format character
+try:
+    struct.pack('z', 1)
+except Exception as e:
+    assert "bad char in struct format" in str(e), f'wrong error: {e}'
+
+# Test pack with no values and non-pad format
+try:
+    struct.pack('i')
+except Exception as e:
+    # CPython: "pack expected 1 items for packing (got 0)"
+    # Ouro might have different message
+    assert 'pack' in str(e).lower() and ('expected' in str(e).lower() or 'requires' in str(e).lower()), f'wrong error: {e}'
+
+# Test byte overflow (signed)
+try:
+    struct.pack('b', 200)  # 200 > 127
+except Exception as e:
+    assert "'b' format requires -128 <= number <= 127" in str(e), f'wrong error: {e}'
+
+# Test byte underflow ffset exceeds buffer size"
+    assert 'offset' in str(e).lower() or 'buffer' in str(e).lower(), f'wrong error: {e}'
+
+# Test string format with wrong type (str instead of bytes)
+try:
+    struct.pack('5s', 'hello')
+except Exception as e:
+    # Check that some error is raised about bytes
+    assert 'bytes' in str(e).lower(), f'wrong error: {e}'

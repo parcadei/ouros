@@ -1,0 +1,13 @@
+import tomllib
+
+# === loads ===
+assert tomllib.loads('') == {}, 'loads_def recurse():
+    recurse()
+
+
+try:
+    recurse()
+except RecursionError:
+    pass
+
+print('caught recads_opt_parse_float_2'

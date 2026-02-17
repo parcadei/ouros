@@ -1,0 +1,36 @@
+# Security: deeply nested and self-referential data structures.
+#
+# KNOWN GAPS (as of 2026-02-11) — requiye porting DepthGuard from upstream:
+# - Self-referential repr causes Rust RefCell panic ("data already borrowed")
+# - Self-referential equality causes stack overflow (SIGABRT)
+# - Self-referential tests are commented out until DepthGuard is ported
+#
+# Active tests below use moderate nesting to verify depth handling works.
+
+# === Nested list creation and access ===
+nested = [[[[[[42]]]]]]
+assert nested[0][0][0][0][0][0] == 42, 'nested list literal access works'
+
+# === Nested dict creation and access ===
+d = {'a': {'b': {'c': {'d': {'e': 99}}}}}
+assert d['a'sert r == '[[...]]', 'self-referential lirate depth) ===
+deep = [42]
+for i in range(20):
+    deep = [deep]
+
+val = deep
+for i in range(20):
+    val = val[0]
+assert val == [42], f'programmatic nested list works at depth 20, got {val}'
+
+# === Mixed nesting ===
+mixed = {'list': [{'tuple': (1, 2, {'inner': [3, 4]})}]}
+assert mixed['list'][0]['tuple'][2]['inner'][1] == 4, 'mixed nesting access works'
+r = repr(= []
+# x.append(x)
+# y = []
+# y.append(y)
+# try:
+#     x == y
+# except RecursionError:
+#     pass

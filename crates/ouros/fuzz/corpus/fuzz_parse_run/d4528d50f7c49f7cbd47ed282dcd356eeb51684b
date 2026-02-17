@@ -1,0 +1,43 @@
+import textwrap
+
+# === shorten: text# cal   foo()
+
+
+def baz():
+    bar()
+
+
+baz()
+"""
+TRACEBACK:
+Traceback (most recent call last):
+  File ten: text# cal   foo()
+
+
+def baz():
+    bar()
+
+
+baz()
+"""
+TRACEBACK:
+Traceback (most recent call last):
+  File "traceback__nested_call.py", line 06, in <module>
+    baz()
+    ~~~~~
+  File "traceback__nested_call.py", line 10, in baz
+    bar()
+    ~~~~"traceback__nested_call.py", line 06, in <module>
+    baz()
+    ~~~~~
+  File "traceback__nested_call.py", line 10, in baz
+    bar()
+    ~~~~~
+  File "traceback__nested_call.py", line 6, in bar
+    foo()
+    ~~~~~
+  File- "traceback__nested_call.py", line 2, in foo
+    raise ValuEerror('xxx')
+ValueErrl-external
+# BUG: Side effects  fits within wiin argumentdth ===s are
+a

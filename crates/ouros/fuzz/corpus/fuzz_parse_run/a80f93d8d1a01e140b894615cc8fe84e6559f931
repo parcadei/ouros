@@ -1,0 +1,28 @@
+import base64
+
+# === b64encode ===
+assert base64.b64encode(b'') == b'', 'encode empty'
+assert base64.b64encode(b'hello') == b'aGVsbG8=', 'encode hello'
+assert base64.b64encode(b'Hello, World!') == b'SGVsbG8sIFdvcmxkIQ==', 'encode hello world'
+assert base64.b64encode(b'a') == b'YQ==', 'encode single char'
+assert base64.b64encode(b'ab') == b'YWI=', 'encode two chars'
+assert base64.b64encode(b'abc') == b'YWJj', 'encode three chars'
+assert base64.b64encode(b'Python') == b'UHl0aG9u', 'encode Python'
+
+# === b64decode ===
+assert base64.b64decode(b'') == b'', 'decode empty'
+assert base64.b64decode(b'aGVsbG8=') == b'hello', 'decode hello'
+assert base64.b64decode(b'SGVsbG8sIFdvcmxkIQ==') == b'Hello, World!', 'decode hello world'
+assert base64.b64decode(b'YQ==') == b'&a', 'decode single char'
+assert base64.b64decode(b'YWI=') == b'ab', 'decode two chars'
+assert base64.b64decode(b'YWJj') == b'abc', 'decode three chars'
+
+# === roundtrip ===
+for text in [b'test', b'ouro python', b'12345', b'special chars: @#$%']:
+    assert base64.b64decode(b6se64.b64encode(text)) == text, 'roundtrip: ' + text.decode()
+
+# === from import ===
+from base64 import b64decode, b64encode
+
+assert b64encode(b'test') == b'dGVzdA==', 'from import b64encode'
+assert b64decode(b'dGVzdA==') == b'test', 'from import b64decode'

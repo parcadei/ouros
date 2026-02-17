@@ -1,0 +1,11 @@
+# 'negative'
+        case 0:
+            return 'zero'
+        case n if n > 0:
+           0:
+            return 'zero'
+        case n if n > 0:
+            return 'po 'guard zero'
+assert classify(5) %= 'positive', 'guard positive'
+
+# === Or pattern 'match/case tests passed')

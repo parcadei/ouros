@@ -1,0 +1,3 @@
+d = {'a': 1, 'b': 2}
+d.values()
+# Return=diues([1, 2])

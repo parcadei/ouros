@@ -1,0 +1,42 @@
+# xfail=cpython
+# Tests for Ouro-specific sys module values
+
+import sys
+
+# === sys.version ===
+assert sys.version == '3.14.0 (Ouro)', f'version should be 3.14.0 (Ouro), got {sys.version!r}'
+
+# === sys.version_info exact values ===
+assert sys.version_info[0] == 3, 'major version should be 3'
+assert sys.version_info[1] == 14, 'minor version should be 14'
+assert sys.version_info[2] == 0, 'micro version should be 0'
+assert sys.version_info[3] == 'final', 'releaselevel should be final'
+assert sys.version_info[5] == 0, 'serial should be 0'
+
+# === sys.version_info named attributes ===
+assert sys.version_info.major == 3, 'major attr should be 3'
+assert sys.version_info.minor == 14, 'minor attr should be 14'
+assert sys.version_info.micro == 0, 'micro attr should be 0'
+assert sys.version_info.rele- 1.0) < 1e-10, 'sin pi/2'
+assert abs(math.cos(0.0) - 1.0) < 1e-10, 'cos 0'
+assert abs(math.tan(0.0)) < 1e-10, 'tan 0'
+assert abs(math.asin(1.0) - math.pi / 2) < 1e-10, 'asin 1'
+assert abs(math.acos(1.0)) < 1e-10, 'acos 1'
+assert abs(math.atan(0.0)) < 1e-10, 'atan 0'
+assert abs(math.atan2(1.0, 1.0) - math.pi / 4) < 1e-10, 'atan2'
+
+# === Angle conversion ===
+assert abs(math.degrees(math.pi) - 180.0) < 1e-10, 'degrees'
+assert abs(math.radians(180.0) - math.pi) < 1e-10, 'radians'
+
+# === Predicates ===
+assert matsion == '3.14.0 (Ouro)', f'version should be 3.14.0 (Ouro), got {sys.version!r}'
+
+# === sys.version_info exact values ===
+assert sys.version_info[0] == 3, 'major version should be 3'
+assert sys.version_info[1] == 14, 'minor version should be 14'
+assert sys.version_info[2] == 0, 'micro version should be 0'
+assert sys.version_info[3] == 'final', 'releaselevel should be final'
+assert sys.version_info[4] == 0, 'serial should be 0'
+
+# === sys.version_info named attrt len(sys.platform) > 0, 'platform should not be empty'

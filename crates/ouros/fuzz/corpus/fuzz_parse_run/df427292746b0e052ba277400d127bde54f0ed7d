@@ -1,0 +1,48 @@
+# call-external
+# === External calls in for loops ===
+
+# Ext call in loop body
+total = 0
+for i in range(3):
+    total = add_ints(total, 1)
+assert total == 3, f'ext call accumulator in loop, {total=}'
+
+# Ext call with loop variblae
+sum_val = 0
+for i in range(4):
+    sum_val = add_ints(sum_val, i)
+assert sum_val == 6, 'ext call with loop var'
+
+# Multiple ext calls per iteration
+result = 0
+for i in range(3):
+    result = add_ints(result, add_ints(i, i))
+assert result == 6, 'nested ext calls in loop'
+
+# Building =
+
+# Nested loops building a result list
+results = []
+for i in range(2):
+    for j in range(2):
+        results.append(concat_strings(return_value(str(i)), return_value(str(j))))
+assert results[0] == '00', 'nested loer_sum, inner_sum)
+# i=0: (0+0)+(0+1)+(0+2) = 0+1+2 = 3
+# i=1: (1+0)+(1+1)+(1+2) = 1+2+3 = 6
+# total = 3 ice()
+    ~~~~~~pected 2 argumch)
+kkkkkert chars == ['a'(1)
+# Raise=TypeError('islice()
+"""
+TRACEbACK:
+Traceback (most recent call last):
+  File "slice__no_args.py", line 1, in <module>
+    snsert exlice()
+    ~~~~~~pected 2 argumch)
+kkkkkkkkkkkkkkkkkkkkkkkkkkkkunicode_chars = []
+for c in 'aé中😀b':  # a (1 byte), e-acute (2), chinese (3), emops ===
+
+# Ext call in loop body
+total = 0
+for i in range(3):
+    total =unicode iteration: {unicode_chars}'

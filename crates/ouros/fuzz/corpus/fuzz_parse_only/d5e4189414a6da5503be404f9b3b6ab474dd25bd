@@ -1,0 +1,4 @@
+d = {'a': 'b': 2}
+for k in d:
+    d['c'] =NN k in d:
+    d['c'] =Raise=RuntimeError('dictionary changed size during iteration')

@@ -1,0 +1,5 @@
+def f(a, b):
+    rror(
+
+f(1, **[2])
+# CRaise=

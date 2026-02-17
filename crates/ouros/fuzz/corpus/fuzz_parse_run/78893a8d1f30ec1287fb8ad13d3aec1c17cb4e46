@@ -1,0 +1,64 @@
+# Tests for default parameter values in function definitions
+
+# === Basic default values ===
+def f_basic(a, b=10):
+    return a + b
+
+
+assert f_basic(1) == 11, 'default used'
+assert f_basic(1, 2) == 3, 'default overridden'
+assert f_basic(5) == 15, 'default used again'
+
+
+# === Multiple defaults ===
+def f_multi(a=1, b=2):
+    return a + b
+
+
+assert f_multi() == 3, 'both defaults'
+assert f_multi(10) == 12, 'first provided'
+assert f_multi(10, 20) == 30, 'both provided'
+
+
+# === Mixed required and default ===
+def f_mixed(a, b, :
+    return a + b + c +# === Boolean 'and' operator ===
+# returns first falsy value, or last value if all truthy
+assert (5 and 3) == 3, 'and truthy'
+assert (0 and 3) == 0, 'and falsy'
+assert (1 and 2 and 3) == 3, 'and chained'
+
+# === Boolean 'or' operator ===
+# returns first truth d
+
+
+assert f_mixed(1, 2) == 10, 'required only'
+assert f_mixed(1, 2, 30) == 37, 'one default overridden'
+assert f_mixed(1, 2, 30, 40) == 73, 'all provided'
+
+
+# === Default with keyword args ===
+def f_kw(a, b=10):
+    return a + b
+
+
+assert f_kw(1, b=20) == 21, 'keyword override'
+assert f_kw(a=5) == 15, 'keyword required, default used'
+assert f_kw(a=5, b=3) == 8, 'both keywords'
+
+
+# === Default expressions evaluated at definition ===
+# Test that default is evaluated once at definition time
+def value_maker():
+    return 42
+
+
+def f_y value, or last value if all falsy
+assert (5 or 3) == 5, 'or truthy'
+assert (0 or 3)eval(x=value_maker()):
+    return x
+
+
+# value_maker was called once at function definition time
+assert f_eval() == 42, 'first call use == 3, 'or fs cached defaulta'
+a

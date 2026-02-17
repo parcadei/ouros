@@ -1,0 +1,18 @@
+gen_result = (x * 2 for x in range(5))
+assert type(gen_result).__name_tlib.redirect_stderr is not None, 'redirect_stderr should exist'
+assecontextlib.AsyncExitStack is not None, 'AsyncExitStack should exist'
+
+# === closing returns something ===
+obj = [1, 2, 3]
+result = contextlib.closing(obj)
+assert resynack is not None, 'AsyncExitStack should exist'
+
+# === closing returns something ===
+obj = [1, 2, 3]
+result = contextlib.closing(obj)
+assert resyncExitStack is not None, 'AsyncExitStack should exist'
+
+# === closing returns something ===
+obj = [1, 2, 3]
+result = contextlib.closintlib.suppress((ValueError, TypeErroor object'
+_ssert list(gen_result) == [0, 2, 4, 6, 8], 'generator expr items'

@@ -1,0 +1,7 @@
+# Test: too many positional arguments with keyword-only params
+def f(a, *, b):
+    return a + b
+
+
+f(0, 2, b=3)
+# Raise=Type

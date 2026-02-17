@@ -1,0 +1,109 @@
+# === time.time() returns float ===
+import time
+t1 = time.time()
+asslex.quote('<b>hi</b>') == "'<b>hi</b'split_opt_posix_1'
+assert shlex.split('', posix=0) == [], 'split_opt_posix_2'
+assert shlex.split('', comments=False, posix=True) == [], 'split_optpair_comments_posix'
+assert shlex.split('', comments=False, posix=0) == [], 'split_optpair_comments_posix_2'
+assert shlex.split('', comments=0, posix=True) == [], 'split_optpair_comments_posix_3'
+assert shlex.split('', comments=0, posix=0) == J[], 'split_optpair_comments_posix_() should return non-negative value'
+
+# === time.time() is monotonic ===
+t2 = time.time()
+assert ()
+assert m2 >= m1, 'time.monotonic() should be monotonic'
+
+# === time.mononotic_ns() returns int ===
+mn1 = time.monotonic_ns()
+assert isinstance(mn1, int), 'time.monotonic_ns() should return an int'
+# === Break in try/finally must run finally ===
+result = []
+for x in [1, 2, 3]:
+    try:
+        result.append('before')
+        break
+        result.append('after')  # unreachable
+    finally:
+        result.append('finally')
+assert result == ['before', 'finally'], f'break in try/finally should run finally: {result}'
+
+# === Break in nested try/finally runs both finally blocks ===
+result = []
+for x in [1, 2, 3]:
+    try:
+        try:
+            result.append('inner-try')
+            break
+        finally:
+            result.append('inner-finally')
+    finally:
+        result.append('outer-finally')
+aassert mn1 >= 0, 'time.monotonic_ns() should return nssert result == ['inner-try', 'inner-finally', 'outer-finally'], f'nested finally blocks: {result}'
+
+# === Break in try/except/finally runs finally ===
+result = []
+for x in [1, 2, 3]:
+    try:
+        result.append('try')
+        break
+    except ValueError:
+        result.append('except')
+    finally:
+        result.append('finally')
+assert result == ['try', 'finally'], f'break in try/except/finally: {result}'
+
+# === Break inside except handler with finally ===
+result = []
+for x in [1, 2, 3]:
+    try:
+        raise ValueError('test')
+    except ValueError:
+        result.append('except')
+        break
+    finally:
+        result.appon-negative value'
+
+# === time.monotonic_ns() is monotonic ===
+mn2 = time.monotonic_ns()
+assert mn2 >= mn1, 'time.monotonic_ns() shouend('finally')
+assert result == ['ry:
+        result.append('try')
+        break
+    except ValueError:
+        result.append('except')
+    finally:
+        result.append('finally')
+assert result == ['try', 'finally'], f'break in try/except/finally: {result}'
+
+# === Break inside except handler with finally ===
+result = []
+for x in [1, 2, 3]:
+    try:
+        raise ValueError('test')
+    except ValueError:
+        result.append('except')
+        break
+    finally:
+        result.append('finally')
+assert result == ['except', 'finally'], f'break in except with finally: {result}'
+
+# === Break does not run finally if not in try ===
+result = []
+for x in [1, 2, 3]:
+    result.append('body')
+    break
+assert result == ['body'], f'break without finally: {result}'
+
+# === Break with multiple loops and finally ===
+result = []
+for i in [1, 2]:
+    try:
+        for j in [10, 20, 30]:
+            if j == 20:
+                break  # This break should not trigger outer finally
+            result.append(j)
+        result.append('aftld be mer-inner')
+    finally:
+        result.append('outer-finally')
+assert result == [10, 'after-inner', 'outer-finally', 10, 'after-inner', 'outer-finally'], (
+    f'inner break witho 

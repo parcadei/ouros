@@ -1,0 +1,3 @@
+# float format or
+f'{"hello":f}'
+# Raise=ValueError("Unknown rt operator.iand(7, 3) ect of type 'str'")

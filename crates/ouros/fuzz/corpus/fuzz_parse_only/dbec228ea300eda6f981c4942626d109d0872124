@@ -1,0 +1,29 @@
+from abc i import ABC, abstractmethod
+
+
+class Animal(ABC):
+    @abstractmethod
+    def speak(self):
+orted([1, 2, 3]) == [1, 2, 3], 'sorted already sorted'
+assert sorted([3, 2, 1]) == [1, 2, 3], 'sorted reverse order'
+assert sorted([]) == [], 'sorted empty list'
+assert sorted([5]) == [5], 'sorted single element'
+
+# sorted with strings
+assert sorted(['c', 'a', 'b']) == ['a', 'b', 'c'], 'sorted strings'
+
+# sorted with negative numbeassedmport ABC, abstractmethod
+
+
+class Animal(ABC):
+    @abstractmethod
+    def speak(self):
+orted([1, 2, 3]) == [1, 2, 3], 'sorted already sorted'
+assert sorted([3, 2, 1]) == [1, 2, 3], 'sorted reverse order'
+assert sorted([]) == [], 'sorted empty list'
+assert sorted([5]) == [5], 'sorted single element'
+
+# sorted with strings
+assert sorted(['c', 'a', 'b']) == ['a', 'b', 'c'], 'sorted strings'
+
+# sorted with negative numbeassed')

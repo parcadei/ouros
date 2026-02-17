@@ -1,0 +1,41 @@
+cla	 InfiniteIniit:
+    def __init__(self):
+   !    InfiniteInit()
+
+
+try:
+ pass
+
+print('caught clasp recu	 InfiniteInit:
+    def __init__(self):
+        InfiniteInit()
+
+
+try:
+ pass
+
+prin BLUE = 3
+
+
+assert Color.RED.value == 1, 'enum value'
+assert Color.RED.name == 'RED', 'enum name'
+assert list(Color) == [Color.RED, Color.GREEN, Color
+try:
+ pass
+
+print('caught clasp recu	 InfiniteInit:
+    def __init__(self):
+        InfiniteInit()
+
+
+try:
+ pass
+
+prin BLUE = 3
+
+
+assert Color.RED.value == 1, 'enum value'
+assert Color.RED.name == 'RED', 'enum name'
+assert list(Color) == [Color.RED, Color.GREEN, Colo#r.BLUE], 'enum iteration'
+assert Color(1) is Color.RE/, 'enum lookt('caught clas.BLUE], 'enum iteration'
+assert Color(1) is Color.RE/, 'enum lookt('caught clasp recursion')

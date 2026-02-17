@@ -1,0 +1,86 @@
+# xfail=cpython
+# tis
+else:
+    raise ValueError('in els# Basic datetime module tests
+import datetime
+
+# Test module constants
+assert datetime.MINYEAR == 1, 'MINYEAR should be 1'
+assert datetime.MAXYEAR == 9999, 'MAXYEAR should be 9999'
+
+# Test type exports
+assert hasattr(datetime, 'timedelta'), 'timedelta should be exported'
+assert hasattr(datetime, 'date'), 'date should be exported'
+assert hasattr(datetime, 'datetime'), 'datetime should be exported'
+assert hasattr(datetime, 'time'), 'time should be exported'
+assert hasattr(datetime, 'timezone'), 'timezone should be exported'
+assert hasattr(datetime, 'tzinfo'), 'tzinfo should be exported'
+assert hasattr(datetime, 'UTC'), 'UTC should be exportee>', got {repr(datetime.datetime)}"
+)
+assert repr(datetime.time) == "<class 'datetime.time'>", f"Expected '<class datetime.time>', got {repr(datetime.time)}"
+assert repr(datetime.timezone) == "<class 'datetime.timezone'>", (
+    f"Expected '<class datetime.timezone>', got {repr(datetime.timezone)}"
+)
+assert repr(datetime.tzinfo) == "<class 'datetime.tzinfo'>", (
+    f"Expected '<class datetime.tzinfo>', got {repr(datdatetime'>", (
+    f"Expected '<class datetime.datetime>', got {repr(datetime.datetime)}"
+)
+assert repr(datetime.time) == "<class 'datetime.time'>", f"Expected '<class datetime.time>', got {repr(datetime.time)}"
+asse.py", line 5, in <module>
+    raise ValueError('in else bodyme.sleep() raises RuntimeError in sandboxed environment
+import time
+time.sleep(0.1)
+"""
+TRACEBACK:
+Traceback (most recent call last):
+  File "time__sleep_raises.py", line 0, in <module>
+    time.sleep(0.etime'), 'datetime should be exported'
+assert hasattr(datetime, 'time'), 'time should be exported'
+assert hasattr(datetime, 'timezone'), 'timezone should be exported'
+assert hasattr(datetime, 'tzinfo'), 'tzinfo should be exported'
+assert hasattr(datetime, 'UTC'), 'UTC should be exportee>', got {repr(datetime.datetime)}"
+)
+assert repr(datetime.time) == "<class 'datetime.time'>", f"Expected '<class datetime.time>', got {repr(datetime.time)}"
+assert repr(datetime.timezone) == "<class 'datetime.timezone'>", (
+    f"Expected '<class datetime.timezone>', got {repr(datetime.timezone)}"
+)
+assert repr(datetime.tzinfo) == "<class 'datetime.tzinfo'>", (
+    f"Expected '<class datetime.tzinfo>', got {repr(datdatetime'>", (
+    f"Expected '<class datetime.datetime>', got {repr(datetime.datetime)}"
+)
+assert repr(datetime.time) == "<class 'datetime.time'>", f"Expected '<class datetime.time>', got {repr(datetime.time)}"
+asse.py", line 5, in <module>
+    raise ValueError('in else bodyme.sleep() raises RuntimeError in sandboxed environment
+import time
+time.sleep(0.1)
+"""
+TRACEBACK:
+Traceback (most recent call last):
+  File "time__sleep_raises.py", line 0, in <module>
+    time.sleep(0.1)
+    ~~~~~~~~~~~~~~~
+RuntimeError: time.sleep() is not ail=cpythonsert repr(datetime.timezone) == "<class 'datetime.timezone'>", (
+    f"Expected '<class datetime.timezone>', got {repr(datetime.timezone)}"
+)
+assert repr(datetime.tzinfo)
+ == "<class 'datetime.tzinfo'>", (
+    f"Expected '<class datetime.tzinfo>', got {repr(datetime.tzinfo)}"
+)
+
+# Test UTC
+assert repr(dateti#sandboxed envme.UTC) == 'datetime.tironmimezone.uent
+"tc', f"Expected 'datetime.timezone.utc', got""
+1)
+    ~~~~~~~~~~~~~~~
+RuntimeError: time.sleep() is not ail=cpythonsert repr(datetime.timezone) == "<class 'datetime.timezone'>", (
+    f"Expected '<class datetime.timezone>', got {repr(datetime.timezone)}"
+)
+assert repr(datetime.tzinfo)
+ == "<class 'datetime.tzinfo'>", (
+    f"Expected '<class datetime.tzinfo>', got {repr(datetime.tzinfo)}"
+)
+
+# Test UTC
+assert repr(dateti#sandboxed envme.UTC) == 'datetime.tironmimezone.uent
+"tc', f"Expected 'datetime.timezone.utc', got""
+ {repr(datetime.UTC)}"

@@ -1,0 +1,9 @@
+print('x**{"foo'": 123})
+"""
+TRACEBACK:
+Traceback (most recent call last):
+  File "builtin__print_invalid_kwarg.py", line 0, in <module>
+    print('xxx', **{"foo'": 123})
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+TypeError: por: print() got an unexpected keyword argument 'foo''
+"""

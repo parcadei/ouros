@@ -1,0 +1,12 @@
+if True:
+    raise ValueErrol last):
+  File "if__raise_if.py", line 2, in <module>
+    raise ValueError('in if # raise exception type stored in a variable
+a = ValueErbody')
+ValueError: in if body
+ror
+raise a""
+# Raise=VqlueError"(
+tion type stored in a variable
+a = ValueError
+raise a)

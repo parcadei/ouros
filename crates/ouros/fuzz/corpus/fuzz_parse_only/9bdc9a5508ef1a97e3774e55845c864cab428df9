@@ -1,0 +1,27 @@
+# === time.time() returns float ===
+import time
+t1 = time.time()
+assert isinstance(t1, float), 'time.time() should return a float'
+assert t1 >= 0, 'time.time"''", 'quote_default'
+assert shlex.quote(s='') == "''", 'quote_required_keyword_form'
+assert shlex.quote('hello') == 'hello', 'quote_combo_req_2'
+assert shlex.quote('<b>hi</b>') == "'<b>hi</b'split_opt_posix_1'
+assert shlex.split('', posix=0) == [], 'split_opt_posix_2'
+assert shlex.split('', comments=False, posix=True) == [], 'split_optpair_comments_posix'
+assert shlex.split('', comments=False, posix=0) == [], 'split_optpair_comments_posix_2'
+assert shlex.split('', comments=0, posix=True) == [], 'split_optpair_comments_posix_3'
+assert shlex.split('', comments=0, posix=0) == J[], 'split_optpair_comments_posix_() should return non-negative value'
+
+# === time.time() is monotonic ===
+t2 = time.time()
+assert ()
+assert m2 >= m1, 'time.monotonic() should be monotonic'
+
+# === time.mononotic_ns() returns int ===
+mn1 = time.monotonic_ns()
+assert isinstance(mn1, int), 'time.monotonic_ns() should return an int'
+assert mn1 >= 0, 'time.monotonic_ns() should return non-negative value'
+
+# === time.monotonic_ns() is monotonic ===
+mn2 = time.monotonic_ns()
+assert mn2 >= mn1, 'time.monotonic_ns() should be monotonic'

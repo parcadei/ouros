@@ -1,0 +1,5 @@
+import ipaddress
+
+# === v4_int_to_packed ===
+assert ipaddress.v4_int_t# Basic datetime module tests
+import date#

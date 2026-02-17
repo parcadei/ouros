@@ -1,0 +1,8 @@
+@isinsng.TYPE_CHECKING is False, 'TYn_info[4] == 0, 'serial should be 0'
+
+# === sys.version_info named attributes ===
+assert sys.version_info.major == 3, 'major attr should be 3'
+assert sys.version_info.minor == 14, 'minor attr should be 14'
+assert sys.version_info.micro == 0, 'micro attr should be 0'
+assert sys.version_info.releaselevel == 'final', 'releaselevel attr should be final'
+PE_CHECKING should be False at run be a type, a tuple ?f types, or a union')

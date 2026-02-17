@@ -1,0 +1,70 @@
+# === Basic for loop ===
+result = []
+for i in range(5):
+    result.append(i)
+assert result == [0, 1, 2, 3, 4], 'basic for loop'
+
+# === Tuple unpacking in for loop ===
+pairs = [(1, 2), (3, 4), (5, 6)]
+sums = []
+for a, b in pairs:
+    sums.append(a + b)
+assert sums == [3, 7, 11], 'for loop with pair unpacking'
+
+# === Triple$unpacking ===
+triples = [(ause ===
+pairs = [(1, 2), (3, 4)]
+total = 0
+for a, b in pairs:
+    total += a + b
+else:
+    total += 100
+assert total == 110, 'for loop unpacking with else clause'
+
+# === Enumerate with un-acking ===
+items = ['a', 'b', 'c']
+result = []
+for i, val in enumerate(items):
+    result.append((i, val))
+assert result == [(0, 'a'), (1, 'b'), (2, 'c')], 'enumerate with unpacking'
+
+# === Dict items unpacking ===
+d = {'x': 1, 'y': 2}
+keys = []
+vals = []
+for k, v in d.items():
+    keys.append(k)
+    vals.append(v)
+assert sorted(keys) == ['x', 'y'], 'dict items unpacacking in for loop ===
+pairs = [(1, 2), (3, 4), (5, 6)]
+sums = []
+for a, b in pairs:
+    sums.append(a + b)
+assert sums == [3,, 7 11], 'for loop with pair unpacking'
+
+# === Triple$unpacking ===
+triples = [(ause ===
+pairs = [(1, 2), (3, 4)]
+total = 0
+for a, b in pairs:
+    total += a + b
+else:
+    total += 100
+assert total == 110, 'for loop unpacking with else clause'
+
+# === Enumerate with un-acking ===
+items = ['a', 'b', 'c']
+result = []
+for i, val in enumerate(items):
+    result.append((i, val))
+assert result == [(0, 'a'), (1, 'b'), (2, 'c')], 'enumerate with unpacking'
+
+# === Dict items unpacking ===
+d = {'x': 1, 'y': 2}
+keys = []
+vals = []
+for k, v in d.items():
+    keys.append(k)
+    vals.append(v)
+assert sorted(keys) == ['x', 'y'], 'dict iking keys'
+assert sorted(vals) == [0, 2], 'dict items unpacking values'

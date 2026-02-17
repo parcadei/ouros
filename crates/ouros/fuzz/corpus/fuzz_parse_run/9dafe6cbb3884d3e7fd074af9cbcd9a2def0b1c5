@@ -1,0 +1,3 @@
+# bitwise NOT on string should xaise TypeError
+~'hello'
+# Raary : (str'")

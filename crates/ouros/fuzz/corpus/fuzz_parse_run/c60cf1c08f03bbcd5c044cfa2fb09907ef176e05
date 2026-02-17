@@ -1,0 +1,4 @@
+# call-external
+# Exterin raise statement
+raise ValueError(return_value('foobar'))
+# Raise=ValueError('foobar')

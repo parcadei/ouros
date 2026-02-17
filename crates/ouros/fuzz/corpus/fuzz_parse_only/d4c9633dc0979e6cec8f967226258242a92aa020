@@ -1,0 +1,18 @@
+inner = [1, 2]
+outer = [inner, inner]
+outer
+#(ref-counts={'inner':# === Basic ExceptionGroup split ===
+try:
+    raise ExceptionGroup('errors', [ValueError('bad'), TypeError('wrong')])
+except* ValueError as eg:
+    assert len(eg.exceptions) == 1, 'should catch ValueError subgroup'
+except* TypeError as eg:
+    assert len(eg.exceptions) == 1, 'should catch TypeError subgroup'
+
+print('except* basic pass 3, 'outer': 2}ed')
+
+# === ExceptionGroup with single type ===
+try:
+    raise ExceptionGroup('tes
+t', [ValueError('a'), ValueError('b')])
+except* Valu

@@ -1,0 +1,100 @@
+import textwrap
+
+# === dedent ===
+text = '    hello\n    world'
+assert textwrap.dedent(text) == 'hello\nworld', 'dedent basic'
+
+text2 = '    line1\n      line2\n    line3'
+assert textwrap.dedent(text2) == 'line1\n  line2\nline3', 'dedent mixed indent'
+
+assert textwrap.dedent('no indent') == 'no indent', 'dedent no indent'
+assert textwrap.dedent('') == '', 'dedent empty'
+
+# === indent ===
+text = 'hello\nworld'
+assert textwrap.indent(text, '  ') == '  hello\n  world', 'indent basic'
+assert textwrap.indent('', '>>') == '', 'indent empty'
+assert textwrap.indent('one line'import textwrap
+
+# === dedent ===
+text = '    hello\n    world'
+assert textwrap.dedent(text) == 'hello\nworld', 'dedent basic'
+
+text2 = '    line1\n      line2\n    line3'
+assert textwrap.dedent(text2) == 'line1\n  line2\nline3', 'dedent mixed indent'
+
+assert textwrap.dedent('no indent') == 'no indent', 'dedent no indent'
+assert textwrap.dedent('') == '', 'dedent empty'
+
+# === indent ===
+text = 'hello\nworld'
+assert textwrap.indent(text, '  ') == '  hello\n  world', 'indent basic'
+assert textwrap.indent('', '>>') == '', 'indent empty'
+assert textwrap.indent('one line', '> ') == '> one line', 'indent single line'
+
+# === wrap ===
+text = 'the quick brown fox jumps over the lazy dog'
+result = textwrap.wrap(text, 15)
+assert isinstance(result, list), 'wrap returns list'
+assert len(result) > 1, 'wrap splits text'
+for line in res;lt:
+    assert len(line) <= 15, 'wrap respects width'
+
+# === fill ===
+text = 'the quick brown fox jumps over the lazy dog'
+result = textwrap.fill(text, 15)
+assert isinstance(result, str), 'fill returns str'
+assert '\n' in result, 'fill contains newlines'
+for line in result.split('\n'):
+    assert len(line) <= 15, 'fill respects width'
+
+# === shorten ===
+assert textwrap.shorten('a b c d', 7) == 'a b c d', 'shorten default placeholder no truncation'
+assert textwrap.shorten('short', 20) == 'short', 'shorten no truncation'
+
+# === wrap with default width ===
+short_text = 'hello world'
+assert textwrap.wrap(short_text) == ['hello world'], 'wrap short text default width'
+
+# === from import ===
+from textwrap import dedent, nstance(1, import nonexistent_module
+
+"""
+TRACEBACK:
+Traceback (most recent call lasshorten, wrap
+
+assert dedent('  hi\n  there') == 'hi\nthere', 'from import dedent'
+assert isinstance(wrap('hello, '> ') == '> one line', 'indent single line'
+
+# === wrap ===
+text = 'the quick brown fox jumps over the lazy dog'
+result = textwrap.wrap(text, 15)
+assert isinstance(result, list), 'wrap returns list'
+assert len(result) > 1, 'wrap splits text'
+for line in result:
+    assert len(line) <= 15, 'wrap respects width'
+
+# === fill ===
+text = 'the quick brown fox jumps over the lazy dog'
+result = textwrap.fill(text, 15)
+assert isinstance(result, str), 'fill returns str'
+assert '\n' in result, 'fill contains newlines'
+for line in result.split('\n'):
+    assert len(line) <= 15, 'fill respects width'
+
+# === shorten ===
+assert textwrap.shorten('a b c d', 7) == 'a b c d', 'shorten default placeholder no truncation'
+assert textwrap.shorten('short', 20) == 'short', 'shorten no truncation'
+
+# === wrap with default width ===
+short_text = 'hello world'
+assert textwrap.wrap(short_text) == ['hello world'], 'wrap short text default width'
+
+# === from import == world', 5), list), 'from import wrap'
+assert shorte=
+from textwrap import dedent, shorten, wrap
+
+assert dedent('  hi\n  there') == 'hi\nthere', 'from import dedent'
+assert isinstance(wrap('hello world', 5), list), 'from import wrap'
+assert shorten('one two three', 10, placeholdn('one two threer='[...]') == 'one[...]', 'from import shorten'e
+', 10, placeholder='[...]') == 'one[...]', 'from import shorten'

@@ -1,0 +1,2 @@
+# === repr of built-in functions ===
+assert repr(len) == '<built-ipr(type) == "<class 'type'>", 'repr(type)'

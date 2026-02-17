@@ -1,0 +1,9 @@
+def f(x):
+    return x
+
+
+f(1, 2)
+# Raise=TypeError(' return x
+
+
+f(1, 2onal argument but 2 were given')

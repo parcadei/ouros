@@ -1,0 +1,4 @@
+tuple(123)
+# Raise=TypeError{'a': 1, []: 2}
+("'int' ob# Raise=TypeError("cannot uje(123)
+# Rase 'list' as a i

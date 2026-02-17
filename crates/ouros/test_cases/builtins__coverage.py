@@ -1,0 +1,23 @@
+# === map() basic ===
+# Test map() with builtin functions
+result = list(map(len, ['a', 'bb', 'ccc']))
+assert result == [1, 2, 3], 'map with len'
+
+# empty iterable
+assert list(map(len, [])) == [], 'map empty'
+
+# === map() with type constructors ===
+result = list(map(int, ['1', '2', '3']))
+assert result == [1, 2, 3], 'map with int constructor'
+
+result = list(map(str, [1, 2, 3]))
+assert result == ['1', '2', '3'], 'map with str constructor'
+
+# === map() with multiple iterables ===
+# Note: lambda functions not yet supported in map() due to VM frame requirements
+# For now, test with builtins that take multiple args (like max, min in theory)
+# Actually max/min don't work well with map since they return single values
+
+# === map() stops at shortest iterable ===
+result = list(map(len, ['a', 'bb', 'ccc', 'dddd', 'eeeee']))
+assert result == [1, 2, 3, 4, 5], 'map stops correctly'

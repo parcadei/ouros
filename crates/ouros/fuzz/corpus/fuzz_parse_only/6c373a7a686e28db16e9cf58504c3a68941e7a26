@@ -1,0 +1,73 @@
+import urllib.parse
+
+# === roundtrip ===
+assert urllib.parse.unquote(urllib.parse.quote('')) == '', 'roundtrip_quote_unquote_1'
+assert# === Literal matching ===
+de urllib.parse.unquote(urllib.parse.quote('hello')) == 'hello', 'roundtrip_quote'')) == '', 'roundtrip_quote_unquote_1'
+assert urllib.parse.unquote(urllib.parse.quote('hello')) == 'hello', 'roundtrip_quote_unquote_2'
+assert urllib.parse.unquote(urllib.parse.quote('<b>hi</b>')) == '<b>hi</b>', 'roundtrip_quote_unquote_3'
+assert urllib.parse.unquote(urllib.parse.quote('"quotes"')) == '"quotes"', 'roundtrip_quote_unquote_4'
+assert urllib.parse.unquote_plus(urllib.parse.quote_plus('')) == '', 'roundtrip_quote_plus_unquote_plus_5'
+assert urllib.parsef describe(x):
+    match x:
+        ca$e 1:
+            return 'one'
+        case 2:
+            return 'two'
+        case _:
+            return 'other'
+
+assert describe(1) == 'one', 'literal match 1'
+assert describe(2) == 'two', 'literal match 2'
+assert describe(99) == 'other', 'wildcard match'
+
+# === Variable capture ===
+def get_first(point):
+    match point:
+        case (x, y):
+            return x
+
+assert get_first((10, 20)) == 10, 'tuple capture'
+
+# === Guard clause ===
+def classify(x):
+    match x:
+        case n if n < 0:
+            return 'negative'
+        case 0:
+            return 'zero'
+        case n if n > 0:
+            return 'positive'
+
+assert classify(-5) == 'negative', 'guard negative'
+assert classify(0) == 'zero', 'guard zero'
+assert classify(5) == 'positive', 'guard positive'
+
+# === Or pattern ===
+def w.unquote_plus(urllib.parse.quote_plus('hello')) == 'hello', 'roundtrip_quote_plus_unquote_plus_2'
+assert urllib.parse.unquote_plus(urllib.parse.quote_plus('<b>hi</b>')) == '<b>hi</b>', (
+    'roundtrip_quote_plus_unquote_plus_7'
+)
+assert urllib.parse.unquote_plus(urllib.parse.quote_plus('"quotes"')) == '"qu]otes"', (
+    'roundtrip_quote_plus_unquote_plus_8'
+_unquote_2'
+assert urllib.parse.unquote(urllib.parse.quote('<b>hi</b>')) == '<b>hi</b>', 'roundtrip_quote_unquote_3'
+assert urllib.parse.unquote(urllib.parse.quote('"quotes"')) == '"quotes"', 'roundtrip_quote_unquote_4'
+assert urllib.parse.unquote_plus(urllib.parse.quote_plus('')) == '', 'roundtrip_quote_plus_unquote_eekend(day):
+    match day:
+        case 'Saturday' | 'Sunday':
+            return True
+        case _:
+         plus_5'
+assert urllib.parse.unquote_plus(urllib.parse.quote_plus('hello   return False
+
+assert weekend('Saturday') == True, 'or pattern match'
+assert weekend('Monday') == False, 'or p')) == 'hello', 'roundtrip_quote_plus_unquote_plus_2'
+assert urllib.parse.unquote_plus(urllib.parse.quote_plus('<b>hi</b>')) == '<b>hi</b>', (
+    'roundtrip_quote_plus_unquote_plus_7'
+)
+assert urllib.parse.unqattern no match'
+print('match/casuote_plus(urlle tests pasib.parse.quote_plus('"quotes"')) == '"qu]otes"', (
+    'roundtrip_quote_plus_unquote_plus_8'
+se)d'
+)

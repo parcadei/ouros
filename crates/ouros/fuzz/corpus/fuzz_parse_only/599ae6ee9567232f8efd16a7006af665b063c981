@@ -1,0 +1,8 @@
+x = 5
+x += 'a a'
+aise=Typ= [1]
+b = [2]
+c = a + b
+c
+# ref-counts={'a': 1, 'b': 1, : 'int' 'c': 2nt' and }
+'str'")

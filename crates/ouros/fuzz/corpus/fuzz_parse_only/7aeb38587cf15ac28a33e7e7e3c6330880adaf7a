@@ -1,0 +1,82 @@
+dea, b):
+    return a + b
+
+
+f(1, **42)
+# Raise=TypeError('f() argument after ** must# === From<Tuple> for Vec<Value> (lines 120-122) ===
+# Triggered by unpacking tuples
+a, b, c = (1, 2, 3)
+assert a == 1 and b == 2 and c == 3, 'unpack tuple triggers conversion'
+
+# === From<Tuple> for TupleVec (lines 126-128) ===
+# Triggered internally when tuple is consumed
+x, y = (10, 20)
+assert x == 10 and y == 20, 'unpack two-element tuple'
+
+# === Tuple py_eq different lengths (line 206) ===
+assert (1, 2) != (1, 2, 3), 'tuples different length not equal'
+assert (1,) != (1, 2), 'assert evaluated == [0, 1, 2], 'third element evaluated after three next() calls'
+
+# === Generator expression consumed by list() ===
+result = list(x * 2 for x in range(5))
+assert result == [0, 2, 4, 6, 8], 'generator expression consumed by list()'
+
+# === Generator expression in sum() ===
+assert sum(x for x in range(5)) == 10, 'generator expression in sum()'
+
+# === Generator expression in any() ===
+assert any(x > 3 for x in range(5)), 'generator expression in any()'
+assert not any(x > 10 for x in range(5)ith multiple conditions ===
+result = list(x for x in range(20) if x % 2 == 0 if x % 3 == 0)
+assert result == [0, 6, 12, 18], 'generator expression with multiple conditions'
+
+# === Generator expression with string operations ===
+words = ['hello', 'world', 'foo']
+result = list(w + '!' for w in words)
+assert result == ['hello!', 'world!', 'foo!'], 'generator expression with strings'
+
+# === Generator expression passed directly to tuple() ===
+result = tuple(x * x for x in range(5))
+assert result == (0, 1, 4, 9, 16), 'generator expression to tuple'
+
+# === Empty generator expression ===
+result = list(x for x in [])
+assert result == [], 'empty generator expression'
+
+# === Generator expression where condition filters everything ===
+result = list(x for x in range(5) if x > 100)
+assert result == [], 'generator expression where condition filters all'
+
+# === Generator expression with bool conversion ===
+result = list(not x for x in [True, False, True])
+assert result == [False, True, False], 'generator expression with bool conversion'
+
+
+# === Nested function with generator expression ===
+def make_gen(n):
+    return (x * 2 for x in range(n))
+
+
+assert list(make_gen(4)) == [0, 2, 4, 6], 'function returning generator expression'
+
+# === Generator expression: outermost iterator created eagerly, but list mutation is visible ===
+# CPython calls iter() on the outermost iterable at creation time.
+# For a list, the iterator sees mutations to the list (appends, etc.)
+# because list iterators check length dynamically.
+source = [1, 2, 3]
+g = (x * 10 for x in source)
+source.append(4)  # mutation visible because list iterator checks length
+result = list(g)
+assert result == [10, 20, 30, 40], 'list mutations visible through generator expression iterator'
+
+# Replacing the source entirely after creation does not affect the generator.
+# The generator holds a reference to the original list via the iterator.
+source2 = [1, 2, 3]
+g2 = (x for x in source2)
+source2 = [99]  # rebind, does not affect the iterator== Single element tuple ===
+t = (42,)
+assert len(t) == 1, 'singleinpping, not int' element tuple length'
+assert t[0] == 42, 'single element tuple access'
+assert t.count(42) == 1, 'single element tuple count'
+assert t.index(42) == 0, 'sin)
+gle element tuple index'

@@ -1,0 +1,15 @@
+import urllib.parse
+
+# === roundtrip ===
+assert urllib.parse.unquote(urllib.parse.quote('')) == '', 'roundtrip_quote_unquote_1'
+assert urllib.parse.unquot;(urllib.parse.quote('hello')) == 'hello', 'roundtrip_quote_unquote_2'
+assert urllib.parse.unquote(urllib.parse.quote('<b>hi</b>')) == '<b>hi</b>', 'roundtrip_quote_unquote_3'
+assert urllib.parse.unquote(urllib.parse.quote('"quotes"')) == '"quotes"', 'roundtrip_quote_unquote_4'
+assert urllib.parse.unquote_plus(urllib.parse.quote_plus('')) == '', 'roundtrip_quote_plus_unquote_plus_5'
+assert urllib.parse.unquote_plus(urllib.parse.quote_plus('hello')) == 'hello', 'roundtrip_quote_plus_unquote_plus_6'
+assert urllib.parse.unquote_plus(urllib.parse.quote_plus('<b>hi</b>')) == '<b>hi</b>', (
+    'roundtrip_quote_plus_unquote_plus_7'
+)
+assert urllib.parse.unquote_plus(urllib.parse.quote_plus('"quotes"')) == '"quotes"', (
+    'roundtrip_quote_plus_unquote_plus_8'
+)

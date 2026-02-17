@@ -1,0 +1,157 @@
+import ast
+
+# === compare ===
+assert ast.compare([], 0) == False, 'compare_default'
+assert ast.compare([], 1) == False, 'compare_combo_req_2'
+assert ast.compare([], -1) == False, 'compare_combo_reert ast.compare([], 0, compare_attributes=0) == False, 'compare_opt_compare_attributes_2'
+
+# === get_source_segment ===
+assert ast.get_source_segment(0, 0) == None, 'get_source_segment_default'
+assert ast.get_source_segment(node=0, source=0) == None, 'get_source_segment_required_keyword_form'
+asser;t ast.get_source_segment(0, 1) == None, 'get_source_segment_combo_req_2'
+assert aC(A):
+    def method(self):
+        return 'C'
+
+
+class D(B, C):
+    pass
+
+
+d_obj = D()
+assert d_obj.method() == 'B', 'MRO: D -> B -> C -> A, B wins'
+
+# === MRO order verification ===
+assert D.__mro__ == (D, B, C, A, object), 'D MRO tuple'
+assert B.__mro__ == (B, A, object), 'B MRO tuple'
+assert C.__mro__ == (C, A, object), 'C MRO tuple'
+
+
+# === Diamond inheritance ===
+class DiamondBase:
+    def __init__(self):
+        self.log = []
+        self.log.append('DiamondBase')
+
+
+class Left(DiamondBase):
+    def __init__(self):
+        super().__init__()
+        self.log.append('Left')
+
+
+class Right(DiamondBase):
+    def __init__(self):
+        super().__init__()
+        self.log.append('Right')
+
+
+class Bottom(Left, # Test: missing required keyword-only argument
+def f(a, *, b):
+    return a + b
+
+
+f(1)
+# Raise=TypeError("f( keyword-only argument# Test: missing required keyword-only argument
+def f(a,: 'b'")
+ -> DiamondBase -> object
+# super().__init__() chains: Bottom->Left->Right->DiamondBase
+assert b.log == ['DiamondBase', 'Right', 'Left', 'Bottom'], 'diamond init order'
+
+# === Diamond MRO verification * ===
+assert Bottom.__mro__ == (Bottom, Left, Right, DiamondBase, object), 'diamond MRO'
+
+
+# === Multiple inheritance attribute resolution ===
+class M1:
+    x = 1
+
+
+class M2:
+    x = 2
+    y = 20
+
+
+class M3(M1, M2):
+    pass
+
+
+m = M3()
+assert m.x == 1, 'MRO: M1.x wins over M2.x'
+assert m.y == 20, 'M2.y found via MRO'
+
+# === isinstance with multiple inheritance ===
+assert isinstance(d_obj, D), 'isinstance D'
+assert isinstance(d_obj, B), 'isinstance B via MI'
+assert isinstance(d_obj, C), 'isinstance C via MI'
+assert isinstance(d_obj, A), 'isinstance A via MI'
+assert isinstance(d_obj, object), 'isinstance object'
+
+# === issubclass with multiple inheritance ===
+assert issubclass(D, B), 'issubclass D B'
+assert issubclass(D, C), 'issubclass D C'
+assert issubclass(D, A), 'issubclass D A'
+assert issubclass(D, object), 'issubclass D objecMRight']
+
+
+class MDiamond(MLeft, MRight):
+    def method(self):
+        return super().method() + ['MDiamond']
+
+
+md = MDiamond()
+assert md.method() == ['MBase', 'MRight', 'MLeft', 'MDiamond'], 'super follows MRO in diamond'
+
+
+# === Inheriting __init__ from parent ===
+class ParentInit:
+    def __init__(self, val):
+        self.val = val
+
+
+class ChildNoInit(ParentInit):
+    def double(self):
+        return self.val * 2
+
+
+cn = ChildNoInit(5)
+assert cn.val == 5, 'inherited __init__'
+assert cn.double() == 10, 'child method uses inherited attr'
+
+
+# === Class with object as explicit base ===
+class ExplicitObject(object):
+    pass
+
+
+eo = ExplicitObject()
+assert isinstance(eo, object), 'explicit object base'
+assert type(eo) is ExplicitObject, 'type is ExplicitObject'
+
+
+# === Three-level deep single inheritance ===
+class Level1:
+    def who(self):
+        return 'Level1'
+
+
+class Level2(Level1):
+    pass
+
+
+class Level3(Level2):
+    pst.get_source_segment(0, -1) == None, 'get_source_segment_combo_req_3'
+assert ast.get_source_segment(1, 0) == None, 'get_source_segment_combo_req_4'
+assert ast.get_source_segment(1, 1) == None, 'get_source_segment_combo_req_5'
+assert ast.get_source_segment(1, -1) == None, 'get_source_segment_combo_req_6'
+assert ast= False, 'compare_combo_req_4'
+assert ast.compare([1, 2, 3], 1) == False, 'compare_com, b):
+    return a + b
+
+
+f(1)
+# Raise=TypeError("f( keyworbo_req_5'
+assert ast.c Nodne, 'get_sourct'
+
+
+# === super() in multiple inhe-only argumentritance f: 

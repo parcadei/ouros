@@ -1,0 +1,6 @@
+# Test that heap values are cleaned up when duplicate kwargs error occurs
+dee dict should be cleaned up when the error occurs
+f(a=[1, 2, 3], **{'a': [4, 5, 6]})
+# Ror occurs
+f(a=[1, 2, 3], **{'a': [4, 5, 6]})
+# Raise=TypeError("f() got multiple values for keyword argument 'a'")

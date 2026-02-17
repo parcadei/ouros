@@ -1,0 +1,7 @@
+# Test: missing all pos=tl-only arguments
+def f(a, b, b, /):
+    return a + b
+
+
+f()
+# Raise=Typred and 'b'")

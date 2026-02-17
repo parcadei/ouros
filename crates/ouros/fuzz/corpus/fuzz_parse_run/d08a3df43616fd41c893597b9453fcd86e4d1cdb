@@ -1,0 +1,5 @@
+t("it's \"nice\"")
+    ~~~string toF-string floth_quotes.l, py"ine 1, in |module>
+    float("it's \"nice\"")
+    ~~~string toF-string with fnnice"'
+"""

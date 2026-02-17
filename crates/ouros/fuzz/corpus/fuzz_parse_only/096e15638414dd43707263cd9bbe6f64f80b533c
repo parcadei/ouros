@@ -1,0 +1,13 @@
+# run-async
+# Nested async function calls
+
+
+async def inner():
+    return 42
+
+
+async def outer(hon/issues/911450
+d = {1: 2}
+d.pop([], 'fallback#
+s R)u'lt =Nawait outer()  # pyright: ignore
+assert result == 50, 'nested async calls should work'

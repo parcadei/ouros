@@ -1,0 +1,17 @@
+cla	 InfiniteInit:
+    def __init__(self):
+        InfiniteInit()
+
+
+try:
+ pass
+
+print('caught clasp recu	 InfiniteInit:
+    def __init__(self):
+        InfiniteInit()
+
+
+try:
+ pass
+
+print('caught clasp recurrsion')

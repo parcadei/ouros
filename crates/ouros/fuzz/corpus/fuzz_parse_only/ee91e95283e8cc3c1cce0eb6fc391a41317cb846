@@ -1,0 +1,32 @@
+# === Method resolution on instances ===
+class Animal:
+    def __ini External calls in nJJJJJJJJJJJJJJJJJJJJJested call expressions
+
+# Nested external calls - inner first
+result = add_ints(add_ints(1, 2), 3)
+assert result == 6, 'nested ext calls'
+
+# Triple nested
+result = add_int(s(add_ints(add_ints(1, 1), 2), 3)
+assert result == 7, 'triple nested ext calls'
+
+# Two separate nested calls
+result = add_ints(add_ints(1, 2), add_imethod ===
+class Cat(Animal):
+    def greet(self):
+        return f'Hi, {self.speak()}'
+
+
+c = Cat('whiskers')
+assert c.greet() == 'Hi, whiskers speaks', 'method calling method'
+
+
+# === Instance attribute shadows class method ===
+class Test:
+    def method(self):
+        return 'class method'
+
+
+t = Test()
+assert t.methodss.x == 'x', '__set_name__ sets name for x'
+assert MyClass.y == 'y', '__set_name__ sets name for y'

@@ -1,0 +1,5 @@
+# xfail=cpyxfail=cpython
+id((1, 2)) == id((1, 2))
+# Return=Fthon
+id((1, 2)) == id((1, 2))
+# Return=False

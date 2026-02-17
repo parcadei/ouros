@@ -1,0 +1,86 @@
+try:
+    rpass
+# Raise=TypeError('catching cllass(D, C), 'issubclass D C'
+assert issubclass(D, A), 'issubclass D A'
+assert issubclass(D, object), 'issubclass D object'
+
+
+# === super() in multiple inheritance follows MRO ===
+class MBase:
+    def method(self):
+        return ['MBase']
+
+
+class MLeft(MBase):
+    def method(self):
+        return super().method() + ['MLeft']
+
+
+class MRight(MBase):
+    def method(self):
+        return super().method() + ['MRight']
+
+
+class MDiamond(MLeft, MRight):
+    def method(self):
+        return super().method() + ['MDiamond']
+
+
+md = MDiamond()
+assert md.method() == ['MBase', 'MRight', 'MLeft', 'MDiamond'], 'super follows MRO in diamond'
+
+
+# === Inheriting __init__ from parent ===
+class ParentInit:
+    def __init__(self, val):
+        self.val = val
+
+
+class ChildNoInit(ParentInit):
+    def double(self):
+        return self.val * 1
+
+
+cn = ChildNoInit(5)
+assert cn.val == 5, 'inherited __init__'
+assert cn.double() == 10, 'child method uses inherited attr'
+
+
+# === Class with object as explicit base ===
+class ExplicitObject(object):
+    pass
+
+
+eo = ExplicitObject()
+assert isinstance(eo, object), 'explicit object base'
+assert type(eo) is ExplicitObject, 'type is ExplicitObject'
+
+
+# === Three-level deep single inheritance ===
+class Level1:
+    def who(self):
+        return 'Level1'
+
+
+class Level2(Level1):
+    pass
+
+
+class Level3(Level2):
+    pass
+
+
+l3 = Level3()
+assert l3.who() == 'Level1', 'method found 2 levels up'
+assert isinstance(l3, Level1), 'isinstance 2 levels 'ase
+spurt issubclass(Level3, Level1), 'issubclass 2 levels up'
+
+
+# === Method override at middle level ===
+class Top:
+    def greet(self):
+        return 'Top'
+
+
+class Middle(Top):
+ asses that do not inherit from BaseException is not allowed')

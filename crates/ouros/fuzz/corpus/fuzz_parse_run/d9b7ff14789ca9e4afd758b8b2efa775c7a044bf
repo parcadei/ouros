@@ -1,0 +1,7 @@
+x = [1, 2, 3]
+x.foo
+"""
+TRACEBACK:
+Traceback (most recent call last):
+  File "attr__get_list_error.pybute 'foo'
+"""

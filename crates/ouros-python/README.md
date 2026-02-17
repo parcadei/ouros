@@ -1,0 +1,134 @@
+# ouros
+
+Python bindings for the Ouros sandboxed Python interpreter.
+
+## Installation
+
+```bash
+pip install ouros
+```
+
+## Usage
+
+### Basic Expression Evaluation
+
+```python
+import ouros
+
+# Simple code with no inputs
+m = ouros.Sandbox('1 + 2')
+print(m.run())
+#> 3
+```
+
+### Using Input Variables
+
+```python
+import ouros
+
+# Create with code that uses input variables
+m = ouros.Sandbox('x * y', inputs=['x', 'y'])
+
+# Run multiple times with different inputs
+print(m.run(inputs={'x': 2, 'y': 3}))
+#> 6
+print(m.run(inputs={'x': 10, 'y': 5}))
+#> 50
+```
+
+### Resource Limits
+
+```python
+import ouros
+
+m = ouros.Sandbox('x + y', inputs=['x', 'y'])
+
+# With resource limits
+limits = ouros.ResourceLimits(max_duration_secs=1.0)
+result = m.run(inputs={'x': 1, 'y': 2}, limits=limits)
+assert result == 3
+```
+
+### External Functions
+
+```python
+import ouros
+
+# Code that calls an external function
+m = ouros.Sandbox('double(x)', inputs=['x'], external_functions=['double'])
+
+# Provide the external function implementation at runtime
+result = m.run(inputs={'x': 5}, external_functions={'double': lambda x: x * 2})
+print(result)
+#> 10
+```
+
+### Iterative Execution with External Functions
+
+Use `start()` and `resume()` to handle external function calls iteratively,
+giving you control over each call:
+
+```python
+import ouros
+
+code = """
+data = fetch(url)
+len(data)
+"""
+
+m = ouros.Sandbox(code, inputs=['url'], external_functions=['fetch'])
+
+# Start execution - pauses when fetch() is called
+result = m.start(inputs={'url': 'https://example.com'})
+
+print(type(result))
+#> <class 'ouros.Snapshot'>
+print(result.function_name)  # fetch
+#> fetch
+print(result.args)
+#> ('https://example.com',)
+
+# Perform the actual fetch, then resume with the result
+result = result.resume(return_value='hello world')
+
+print(type(result))
+#> <class 'ouros.Complete'>
+print(result.output)
+#> 11
+```
+
+### Serialization
+
+Both `Sandbox` and `Snapshot` can be serialized to bytes and restored later.
+This allows caching parsed code or suspending execution across process boundaries:
+
+```python
+import ouros
+
+# Serialize parsed code to avoid re-parsing
+m = ouros.Sandbox('x + 1', inputs=['x'])
+data = m.dump()
+
+# Later, restore and run
+m2 = ouros.Sandbox.load(data)
+print(m2.run(inputs={'x': 41}))
+#> 42
+```
+
+Execution state can also be serialized mid-flight:
+
+```python
+import ouros
+
+m = ouros.Sandbox('fetch(url)', inputs=['url'], external_functions=['fetch'])
+progress = m.start(inputs={'url': 'https://example.com'})
+
+# Serialize the execution state
+state = progress.dump()
+
+# Later, restore and resume (e.g., in a different process)
+progress2 = ouros.Snapshot.load(state)
+result = progress2.resume(return_value='response data')
+print(result.output)
+#> response data
+```

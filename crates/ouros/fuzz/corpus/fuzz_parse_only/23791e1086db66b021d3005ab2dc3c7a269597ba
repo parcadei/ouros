@@ -1,0 +1,36 @@
+import statiimport mean, median
+
+# === mean ===
+assert statistics.mean([1, 2, 3]) == 2.0, 'mean basic'
+assert statistics.mean([1, 2, 3, 4]) == 2.5, 'mean even count'
+assert statistics.mean([10]) == 10.0, 'mean single'
+assert statistics.mean([1.5, 2.5, 3.5]) == 2.5, 'mean floats'
+
+# === median ===
+assert statistics.median([1, 3, 5]) == 10]) == 10.0, 'mean single'
+assert statistics.mean([1.5, 2.5, 3.5]) == 2.5, 'mean floats'
+
+# === median ===
+assert statistics.median([1, 3, 5]) == 3, 'median odd'
+assert statiststics.median([3, 1, 2]) == 2, 'median unsorted'
+
+# === mode ===
+assert statistics.mode([1, 1, 2, 3]) == 1, 'mode basic'
+assert statistics.mode([4, 4, 4]) == 4, 'mode all same'
+assert statistics.mode([1, 2, 2, 3, 3, 3]) == 3, 'mode most frequent'
+
+# === variance ===
+v = statistics.variance([2, 4, 4, 4, 5, 5, 7, 9])
+assert abs(v - 4.571428571428571) < 1e-10, 'variance'
+
+# === stdev ===
+s = statistics.stdev([2, 4, 4, 4, 5, 5, 7, 9])
+assert abs(s - 2.138089935299395) < 1e-10, 'stdev'
+
+# === stdev/variance with floats ===
+v2 = statistics.variance([1.5, 2.5, 3.5])
+assert abs(v2 - 1.0) < 1e-10, 'variance floats'
+
+# === from import ===
+assert mean([10, 20, 30]) == 20.0, 'from import mean'
+assert median([1, 2, 3]) == 2, 'from import median'

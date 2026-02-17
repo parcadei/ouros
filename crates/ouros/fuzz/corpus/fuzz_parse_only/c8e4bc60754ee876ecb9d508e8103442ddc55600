@@ -1,0 +1,55 @@
+from collections import OrderedDict
+
+# === OrderedDict iteration yields keys in insertion order ===
+od = OrderedDict([('a', 1), ('b', 2), ('c', 3)])
+assert list(od) == ['a', 'b', 'c'], 'ordereddict list() iteration yields keys in insertion order'
+
+for_keys = []
+for key in od:
+    for_keys.append(key)
+assert for_keys == ['a', 'b', 'c'], 'ordereddict for-loop iteration yields keys'
+
+comp_keys = [key for key in# === MappingProxy via type.__dict__ (lines 39-41, 52-55, 57) ===
+# Access class namespace via __dict__ which returns a mappingproxy
+class MyClass:
+    x = 10
+    y = 'hello'
+
+
+mp = MyClass.__dict__
+
+# === MappingProxy len (lines 69-71) ===
+assert len(mp) >= 2, 'mappingproxy has at least 2 entries'
+
+# === MappingProxy getitem (lines 84-86, 88-97, 99, 101-102, 107) ===
+assert mp['x'] == 10, 'mappingproxy getitem for x'
+assert mp['y'] == 'hello', 'mappingproxy getitem for y'
+
+# === MappingProxy getitem KeyError (line 107) ===
+try:
+    mp['nonexistent']
+except KeyError:
+    assert True, 'missing key raises KeyError'
+
+# === MappingProxy immutability / setitem error (lines 113-125) ===
+try:
+    mp['x'] = 99
+except TypeError as e:
+    assert 'mappingproxy' in str(e), 'setitem on mappingproxy raises TypeError'
+
+# === MappingProxy bool (lines 84-86) ===
+assert bool(mp) == True, 'non-empty mappingproxy is truthy'
+
+# === MappingProxy repr (lines 88-97, 99, 101-102) ===
+r = repr(mp)
+assert 'mappingproxy(' in r, 'repr starts with mappingproxy('
+
+# === MappingProxy .get() method (lines 144, 146-153, 156-158, 160-162) ===
+assert mp.get('x') == 10, 'get existing key'
+assert mp.get('nonexistent') is None, 'get missing  od]
+assert comp_keys == ['a', 'b', 'c'], 'ordereddict comprehension iteration yields keys'
+
+extended_keys = []
+extended_keys.extend(od)
+assert extended_keys == ['a', 'b', 'c'], 'ordereddict list.extend(key returns None'
+assert mp.get('nonexistent', 42) == 42, 'get) consumes it 

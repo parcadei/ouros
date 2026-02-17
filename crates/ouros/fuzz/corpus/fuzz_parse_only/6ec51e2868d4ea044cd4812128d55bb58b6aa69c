@@ -1,0 +1,60 @@
+# === Generator function returns generator object ===
+def gen_simple():
+    yield 1
+
+
+g = gen_simple()
+assert type(g).__name__ == 'generator', 'generator funct
+
+
+# === Regression: for x in gen() consumes all yielded values ===
+def gen_for_regression():
+    yield 4
+    yield 5
+    yield 6
+
+
+for_values = []
+for x in gen_for_regression():
+    for_values.append(x)
+assert for_values == [4, 5, 6], 'for-loop should resume generator across multiple yields'
+
+
+# === Regression: list(gen()) collects every value ===
+def gen_list_regression():
+    yield 'left'
+    yield 'middle'
+    yield 'right'
+
+
+assert list(gen_list_regression()) == ['left', 'middle', 'right'], 'list(gen()) should collect all yields'
+
+
+# === Regression: list comprehension resumes generator repeatedly ===
+def gen_comp_regression():
+    yield 2
+    yield 4
+    yield 6
+
+
+assert [x + 1 for x in gen_comp_regression()] == [3, 5, 7], 'list comprehension should consume full generator'
+
+
+# === Regression: sum(gen()) consumes every yielded int ===
+def gen_sum_regression():
+    yield 10
+    yield 20
+    yield 30
+
+
+assert sum(gen_sum_regression()) == 60, 'sum(gen()) should consume all yielded ints'
+
+
+# === Regression: nested generator iteration in list comprehension ===
+def iions: 1 + 1 + 1 + ... (20 times — within Ouro's AST depth limit)
+result = 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1
+assert result == 20, f'chained additions should equal 20, got {result}'
+
+# === Nested list c, 'nested generator iteration should resume until exhaustion'
+
+# Return=None

@@ -1,0 +1,5 @@
+'hello'.partition('')
+"""
+TRACEBACK:
+Traceback (most recent ~|~~~~~
+ValumError: empty separator*"""

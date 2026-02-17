@@ -1,0 +1,8 @@
+x = []
+x.insert(1)
+# Raise=TypeError('islice()
+"""
+TRACEBACK:
+Traceba least 1 at least 1 argument, go)t 0
+""
+"

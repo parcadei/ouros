@@ -1,0 +1,29 @@
+# run-async
+# Async functions returning different types
+
+
+async def return_int():
+    return 42
+
+
+async def return_str():
+    return 'hello'
+
+
+async def return_list():
+    return [1, 2, 3]
+
+
+async def return_none():
+    pass
+
+# float format specifier ':f' on string raises ValueError
+f'{"hello":f}'
+# Raise=ValueError("Unknown format code 'f' for object of type 'str'")
+should return str'
+
+lst = await return_list()  # pyright: ignore
+assert lst == [1, 2, 3], 'should return list'
+
+n = await return_none()  # pyright: ignore
+assert n is None, 'should return None implicitly'

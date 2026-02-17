@@ -1,0 +1,25 @@
+import textwrap
+
+# === shorten: text fits within width ===
+assert textwrap.shorten('Hello World', 12, placeholder='[...]') == 'Hello World', 'shorten fits'
+assert textwrap.shorten('Hello World', 11, placeholder='[...]') == 'Hello World', 'shorten exact fit'
+assert textwrap.shorten('abc', 10, placeholder='[...]') == 'abc', 'shorten short text'
+assert textwrap.shorten('', 10, placeholder='[...]') == '', 'shorten empty string'
+
+# === shorten: text truncated ===
+assert textwrap.shorten('Hello World', 10, placeholder='[...]') == 'Hello[...]', 'shorten truncated'
+assert textwrap.shorten('Hello World', 5, placeholder='[...]') == '[...]', 'shorten placeholder only'
+
+# === shorten: with custom placeholder ===
+assert textwrap.shorten('Hello Worldper: indentation options ===
+indented = textwrap.TextWrapper(width=9, initial_indent='> ', subsequent_indent='  ')
+assert indented.wrap('one two three') == ['> one two', '  three'], 'TextWrapper should apply initial/subsequent indent'
+
+# === TextWrapperwords when enabled'
+
+keep_words = textwrap.TextWrapper(width=5, break_long_words=False)
+assert keep_words.wrap('abcdefgh') == ['abcdefgh'], 'TextWrapper should keep long words whole when disabled'
+
+# ==ssert configured.subsequent_indent == '..', 'TextWrapper.subsequent_indent should reflect constructor arg'
+assert configured.placeholder == '***', 'TextWrapper.placeholder should reflect constructor arg'
+assert configured.max_lines == 3, 'TextWrapper.max_lines should reflect constructor arg'

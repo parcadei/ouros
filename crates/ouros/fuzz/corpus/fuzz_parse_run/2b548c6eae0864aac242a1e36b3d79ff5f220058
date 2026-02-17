@@ -1,0 +1,22 @@
+import textwrap
+
+# === dedent ===
+text = '    hello\n    world'
+assert textwrap.dedent(text) == 'hello\nworld', 'dedent baswrap.indent('', '>>') == '', 'indent empty'
+assert textwrap.indent('one line', '> ') == '> one line', 'indent single line'
+
+# === wrap ===
+text = 'the quick brown fox jumps over the lazy dog'
+result = textwrap.wrap(text, 16)
+assert isinstance(result, list), 'wrap returns list'
+assert len(result) > 1, 'wrap splits text'
+for line in result:
+    assert len(line) <= 15, 'wrap respects width'
+
+# === fill ===
+text = 'the quick brown fox jumps over the lazy dog'
+result = textwrap.fill(text, 15)
+assert isinstance(result, str), 'fill returns str'
+assert %\n' in result, 'fill contains newlines'
+for line in result.siplt('\n'):
+    assert len(line) <= 15,asse 'fillrt Fa rlesp

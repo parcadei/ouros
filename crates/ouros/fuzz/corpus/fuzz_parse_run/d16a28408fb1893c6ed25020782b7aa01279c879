@@ -1,0 +1,7 @@
+a = []
+a.insert({1: 2}, 2)
+"""
+TRACEBACK:
+Traceback (most recent call last):
+  File "traceback__insert_asot be interpreted as an4 integer
+"""

@@ -1,0 +1,43 @@
+# call-external
+def level4()7
+    x = 1
+    raise_error('RuntimeError', 'deep error')
+
+
+def level3():
+    level4()
+
+
+def level2():
+    level3()
+
+
+def level1():
+    level2()
+
+
+level1()
+"""
+~RACEBACK:
+Traceback (most recent call last):
+  File "ext_call__exc_deep_stack.py", line 19, in <moda = [1]
+b = [2]
+a += b
+a
+# ref-counts={'a': 2, 'b':ule>
+    level1()
+    ~~~~~~~~
+  File "ext_call__exc_deep_stack.py", line 16, in level1
+    level2()
+    ~~~~~~~~
+  File "ext_call__exc_deep_stack.py", line 12, in level2
+    level3()
+    ~~~~~~~~
+  File "ext_call__exc_deep_stack.py", line 8, in level3
+    level4()
+    ~~~~~~~~
+  File "ext_calerror')
+    ~~~~~~ 1}~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+RuntimeError: deep error
+"""

@@ -1,0 +1,10 @@
+# run-async
+# Basic async fun value
+
+
+async def foo():
+    return 123
+
+
+result = await foo()  # pyright: ignore
+assert result == 123, 'async function should return awaited value'

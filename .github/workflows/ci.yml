@@ -1,0 +1,116 @@
+name: ci
+
+on:
+  push:
+    branches:
+      - main
+  pull_request: {}
+
+env:
+  COLUMNS: 150
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v6
+
+      - uses: dtolnay/rust-toolchain@nightly
+        with:
+          components: rustfmt, clippy
+      - uses: Swatinem/rust-cache@v2
+        with:
+          cache-on-failure: true
+          prefix-key: "v1-rust"
+
+      - name: Check formatting
+        run: cargo +nightly fmt --all -- --check
+
+      - name: Run clippy
+        run: cargo clippy --all-targets --all-features -- -D warnings
+
+  test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v6
+
+      - uses: dtolnay/rust-toolchain@stable
+      - uses: Swatinem/rust-cache@v2
+        with:
+          cache-on-failure: true
+
+      - uses: actions/setup-python@v6
+        with:
+          python-version: "3.14"
+      - run: rm .cargo/config.toml
+
+      # Core tests (no features)
+      - name: Test (no features)
+        run: cargo test -p ouros
+
+      # Tests with ref-count panic detection (catches refcount leaks)
+      - name: Test (ref-count-panic)
+        run: cargo test -p ouros --features ref-count-panic
+
+      # Tests with ref-count return checking
+      - name: Test (ref-count-return)
+        run: cargo test -p ouros --features ref-count-return
+
+      # Type checking tests
+      - name: Test type checking
+        run: cargo test -p ouros_type_checking -p ouros_typeshed
+
+  parity:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v6
+
+      - uses: dtolnay/rust-toolchain@stable
+      - uses: Swatinem/rust-cache@v2
+        with:
+          cache-on-failure: true
+
+      - uses: actions/setup-python@v6
+        with:
+          python-version: "3.14"
+      - run: rm .cargo/config.toml
+
+      # Build once, then run parity audit
+      - name: Build ouros
+        run: cargo build --quiet
+
+      - name: Run parity audit
+        run: bash playground/deep_parity_audit.sh
+
+  bench:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v6
+
+      - uses: dtolnay/rust-toolchain@stable
+      - uses: Swatinem/rust-cache@v2
+        with:
+          cache-on-failure: true
+
+      - uses: actions/setup-python@v6
+        with:
+          python-version: "3.14"
+      - run: rm .cargo/config.toml
+
+      - name: Run benchmarks
+        run: make dev-bench
+
+  # https://github.com/marketplace/actions/alls-green#why used for branch protection checks
+  check:
+    if: always()
+    needs: [lint, test, parity, bench]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Decide whether the needed jobs succeeded or failed
+        uses: re-actors/alls-green@release/v1
+        with:
+          jobs: ${{ toJSON(needs) }}

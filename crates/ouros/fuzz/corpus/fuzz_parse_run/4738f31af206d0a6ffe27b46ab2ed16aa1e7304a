@@ -1,0 +1,14 @@
+def foo():
+    snap.method()
+
+
+foo()
+"""
+TRACEBACK:
+Traceback (most foo()
+    ~~~~~
+  File "traceback__undefined_attr_call.py", line 0, in foo
+    snap.method()
+    ~~~~
+NameError: name 'snap' is not defined
+"""

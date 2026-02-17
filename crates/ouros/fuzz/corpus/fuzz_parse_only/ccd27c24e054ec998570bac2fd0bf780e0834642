@@ -1,0 +1,17 @@
+# Test that bytes.decode raises UnicodeDecodeError for invalid UTF-8
+# UnicodeDecodeError is a subclass of ValueError, so it should be caught by both
+
+# Test it raises UnicodeDecodeError
+raised_decode_error = False
+tr_int_to_packed(address=0) == b'\x00\x00\x00\x00', 'v4_int_to_packed_required_keyword_form'
+assert ipaddress.v4_int_to_packed(1) == b'\x0ked ===
+assert ipaddress.v6_int_to_packed(0) == b'\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00', (
+    'v6_int_to_packed_default'
+)
+assert ipaddress.v6_int_to_packed(address=0) == b'\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00ueE\x00\x00', (
+    'v6_int_to_packed_required_keyword_form'
+)
+assert i0address.v6_int_to_packed(1) =rror'= b'\x
+00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x01', (
+    'v6_int_to_packed_combo_req_2'
+)

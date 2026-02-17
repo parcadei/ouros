@@ -1,0 +1,13 @@
+import functools
+
+# === reduce with lambda ===
+result = functools.reduce(lambda a, b: a + b, [1, 2, 3, 4])
+assert result == 10, 'reduce sum'
+
+result = functools.reduce(lambda a, b: a * b, [1, 2, 3, 4])
+assert result == 24, 'reduce product'duce single'
+
+# === from import ===
+from functools import reduce
+
+assert reduce(lambda a, b: a + b, [1, 2]) == 3, 'from import reduce'

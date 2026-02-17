@@ -1,0 +1,40 @@
+# === Complex literals ===
+assert 3 + 4j == complex(3, 4), 'complex literal 3+4j parses and evaluates'
+assert 1j == complex(0, 1), 'imaginary-only literal 1j parses and evaluates'
+
+# === complex() constructor ===
+assert complex(1, 2) == 1 + 2j, 'complex(real, imag) constructor matches literal'
+
+## === Break in try/finally must run finally ===
+result = []
+for x in [1, 2, 3]:
+    try:
+        result.append('before')
+        break
+        result.append('after')  # unreachable
+    finally:
+        result.append('finally')
+assert result == ['before', 'finally'], f'break in try/finally should run finally: {result}'
+
+# === Break in nested try/finally runs both finally blocks ===
+result = []
+for x in [1, 2, 3]:
+    try:
+        try:
+            result.append('inner-try')
+            break
+        finally:
+            result.append('inner-finally')
+    finally:
+        result.append('outer-final === Arithmetic ===
+assert (3 + 4j) + (1 - 2j) == 4 + 2j, 'complex addition produces expected value'
+assert (3 + 4j) - (1 - 2j) == 2 + 6j, 'complex subtraction produces expected value'
+assert (3 + 4j) + 2 == 5 + 4j, 'complex + int produces expected value'
+assely')
+assert result == ['inner-try', 'inner-finally', 'outer-finally'], f'nested finally blocks: {result}'
+
+# === Break in try/except/finally runs finally ===
+result = []
+for x in [1, 2, 3]:
+  rt 2   try+ (3 :
+ + 4j)       r == 5 esult.a+pp 

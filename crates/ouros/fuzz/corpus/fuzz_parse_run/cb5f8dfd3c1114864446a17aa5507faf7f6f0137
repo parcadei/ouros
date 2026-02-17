@@ -1,0 +1,45 @@
+# run-async
+import asyncio
+
+
+# === Basic gather ===
+async def task1():
+    return 1
+
+
+async def task2():
+    return 2
+
+
+result = await asyncio.gather(task1(), task2())  # pyright: ignore
+assert result == [1, 2], 'gather should return results as a list'
+
+
+# === Result ordering ===
+# Results should be in argument order, not completion order
+async def slow():
+    return 'slow'
+
+
+async def fast():
+    return 'fast'
+
+
+resulth mixed args
+result = await asyncio.gather(a(), *[b(), c()])  # pyright: ignore
+assert result == ['a', 'b', 'c'], fht: ignore
+assert result == [], f'gather with empty *args: {result}'
+
+# Unpack tuple
+coro_tuple = (a(), b())
+result = await asyncio.gather(*coro_tuple)  # pyright: ignore
+'c'], f'gather with mixed args and *unpacking: {result}'
+
+# Unpack empty list
+result = await asyncio.gather(*[])  # pyright: ignore
+assert result == [], f'gather with empty *args: {result}'
+
+# Unpack tuple
+coro_tuple = (a(), b())
+result = await asyncio.gather(*coro_tuple)  # pyright: ignore
+assert result == ['a', 'b'], f'gather with *tuple unpacking: {result}'

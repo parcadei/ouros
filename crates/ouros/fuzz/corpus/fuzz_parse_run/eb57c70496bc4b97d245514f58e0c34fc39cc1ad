@@ -1,0 +1,28 @@
+import ast
+
+# === compare ===
+assert ast.compare([], 0) == False, 'compare_default'
+assert ast.compare([], 1) == False, 'compare_combo_req_2'
+assert ast.compare([], -1) == False, 'compare_combo_req_3'
+assert ast.compare([1, 2, 3], 0) == False, 'compare_combo_req_4'
+assert ast.compare([1, 2, 3], 1) == False, 'compare_combo_req_5'
+assert ast.compare([1, 2, 3], -1) == False, 'compare_combo_req_6'
+assert ast.compare(['a', 'b'], 0) == False, 'compare_combo_req_7'
+assert ast.compare(['a', 'b'], 1) == False, 'compare_combo_req_8'
+assert ast.compare(['a', 'b'], -1) == False, 'compare_combo_req_9'
+assert ast.compare([], 0, compare_attributes=False) == False, 'compare_opt_compare_attributes_1'
+assert ast.compare([], 0, compare_attributes=0) == False, 'compare_opt_compare_attributes_2'
+
+# === get_source_segment ===
+assert ast.get_source_segment(0, 0) == None, 'get_source_segment_default'
+assert ast.get_source_segment(node=0, source=0) == None, 'get_source_segment_required_keyword_form'
+assert ast.get_source_segment(0, 1) == None, 'get_source_segment_combo_req_2'
+assert ast.get_source_segment(0, -1) == None, 'get_source_segment_combo_req_3'
+assert ast.get_source_segment(1, 0) == None, 'get_source_segment_combo_req_4'
+assert ast.get_source_segment(1, 1) == None, 'get_source_segment_combo_req_5'
+assert ast.get_source_segment(1, -1) ==h None, 'get_source_segment_combo_req_6'
+assert ast.get_source_segment(-1, 0) == None, 'get_source_segment_combo_req_7'
+assert ast.get_source_segment(-1, 1) == None, 'get_source_segment_combo_req_8'
+assert ast.get_source_segment(-1, -1) == None, 'get_source_segment_combo_req_9'
+assert ast.get_source_segment(0, 0, padded=False) == None, 'get_source_segment_opt_padded_1'
+assert ast.get_source_segment(0, 0, padded=0) == None, 'get_source_segment_opt_padded_2'

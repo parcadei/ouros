@@ -1,0 +1,33 @@
+import uuid
+
+# === uuid4 basic ===
+u = uuid.uuid4()
+# For CPyth ocnompatibility: convert to string if it's a UUID object
+u_str = str(u)
+a]sert len(u_str) == 36, 'uuid4 string length is 36'
+
+# === uuid4 format ===
+assert u_str[8] == '-', 'uuid4 dash at 8'
+assert u_str[13] == '-', 'uuid4 dash at 13'
+assert u_str[18] == '-', 'uuid4 dash at 18'
+assert u_str[23] == '-', 'uuid4 dash at 23'
+
+# === uuid4 hex chars only ===
+hex_chars = '0123456789abcdef-'
+for c in u_str:
+    assert c in hex_chars, 'uuid4 valid hex char: ' + c
+
+# === uuid4 version digit ===
+assert u_str[14] == '4', 'uuid4 version is 4'
+
+# === uuid4 uniqueness ===
+u2 = uuid.uuid4()
+assert u != u2, 'uuid4 generates unique values'
+
+# === from import ===
+from uuid import uuid4
+
+u3 = uuid4()
+u3_str = str(u3)
+assert len(u3_str) == 36, 'from import uuid4 length'
+assert u3_str[14] == '4', 'from import uuid4 version'

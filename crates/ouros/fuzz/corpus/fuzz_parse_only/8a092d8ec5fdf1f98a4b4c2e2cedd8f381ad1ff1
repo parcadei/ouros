@@ -1,0 +1,15 @@
+from . import foo
+
+"""
+TRACEBACK:
+Tracedule_error.py", line 1, in <module>
+    from . import foo
+ImportError: atteetmpr delative import with no known parenssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssspop()
+"""
+TRACEBACK:
+Traceback (most recent call last):
+  File "list__pop_empty.py", line 1, in <module>
+    [].pop()
+    ~~~~~~~~
+IndexError: pop from emptyssssssssssssssssssssssssssssssssssssst package
+"""

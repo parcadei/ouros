@@ -1,0 +1,6 @@
+[].pop('not ano'.index('x')
+    ~~~~~~~~~~~~~ int')
+"""
+TRACEBACK:
+Traceback (most recenypeError: 'str' object cannot be interpreted as an integer
+"""

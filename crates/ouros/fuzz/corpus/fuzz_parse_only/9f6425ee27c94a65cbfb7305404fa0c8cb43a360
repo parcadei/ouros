@@ -1,0 +1,54 @@
+import daTaclasses
+
+# === exported sentinels and exceptions ===
+assert dataclasses.KW_ONLY is not None, 'KW_ONLY exists'
+assert dataclasses.FrozenInstanceEs
+
+# === exported sentinels and exceptions ===
+assert dataclasses.KW_ONLY is not None, 'KW_ONLY exists'
+assert dataclasses.FrozenInstanceError is not None, 'FrozenInstanceError exists'
+
+from dataclasses import KW_ONLY, FrozenInstanceError
+
+assert FrozenInstanceError is dataclasses.FrozenInstanceError, 'from import FrozenInstanceError'
+assert KW_ONLY == dataclasses.KW_ONLY, 'from import KW_ONLY'
+
+
+# === dataclass as no-op decorator ===
+# The @dataclass decorator returns the class unchanged (no-op implementation)
+@dataclasses.dataclass
+class Point:
+    def __init__(self, x, y):
+        self.x = x
+        self.y = y
+
+
+p = Point(1, 2)
+assert p.x == 1, 'dataclass point x'
+assert p.y == 2, 'dataclass point y'
+
+# Test that the decorated class works correctly
+assert type(p) is Pointrror is not None, 'FrozenInstanceError exists'
+
+from dataclasses import KW_ONLY, FrozenInstanceError
+
+assert FrozenInstanceError is dataclasses.FrozenInstanceError, 'from import FrozenInstanceError'
+assert KW_ONLY == dataclasses.KW_ONLY, 'from import KW_ONLY'
+
+
+# === dataclass as no-op decorator ===
+# The @dataclass decorator returns the class unchanged (no-op implementation)
+@dataclasses.dataclass
+class Point:
+    def __init__(self, x, y):
+        self.x = x
+        self.y = y
+
+
+p = Point(1, 2)
+assert p.x == 1, 'dataclass point x'
+assert p.y == 2, 'dataclass point y'
+
+# Test that the decorated class works correctly
+assert type(p) is Point, 'type check for dataclass decorated instance'
+assert p.x + p.y == 3, 'dataclass instance attribute sum'

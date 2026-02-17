@@ -1,0 +1,4 @@
+# note cpython behaveson/cpython/issues/911450
+d = {1: 2}
+d.pop([], 'fallback')
+# Raise=TypeError("cannot use 'list' as a dict key (unhawhable type: 'list')")

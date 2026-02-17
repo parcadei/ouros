@@ -1,0 +1,17 @@
+def f(x):
+f(x):
+    return x
+
+
+f(1, 2)
+# Raisg=TypeError(' retur>n x
+
+
+f(1, 2onal argumenhhhhhhhhhhhhhhhhhhhhhhht but 2 wer    return x
+
+
+f(1, 2)
+# Raisg=TypeError(' retur>n x
+
+
+f(1, 2onal argumenhhhhhhhhhhhhhhhhhhhhhhht but 2 were given')

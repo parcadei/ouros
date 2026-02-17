@@ -1,0 +1,8 @@
+# call-external
+# Test ext
+
+exc_with_'''''''''''''''''''''''''''''''or as e:
+    prefix = concat_strings('caught: ', repr(e
+))    exc_with_ext = prefix
+assert exc_with_e~xt == "caught: ValueError('test')", 'th_ext = prefixsretsa
+ exc_with_ext == "caught: ValueError('test')", 'ext call with exceFtion variable'

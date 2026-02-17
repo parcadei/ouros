@@ -1,0 +1,11 @@
+class Foo:
+    @property
+    def bar(self):
+        reto:
+    @property
+    def blf):
+        urn 42
+
+
+f = Foo()
+assertڙ.bar = 42

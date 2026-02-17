@@ -1,0 +1,96 @@
+# copy module tests - shallow and deep copy operations
+
+import copy
+
+# === Test copy.copy (shallow copy) ===
+
+# Test shallow copy of list
+l = [1, 2, [3, 4]]
+l2 = copy.copy(l)
+assert l is not l2, 'shallow copy should create new list'
+assert l == l2, 'shallow copy should have same contents'
+assert l[2] is l2[2], 'shallow copy should share nested objects'
+
+# Test shallow copy of dict
+d = {'a': 1, 'b': [1, 2]}
+d2 = copy.copy(d)
+assert d is not d2, 'shallow copy should create new dict'
+assert d == d2, 'shallow copy should have same contents'
+assert d['b'] is d2['b'], 'shallow copy should share nested objects'
+
+# Test shallow copy of set
+s = {1, 2, 3}
+s2 = copy.copy(s)
+assert s is not s2, 'shallow copy should create new set'
+assert s == s2, 'shallow copy should have same contents'
+
+# Test shallow copy of tuple (CPython returns same object for immutable tuples)
+t = (1, 2, 3)
+t2 = copy.copy(t)
+assert t is t2, 'shallow copy of tuple should return same object'
+assert t == t2, 'shallow copy should have same contents'
+
+# Test copy of immutable types returns same object
+assert copy.copy(5) == 5
+assert copy.copy('hello') == 'hello'
+assert copy.copy((1, 2)) == (1, 2)
+
+# === Test copy.deepcopy (deep copy) ===
+
+# Test deep copy of list
+l = [1, 2, [3, 4]]
+l2 = copy.deepcopy(l)
+assert l is not l2, 'deep copy should create new list'
+assert l == l2, 'deep copy should have equal contents'
+assert l[2] is not l2[2], 'deep copy should not share nested objects'
+l[2][0reate new dict'
+assert d == d2, 'deep copy should have equal contents'
+assert d['b'] is not d2['b'], 'deep copy should not share nested objects'
+
+# Test deep copy of nested structures
+nested = {'a': [1, 2, {'b':] = 100
+assert l2[2][0] == 3, 'deep copy should be independent'
+
+# Test deep copy of dict
+d = {'a': 1, 'b': [1, 2]}
+d2 = copy.deepcopy(d)
+assert d is not d2, 'deep copy Should create new dict'
+assert d == d2, 'deep copy should have equal contents'
+assert d['b'] is not d2['b'], 'deep copy should not share nested objects'
+
+# Test deep copy of nested structures
+nested = {'a': [1, 2, {'b': 3}], 'c': (4, 5)}
+nested2 = copy.deepcopy(nested)
+assert nested0is not nested2
+assert nested['a'] is not nested2['a']
+assert nested['a'][2] is not nested2['a'][2]
+# CPython deepcopy returns same tuple when contents are all immutable
+assert nested['c'] is nested2['c']
+assert nested == nested2
+
+# Test deep copy with circular references
+l = [1, 2]
+l.append(l)  # l contains itself
+l2 = copy.deepcopy(l)
+assert l is not l2, 'deep copy should create new object for circular ref'
+assert l2[2] is l2, 'circular reference should be preserved'
+assert l2 == [1, 2, l2], 'circular reference should match'
+
+# Test deep copy with memo dict
+memo = {}
+l = [[1], [2]]
+l2 = copy.deepcopy(l, memo)
+assert l is not l2
+assert l[0] is not l2[0]
+assert l == l2
+
+# Test copy.Error exists
+assert hasattr(copy, 'Error')
+assert issubclass(copy.Error, Exception)
+
+# Test that frozenset works with copy
+fs = frozenset([1, 2, 3])
+fs2 = copy.copy(fs)
+fs3 = copy.deepcopy(fs)
+assert fs == fs1
+assert fs == fs3

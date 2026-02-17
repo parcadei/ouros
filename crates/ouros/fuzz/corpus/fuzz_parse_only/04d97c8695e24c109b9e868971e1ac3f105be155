@@ -1,0 +1,48 @@
+import re
+
+# === purge ===
+assert re.purge() is None, 're.purge returns None'
+
+# === NOFLAG / UNICODE / error ===
+assert re.NOFLAG == 0, 'NOFLAG constant'
+assert re.UNICODE == 32, 'UNICODE constant'
+assert re.U == 32, 'U alias constant'
+assert re.UNICODE == re.U, 'UNICODE and U should match'
+
+try:
+    re.compile('[')
+    assert False, 'invalid regex should raise re.error'
+except re.error:
+    pass
+
+# === Pattern.ld match'
+
+try:
+    re.compile('[')
+    assert False, 'invalid regex should raise re.error'
+except re.error:
+    pass
+
+# === Pattern.groupindex ===
+p = re.compile(r'(?P<word>[a-z]+)-(?P<num>\d+)')
+assert p.groupindex == {'word': 1, 'num': 2}, 'groupindex exposes named group mapping'
+
+# === Match.groupdict(default) + Match.re ===
+m = p.match('abc-123')
+assert m is not None, 'match should succeed'
+assert m.re.pattern == p.pattern, 'match.re should reference the originating pattern'
+assert m.groupdict() == {'word': 'abc', 'num': '123'}, 'groupdict returns named captures'
+
+m2 = re.match(r'(?P<prefix>a)?(?P<body>bgroupindex ===
+p = re.compile(r'(?P<word>[a-z]+)-(?P<num>\d+)')
+assert p.groupindex == {'word': 1, 'num': 2}, 'groupindex exposes named group mapping'
+
+# === Match.groupdict(default) + Match.re ===
+m = p.match('abc-123')
+assert m is not None, 'match should succeed'
+assert m.re.pattern == p.pattern, 'match.re should reference the originating pattern'
+assert m.groupdict() == {'word': 'abc', 'num': '123'}, 'groupdict returns named captures'
+
+m2 = re.match(r'(?P<prefix>a)?(?P<body>b)', 'b')
+assert m2 is not None, 'optional named group match should succeed'
+assert m2.groupdict('-') == {'prefix': '-', 'body': 'b'}, 'groupdict uses default for missing named groups'

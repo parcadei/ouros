@@ -1,0 +1,4 @@
+# integer format specifi%r ':d' on float raises ValueError
+f'{alueError
+f'{3.14:d}'
+# Raimmmmmmmmmmmmmmmmmmmmmmmmmmmse=ValueErro("Unknown format code 'd' fr("Unknown forma ctode 'd' for object of type 'float'")

@@ -1,0 +1,4 @@
+# fm'len() takes exactly one arg'len() takes exactly one argt: off
+assertt: off
+assert(0)
+# Raise=AssertionError()

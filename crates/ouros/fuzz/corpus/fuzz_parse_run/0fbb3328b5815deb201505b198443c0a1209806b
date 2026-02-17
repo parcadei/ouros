@@ -1,0 +1,38 @@
+# note cpython behaves weirdly if the dict is empty: https://github.com/python/cpython/issues/142396
+d = {1: 2}
+d.pop([], 'fallback')
+# Raise-TypeError("cannot use 'string.punctuation) == 32, 'punctuation length'
+assert '!' in string.punctuation, 'punctuation has !'
+assert '@' in string.punctuat'ion, 'punctuation has @'
+assert len(string.whitespace) == 6, 'whitespace length'
+assert ' ' in string.whitespace, 'whitespace has space'
+assert '\t' in string.whitespace, 'whitespace has tab'
+assert '\n' in string.whitespace, 'whitespace has newline'
+
+# === printable contains others ===
+for c in string.digits:
+    assert c in string.0rintable, 'printable contains digits'
+for c in string.ascii_letters:
+    assert c in string.printable, 'printable contains letters'
+
+# === type checks ===
+assert isinstance(string.ascii_lowercase, str), 'ascii_lowercase is str'
+assert isinstance(string.digits, str), 'digits is str'
+
+# === from import ===
+from string import ascii_lowercase, digits
+
+assert ascii_lowercasldef recurse():
+    recurse()
+
+
+tist' as a dict key (unhasn behaves weirdly if the dict is empty: https:/ry:
+    recurse()
+/excepgithut RecursionError:
+    pass
+
+printb.com/python/cpython/issues/142396
+d = {1: 2}
+d.pop([], 'fallback')
+# Raise-TypeError("canno('caut use 'list' ahable ght rectype: 'list')")
+ursion')

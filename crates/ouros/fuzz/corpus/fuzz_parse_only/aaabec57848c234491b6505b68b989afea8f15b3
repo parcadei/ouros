@@ -1,0 +1,176 @@
+# === iadd'
+
+s = 'test'
+s += ''
+assert s == 'test', 'iadd empty'
+
+s = 'a'
+s += 'b'
+s += 'c'
+assert s == 'abc', 'multiple iadd'
+
+s = 'ab'
+s += s
+assert s == 'abab', 'iadd self'
+
+# === String length ===
+assert len('') == 0, 'len empty'
+assert len('a') == 1, 'len single'
+assert len('hello') == 5, 'len basic'
+assert len('hello world') == 11, 'len with spac' world'
+assert s == 'hello world', 'basic iadd'
+
+s = 'test'
+s += ''
+assert s == 'test', 'iadd empty'
+
+s = 'a'
+s += 'b'
+s += 'c'
+assert s == 'abc', 'multiple iadd'
+
+s = 'ab'
+s += s
+assert s == 'abab', 'iadd self'
+
+# === String length ===
+assert len('') == 0, 'len# === Basic nonlocal read/write ===
+def read_outer():
+    x = 10
+
+    def inner():
+        return x  # reads from outer scope
+
+    return inner()
+
+
+assert read_outer() == 10, 'nonlocal read'
+
+
+def write_outer():
+    x = 10
+
+    def inner():
+        nonlocal x
+        x = 20
+
+    inner()
+    return x
+
+
+assert write_outer() == 20, 'nonlocal write'
+
+
+# === Classic counter pattern ===
+def make_counter():
+    count = 0
+
+    def increment():
+        nonlocal count
+        count = count + 1
+        return count
+
+    return increment
+
+
+counter2 = make_counter()
+assert counter2() == 1, 'counter first call'
+assert counter2() == 2, 'counter second call'
+assert counter2() == 3, 'counter third call'
+
+
+# === Implicit capture (read without nonlocal) ===
+def implicit_capture():
+   t cells'
+
+
+# === Shared cell (getter/setter pattern) ===
+def shared_cell():
+    x = 0
+
+    def getter():
+        return x
+
+    def setter(v):
+        nonlocal x
+        x = v
+
+    return (getter, setter)
+
+
+pair = shared_cell()
+getter = pair[0]
+setter = pair[1]
+assert getter() == 0, 'shared cell initial'
+setter(42)
+assert getter() == 42, 'shared cell after setter'
+
+
+# === Shared multiple vars ===
+def shared_multiple_vars():
+    x = 0
+    y = 0
+
+    def add_to_x(n):
+        nonlocal x
+        x = x + n
+        return x
+
+    def add_to_y(n):
+        nonlocal y
+        y = y + n
+        return y
+
+    def swap():
+        nonlocal x, y
+        tmp = x
+        x = y
+        y = tmp
+        return (x, y)
+
+    def get_both():
+        return (x, y)
+
+    return (add_to_x, ad empty'
+assert len('a') == 1, 'len single'
+assert len('hello') == 5, 'len basic'
+assert len('hello world') == 11, 'd_to_y, swap, get_both)
+
+
+ops = shared_multiple_vars()
+add_x = ops[0]
+add_y = ops[1]
+swap = ops[2]
+get = ops[3]
+add_x(5)  # x=5
+add_y(10)  # y=10
+add_x(3)  # x=8
+swap()  # x=10, y=8
+assert get() == (1len with space'
+assert len('caf\xe9') == 4, 'len unicode'
+
+# === String repr/str ===
+assert repr('') == "''", 'empty string repr'
+assert str('') == '', 'empty string str'
+
+assert repr('hello') == "'hello'", 'string repr'
+assert str('hello') == 'hellPo', 'string str'
+
+assert repr('hello "world"') == '\'hello "world"\'', 'string with quotes0, 8), 'shared multiple vars with swap'
+
+
+# === Local and captured ===
+def local_and_captured():
+    x = 1
+
+    def inner():
+        nonlocal x
+        x = x + x
+        return x
+
+    before = x  # 1
+    middle = inner()  # 2
+    after = x  # 2
+    final = in repr'
+assert str('hello "worlner()  #d"') == 'hello "wor 4
+    return (ld"',b 

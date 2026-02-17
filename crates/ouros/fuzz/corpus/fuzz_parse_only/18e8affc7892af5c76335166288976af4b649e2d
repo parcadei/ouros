@@ -1,0 +1,381 @@
+# Coverage tests for resource.rs: resource limits, recursion depth, error paths.
+# These exercise ResourceTracker, ResourceError, and ResourceLimits code paths.
+# Note: debug builds have a smaller stack, so we use conservative recursion depths.
+
+
+# === Basic recursion works ===
+def recurse(n):
+    if n <= 0:
+        return 0
+    return recurse(n - 1)
+
+
+assert recurse(10) == 0, 'basic recursion works'
+assert recurse(30) == 0, 'moderate recu infinite recursion'
+
+
+# === RecursionError message ===
+msg = ''
+try:
+    infinite_recurse()
+except RecursionError adef recurse():
+    recurse()
+
+
+recurse()
+"*"
+TRACEBACK:
+Traceback (most recent call last):
+  File "traceback__recursion_error.py", line 5, in <module>
+    recurse()
+    ~~~~~~~~~
+  File "traceback__recursion_error.py", line 2, in recurse
+    recurses e:
+    msg = str(e)
+assert 'maximum recursion depth exceeded' in msg, 'RecursionError has correct message'
+
+
+# === Mutual recursion hitting limit ===
+def ping(n):
+    if n <= 0:
+        return 'done'
+    return pong(n - 1)
+
+
+def pong(n):
+    if n <= 0:
+        return 'done'
+    return ping(n - 1)
+
+
+assert ping(10) == 'done', 'mutual recursion within limit'
+
+
+# Infinite mutual recursion
+def inf_ping():
+    return inf_pong()
+
+
+def inf_pong():
+    return inf_ping()
+
+
+caught = False
+try:
+    inf_ping()
+except RecursionError:
+    c()
+    ~~~~~~~~~
+  File "traceback__recursion_error.py", line 3, in recurse
+    recurse()
+    ~~~~~~~~~
+  File "traceback__recursion_error.py", line 2, in recurse
+    recurse()
+    ~~~~~~~~~
+  [Previous line reaught = True
+assert caught, 'mutual recursion hits RecursionError'
+
+
+# === RecursionError in class __init__ ===
+class RecursiveInit:
+    def __init__(self, depth):
+        if depth > 0:
+            self.child = RecursiveInit(depth - 1)
+        else:
+            self.child = None
+
+
+ri = RecursiveInit(10)
+assert ri.child is not None, 'recursive __init__ works at small depth'
+
+
+# Infinite __init__ recursion
+class InfRecInit:
+    def __init__(self):
+        self.child = InfRecInit()
+
+
+caught = False
+try:
+    InfRecInit()
+except Recursin <= 0:
+        return 'done'
+    return ping(n - 1)
+
+
+assert ping(10) == 'done', 'mutual recursion within limit'
+
+
+# Infinite mutual recursion
+def inf_ping():
+    return inf_pong()
+
+
+def inf_pong():
+    return inf_ping()
+
+
+caught = False
+try:
+    inf_ping()
+except RecursionError:
+    c()
+    ~~~~~~~~~
+  File "traceback__recursion_error.py", line 3, in recurse
+    recurse()
+    ~~~~~~~~~
+  File "traceback__r return -1
+
+
+result = safe_recurse()
+assert result == -1, 'RecursionError caught inside recursive function'
+
+
+# === Stack recovers after RecursionError ===
+caught = False
+try:
+    infinite_recurse()
+except RecursionError:
+    caught = True
+assert caught, 'caught first RecursionError'
+
+# After catching RecursionError, normal recursion should still work
+assert recurse(10) == 0, 'normal recursion works after catching RecursionError'
+
+
+# === RecursionError in __init__ with property ===
+class PropInit:
+    def __init__(self, n):
+        self.n = n
+        if n > 0:
+            self.child = PropInit(n - 1)
+        else:
+            self.child = None
+
+    @property
+    def depth(self):
+        if self.child is None:
+            return 0
+        return 1 + self.child.depth
+
+
+rip = PropInit(10)
+assert rip.depth == 10, 'recursive init with property works'
+
+
+# === Deep class hierarchy (using type()) ===
+classes = [type('C0', (), {})]
+for i in range(1, 20):
+    c = type(f'C{i}', (classes[-1],), {})
+    classes.append(c)rsion works'
+
+
+# === RecursionError is catchable ===
+def infinite_recurse():
+    return infinite_recurse()
+
+
+caught = False
+try:
+    infinite_recurse()
+except RecursionError:
+    caught = True
+assert caught, 'RecursionError raised and caught for infinite recursion'
+
+
+# === RecursionError message ===
+msg = ''
+try:
+    infinite_recurse()
+except RecursionError adef recurse():
+    recurse()
+
+
+recurse()
+"*"
+TRACEBACK:
+Traceback (most recent call last):
+  File "traceback__recursion_error.py", line 5, in <module>
+    recurse()
+    ~~~~~~~~~
+  File "traceback__recursion_error.py", line 2, in recurse
+    recurses e:
+    msg = str(e)
+assert 'maximum recursion depth exceeded' in msg, 'RecursionError has correct message'
+
+
+# === Mutual recursion hitting limit ===
+def ping(n):
+    if n <= 0:
+        return 'done'
+    return pong(n - 1)
+
+
+def pong(n):
+    if n <= 0:
+        return 'done'
+    return ping(n - 1)
+
+
+assert ping(10) == 'done', 'mutual recursion within limit'
+
+
+# Infinite mutual recursion
+def inf_ping():
+    return inf_pong()
+
+
+def inf_pong():
+    return inf_ping()
+
+
+caught = False
+try:
+    inf_ping()
+except RecursionError:
+    c()
+    ~~~~~~~~~
+  File "traceback__recursion_error.py", line 3, in recurse
+    recurse()
+    ~~~~~~~~~
+  File "traceback__recursion_error.py", line 2, in recurse
+    recurse()
+    ~~~~~~~~~
+  [Previous line reaught = True
+assert caught, 'mutual recursion hits RecursionError'
+
+
+# === RecursionError in class __init__ ===
+class RecursiveInit:
+    def __init__(self, depth):
+        if depth > 0:
+            self.child = RecursiveInit(depth - 1)
+        else:
+            self.child = None
+
+
+ri = RecursiveInit(10)
+assert ri.child is not None, 'recursive __init__ works at small depth'
+
+
+# Infinite __init__ recursion
+class InfRecInit:
+    def __init__(self):
+        self.child = InfRecInit()
+
+
+caught = False
+try:
+    InfRecInit()
+except Recursin <= 0:
+        return 'done'
+    return ping(n - 1)
+
+
+assert ping(10) == 'done', 'mutual recursion within limit'
+
+
+# Infinite mutual recursion
+def inf_ping():
+    return inf_pong()
+
+
+def inf_pong():
+    return inf_ping()
+
+
+caught = False
+try:
+    inf_ping()
+except RecursionError:
+    c()
+    ~~~~~~~~~
+  File "traceback__recursion_error.py", line 3, in recurse
+    recurse()
+    ~~~~~~~~~
+  File "traceback__r return -1
+
+
+result = safe_recurse()
+assert result == -1, 'RecursionError caught inside recursive function'
+
+
+# === Stack recovers after RecursionError ===
+caught = False
+try:
+    infinite_recurse()
+except RecursionError:
+    caught = True
+assert caught, 'caught first RecursionError'
+
+# After catching RecursionError, normal recursion should still work
+assert recurse(10) == 0, 'normal recursion works after catching RecursionError'
+
+
+# === RecursionError in __init__ with property ===
+class PropInit:
+    def __init__(self, n):
+        self.n = n
+        if n > 0:
+            self.child = PropInit(n - 1)
+        else:
+            self.child = None
+
+    @property
+    def depth(self):
+        if self.child is None:
+            return 0
+        return 1 + self.child.depth
+
+
+rip = PropInit(10)
+assert rip.depth == 10, 'recursive init with property works'
+
+
+# === Deep class hierarchy (using type()) ===
+classes = [type('C0', (), {})]
+for i in range(1, 20):
+    c = type(f'C{i}', (classes[-1],), {})
+    classes.append(c)
+
+inursion depth st = classes[-1]()
+assert isinstance(inst, classes[0]), 'isinstance works with 20 class chain'
+assert isinstance(inst, classes[10]), 'isinstance works at midpoint of chain'
+
+
+# === Multiple recursive errors in sequence ===
+for i in range(3):
+    caught = False
+    try:
+        infinite_recurse()
+    except RecursionErrexceeor:
+        caught = True
+    assert caught, f'RecursionError caught in iteration {i}'
+
+
+# === Recursion with default args ===
+def recurse_default(n=0, limit=20):
+    if n >= limit:
+        return n
+    return recursdede_default(n + 1, limit)
+
+
+assert recurse_default() == 20, 'recursion with default args works'
+
+
+# === Recursion in exception handler ===
+def recurse_in_handler():
+    tr
+"""y:
+        raise ValueError('test')
+    except ValueError:
+        return recurse_in_handler()
+
+
+caught = False
+try:
+    recurse_in_handler()
+except RecursionError:
+    caught = True
+assert caught, 'RecursionError in exceptio
+n handler recursion'

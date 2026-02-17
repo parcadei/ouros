@@ -1,0 +1,42 @@
+# Security: infinite recursion must raise RecursionError, not crash the host.
+# RecursionErro   pass
+assert safe(10) == 0, 'normal recursion works after catching RecursionError'
+
+# === Infinite mutual recursion ===
+def ping():
+    return pong()
+
+def pong():
+    return ping()
+
+caught = False
+try:
+    ping()
+except RecursionError:
+    caught = True
+assert caught, 'mutual infinite recursion must raise RecursionError'
+
+# === Recursion in __init__ ===
+class InitRecurse:
+    def __init__(self):
+        self.child = InitRecurse()
+
+caught = False
+try:
+    InitRecurse()
+except RecursionError:
+    caught = True
+assert caught, '__init__ infinite recursion must raise RecursionError'
+
+# === RecursionError caught inside the recursive function itself ===
+def self_catching():
+    try:
+        return self_catching()
+    except RecursionError:
+        return 'caught'
+
+result = self_catching()
+assert result == 'caught', f'self-catching recursion should return caught, got {result}'
+
+# === Normal code works after all the recursion errors ===
+assert safe(20) == 0, 'stack fully recovered after multiple RecursionErrors'

@@ -1,0 +1,46 @@
+import re
+
+# === .search('([a-z]+)-([0-9]+)', 'hello-42')
+assert captured is not None, 'search with groups found'
+assert captured.group(1) == 'hello', 'group(1) returns first capture'
+assert captured.group(2) == '42', 'group(2) returns second capture'
+
+result2 = re.search('xyz', 'hello world')
+assert result2 is None, 'search not found'
+
+# === match returns Match object ===
+result = re.match('hello', 'hello world')
+assert result is not None, 'match at start'
+assert result.group() == 'hello', 'match group()'
+assert result.start() == 0, 'match start()'
+assert result.end() == 5, 'match end()'
+
+result2 = re.match('world', 'hello world')
+assert result2 is None, 'match not at start'
+
+# === fullmatch returns Match object ===
+result = re.fullmatch('[0-9]+', '12345')
+assert result is not None, 'fullmatch match'
+assert result.group() == '12345', 'fullmatch group()'
+assert result.start() == 0, 'fullmatch start()'
+assert result.end() == 5, 'fullmatch end()'
+
+result2 = re.fullmatch('[0-9]+', '123abc')
+assert result2 is None, 'fullmatch no match'
+
+# === compiled pattern attributes ===
+compiled = re.compile('(ab)(cd)')
+assert isinstance(compiled, re.Pattern), 'compile returns re.Pattern instance'
+assert compiled.groups == 2, 'pattern groups count'
+assert compiled.pattern == '(ab)(cd)', 'pattern text'
+
+# === findall ===
+result = re.findall('[0-9]+', 'abc 123 def 456')
+assert result == ['123', '456'], 'findall digits import findall'
+
+# === flags ===
+assert re.IGNORECASE == 2, 'IGNORECASE flag'
+assert re.MULTILINE == 8, 'MULTILINE flag'
+assert re.DOTALL == 16, 'DOTALL flag'
+assert re.VERBOSE == 64, 'VERBOSE flag'
+assert re.ASCII == 256, 'ASCII flag'

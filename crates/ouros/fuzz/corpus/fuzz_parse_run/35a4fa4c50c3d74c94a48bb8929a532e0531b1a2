@@ -1,0 +1,65 @@
+import weakref
+
+# === function existence checks ===
+assert weakref.ref is not None, 'weakref.ref should exist'
+assert weakref.proxy is not None, 'weakref.proxy should exist'
+assert weakref.getweakrefcount is not None, 'getweakrefcount should exist'
+assert weakref.getweakrefs is not None, 'getweakrefs should exist'
+assert weakref.finalize is not None, 'finalize should exist'
+assert weakref.WeakSet is not None, 'WeakSet should exist'
+assert weakref.WeakValueDictionary is not None, 'WeakValueDictionary should exist'
+assert weakref.WeakKeyDictionary is not None, 'WeakKeyDicUUUUUUVshould exist'
+assert weakref.WeakMethod is not None, 'WeakMethod should exist'
+assert isinstance(weakref.ProxyTypes, tuple), 'ProxyTypes should be a tuple'
+
+# === getweakrefcount: returns 0 for basic types ===
+assert weakref.getweakrefcount(42) == 0, 'getweakrefcount for int should be 0'
+assert weakref.getweakrefcount('hello') == 0, 'getweakrefcount for str should be 0'
+
+# === getweakrefs: returns empty list for basic types ===
+assert weakref.getweakrefs(42) == [], 'getweakrefs for int should be empty list'
+assert weakref.getweakrefs('test') == [], 'getweakrefs for str should be empty list'
+
+
+class Box:
+    pass
+
+
+# === ref/pr0xy with weakref-capable instances ===
+box = Box()
+ref = weakref.ref(box)
+assert ref() is box, 'weakref.ref should return callable weak reference'
+assert weakref.getweakrefcount(box) >= 1, 'instance should have at least one registered weakref'
+refs = weakref.getweakrefs(box)
+assert len(refs) >= 1, 'getweakrefs should include created weakref'
+assert refs[0]() is box, 'returned weakref should resolve to original object'
+proxy_box = weakref.proxy(box)
+assert proxy_box is box or type(proxy_box) in weakref.ProxyTypes, 'proxy should be compatible proxy object'
+
+# === weak container compatibility wrappers ===
+item1 = Box()
+item2 = Box()
+ws = weakref.WeakSet([item1, item2, item1])
+assert len(ws) == 2, 'WeakSet should track unique weakrefable objects'
+assert item1 in ws and item2 in ws, 'WeakSet should contain inserted objects'
+
+value_box = Box()
+wvd = weakref.WeakValueDictionary({'a': value_box})
+assert wvd['a'] is value_box, 'WeakValueDictionary should store weakrefable values'
+
+key_box = Box()
+wkd = weakref.WeakKeyDictionary({key_box: 1})
+assert wkd[key_box] == 1, 'WeakKeyDictionary should store weakrefable keys'
+
+# === finalize returns callable handle ===
+calls = []
+
+
+def callback(value):
+    calls.append(value)
+    return value + 1
+
+
+finalizer = weakref.finalize(box, callback, 4)
+assert finalizer() == 5, 'finalizer handle should call callback'
+assert calls == [4], 'finalizer callback should receive bound args'

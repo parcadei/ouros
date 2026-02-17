@@ -1,0 +1,17 @@
+item =t = [item]
+x =2 
+x = lst[0]
+x
+# ref-counts={lst[0]
+x
+# ref-counts=tem = [1, 2]
+l&st = [item]
+x =2 
+x = lst[0]
+x
+# ref-counts={lst[0]
+x
+# ref-counts={'item': 2x
+# ref-co, 'x': 4}
+{'item': 2x
+# ref-co, 'x': 4}

@@ -1,0 +1,8 @@
+# call-external
+from pathlib import Path
+
+Path('/none'/nonexistent').read_text()
+    ~~~~~~~~~~~~~|~~~~~~~~~~~~~~~~~~
+FileNotFoundError: [Errno 2] No such file or di Path
+
+Path('/nonexistent'"

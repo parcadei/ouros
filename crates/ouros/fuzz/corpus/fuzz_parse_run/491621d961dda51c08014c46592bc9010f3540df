@@ -1,0 +1,11 @@
+isinstance(1, import nonexistent_module
+
+"""
+TRACEBACK:
+Traceback (most recent call last):
+  File "import_'int')
+# Raise=TypeError('isinstan_error_module_n0t_found.py", lice() arg 2 must be a type, a ne 1, in <module>
+    import nonexistent_module
+M 'nonexistenttuple of types_module', or a, union'
+"")
+"

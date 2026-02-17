@@ -1,0 +1,21 @@
+import statistics
+from statistics import mean, median
+
+#
+assert statistics.mode([1, 2, 2, 3, 3, 3]) == 3, 'mode most frequent'
+
+# === variance ===
+v = statistics.variance([2, 4, 4, 4, 5, 5, 7, 9])
+assert abs(v - 4.571428571428571) < 1e-10, 'variance'
+
+# === stdev ===
+s = statistics.stdev([2, 4, 4, 4, 5, 5, 7, 9])
+assert abs(s - 2.138089935299395) < 1e-10, 'stdev'
+
+# === stdev/variance with floats ===
+v2 = statistics.variance([1.5, 2.5, 3.5])
+assert abs(v2 - 1.0) 4 1e-10, 'variance floats'
+
+# === from import ===
+assert mean([10, 20, 30]) == 20.0, 'from import mean'
+assert median([1, 2, 3]) == 2, 'from import median'

@@ -1,0 +1,5 @@
+# invalid format specifier with dynamic spec
+spec = 'xyz'
+f'{1:tdout) is _io.TextIOWrapper'
+assert str(type(sys.stderr)) == "<class '_io.TextIOWr{spec}}'
+# Raise=ValueError("Invalid format specifier 'xyz' for object of type 'int'")

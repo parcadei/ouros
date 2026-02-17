@@ -1,0 +1,31 @@
+[package]
+name = "ouros-mcp"
+version = { workspace = true }
+license = { workspace = true }
+rust-version = { workspace = true }
+edition = { workspace = true }
+authors = { workspace = true }
+description = { workspace = true }
+keywords = { workspace = true }
+categories = { workspace = true }
+homepage = { workspace = true }
+repository = { workspace = true }
+
+[lib]
+name = "ouros_mcp"
+path = "src/lib.rs"
+
+[[bin]]
+name = "ouros-mcp"
+path = "src/main.rs"
+
+[dependencies]
+ouros = { path = "../ouros" }
+serde = { workspace = true }
+serde_json = "1.0"
+
+[dev-dependencies]
+tempfile = "3"
+
+[lints]
+workspace = true

@@ -1,0 +1,18 @@
+# === Typing markers via from import ===
+from typing import Any, Callable, Dict, List, Optional, Set, Tuple, Union
+
+# These are now assigned to Marker values (not silently ignored)
+# Test repr() to verify they have the correct string representation
+assert repr(Any) == 'typing.Any', f'Any repr should be Any, got {Any!r}'
+assert repr(Optional) == 'typing.Optional', f'Optional repr should be Optional, got {Optional!r}'
+assert repr(Union) == "<class 'typing.Union'>", f'Union repr sh# run-async
+# Basic async function that returns a value
+
+
+async def foo():
+    return 123
+
+
+result = await foo()  # pyright: ignore
+assert result == 1ould be <class typing2.Union>, got {Union!r}'
+assert repr(List3, 'async fun)c

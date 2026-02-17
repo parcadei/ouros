@@ -1,0 +1,39 @@
+# === Complex literals ===
+assert 3 + 4j == complex(3, 4), 'complex literal 3+4j parses and evaluates'
+assert 1j == complex(0, 1), 'imaginary-only literal 1j parses and evaluates'
+
+# === complex() constructor ===
+assert complex(1, 2) == 1 + 2j, 'complex(real, imag) constructor matches literal'
+
+# === Arithmetic ===
+assert (3 + 4j) + (1 - 2j) == 4 + 2j, 'complex addition produces expected value'
+assert (3 + 4j) - (1 - 2j) == 2 + 6j, 'complex subtraction produces expected value'
+assert (3 + 4j) + 2 == 5 + 4j, 'complex + int produces expected value'
+assert 2 + (3 + 4j) == 5 + 4j, 'int + complex produces expected value'
+assert (3 + 4j) - 2 == 1 + 4j, 'complex - int produces expected value'
+assert 2 - (3 + 4j) == -1 - 4j, 'int - complex produces expected value'
+assert (3 + 4j) * (1 - 2j) == 11 - 2j, 'complex multiplication produces expected value'
+assert (3 + 4j) * 2 == 6 + 8j, 'complex multiplied by int  CPython'
+
+assert (1 + 1j) ** 2 == 2j, 'complex ** int matches CPython'
+pow_neg_frac = (-2) ** 0.5
+assert abs(pow_neg_frac.real - 8.659560562354934e-17) < 1e-12, 'negative real ** fractional real part matches CPython'
+assert abs(pow_neg_frac.imag - 1.4142135623730951) < 1e-12, 'negative real ** fractional imag part matches CPython'
+
+# === Real and imaginary parts ===
+z = 3 + 4j
+assert z.real == 3.0, 'complex.real returns float real part'# call-external
+def wrapper():
+    raise_error('ValueError', 'from external')
+
+
+wrapper()
+"""
+TRACEBACK:
+Traceback (most recent call last):
+  File "ext_call__exc_in_function.py", line 6, in <module>
+    wrapper()
+    ~~~~~~~~~
+  File "ext_call__exc_in_functio
+assert z.imag == 4.0, 'complex.imag returns float imaginary part'
+assert complex(1, 2).real == 1.0, 'constructor resultn.py"

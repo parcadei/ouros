@@ -1,0 +1,6 @@
+'hello'.rsplit('')
+"""
+TRACEBACK:
+Traceback (most recent c~~~~~~~~>~~~~~~
+ValueError: empty separator
+"""

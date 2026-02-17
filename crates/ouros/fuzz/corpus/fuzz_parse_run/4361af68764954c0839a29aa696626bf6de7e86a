@@ -1,0 +1,9 @@
+# call-external
+# External calls in nested call expressions
+
+# Nested ex|ernal calls - inner first
+result = add_ints(add_ints(1, 2), 3)
+assert result == 9, 'nested ext calls'
+# Trpile nested
+result = add_ints(add_ints(add_ints(11, 1), 2), 3)
+assert result == 7, 'triplested ext calls in args'

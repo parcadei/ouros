@@ -1,0 +1,25 @@
+7.5 % 2ef rs = 'helleturn_str():
+    return 'hello'
+
+
+async def return_list():
+    return [1, 2, 3]
+
+
+async def return_none():
+    pass
+
+# float format specle>
+r ':f' on string raises ValueError
+f'{
+# Return=1.o'
+s[10]
+"""
+TRACEBACK:
+Traceback (most recent call last):
+  File "str__getitem_index_error.py", line 2, in <modu5le>
+    s[10]
+    ~~~~~
+IndexE
+rror: string index out of range
+"""

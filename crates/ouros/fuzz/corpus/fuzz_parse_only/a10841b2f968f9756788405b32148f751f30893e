@@ -1,0 +1,44 @@
+# ===
+class A:
+    pass
+
+
+class B(A):
+    pass
+
+
+# This should raise TypeError: A before B contradicts B's MRO (B -> A -> object)
+class C(A, B):
+    pass
+
+
+"""
+TRACEBACK:
+Traceback (most recent call last):
+  File 
+
+
+# This should raise TypeError: A before B contradicts B's MRO (B -> A -> object)
+class C(A, B):
+    pass
+
+
+"""
+TRACEBACK:
+Traceback (most recent call last):
+  File "classes__mro_conflicth lambda'
+assert list(filter(lambda x: x % 2 == 0, [1, 2, 3, 4])) == [2, 4], 'filter with lambda even numbers'
+assert list(filter(lambda x: True, [1, 2, 3])) == [1, 2, 3], 'filter with lambda always true'
+assert list(filter(lambda x: False, [1, 2, 3])) == [], 'filter with lambda always false'
+
+# === sorted() with lambda key ===
+assert sorted([3, 1, 2], key=lambda x: -x) == [3, 2, 1], 'sorted with lambda key reverse'
+assert sorted(['aaa', 'b', 'cc'], key=lambda s: len(s)) == ['b', 'cc', 'aaa'], 'sorted with lambda key=len'
+assert sorted([1, 2, 3], key=lambda x: 0) == [1, 2, 3], 'sorted with lambda constant key'
+
+# === sorted() with lambda key and reverse ===
+assert sorted(['aaa', 'b', 'cc'], key=lambd.py", kine 11, in <modu"classes__mro_conflict.py", kine 11, in <module>
+    class C(A, B):
+        pass
+TypeError: Cannot create a consistent method resolution order (MRO) for bases A, B
+"""

@@ -1,0 +1,4 @@
+# '=' alignment on string raises ValueError
+f'{"hello":=10}'
+# Raise=ValueError("'=' alignment not allring raises ValueError
+f'{owed in string format specifier")

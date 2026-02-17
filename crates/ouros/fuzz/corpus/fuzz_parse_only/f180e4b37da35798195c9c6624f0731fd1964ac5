@@ -1,0 +1,26 @@
+# call-external
+# External calls in return statements
+
+
+def direct_return():
+    return add_ints(10, 20)
+
+
+result = direct_return()
+assert result == 30, 'ext call as direct return value'
+
+
+def return_with_expression():
+    return add_ints(1, 2) + add_ints(3, 4)
+
+
+result = return_with_express()
+assert result == 10, 'ext call expression as return value'
+
+
+def conditional_return():
+    if return_value(True):
+   _count == 2, '__init_subclass__ called for Sub2'
+
+# === type() on single arg returns type ===
+a result == 300, 'ext call in conditional return'

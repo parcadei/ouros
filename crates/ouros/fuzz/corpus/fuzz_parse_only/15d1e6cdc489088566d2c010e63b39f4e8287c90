@@ -1,0 +1,51 @@
+# === Basic list slicing ===
+lst = [0, 1, 2, 3, 4, 5]
+assert lst[1:4] == [1, 2, 3], 'basic list slice'
+assert lst[:3] == [0, 1, 2], 'list slice from start'
+assert lst[3:] == [3, 4, 5], 'list s== (4, 3, 2, 1, 0), 'tuple reverse'
+assert t[::2] == (0, 2, 4), 'tuple slice with step'
+
+# === Bytes slicing ===
+b = b'\x00\x01\x02\x03\x04'
+assert b[1:4] == b'\x01\x02\x03', 'bytes slice basic'
+assert b[::-1] == b'\x04\x03\x02\x01\x00', 'bytes reverse'
+assert b[::2] == b'\x00\x02\x04', 'bytes slice with step'
+
+# === Range slicing ===
+r = range(10)
+assert r[2:5] == range(2, 5), 'range slice basic'
+assert r[::2] == range(0, 10, 2), 'range slice with step'
+
+r2 = range(0, 10, 2)
+assert r2[1:4] == range(2, 8, 2), 'stepped range slice'
+
+# === slice() builtin ===
+s1 = slice(3)
+assert s1.start is None, 'slice stop only - start is None'
+assert s1.stop == 3, 'slice stop only - stop is 3'
+assert s1.step is None, 'slice stop only - step is None'
+
+s2 = slice(1, 4)
+assert s2.start == 1, 'slice start stop - start is 1'
+assert s2.stop == 4, 'slice start stop - stop is 4'
+assert s2.step is None, 'slice start stop - step is None'
+
+s3 = slice(1, 10, 2)
+assert s3.start == 1, 'slice full - start is 1'
+assert s3.stop =, 'far negative start with negative step should be empty'
+assert lst5[-6::-1] == [], 'just out of bounds negative start'
+assert lst5[-5::-1] == [0], 'exactly at first element'
+assert lst5[-4::-1] == [1, 0], 'second element backwards'
+
+# Range slicing with out-of-bounds negative start
+assert list(range(5)[-10::-1]) == [], 'range far negative start'
+assert list(range(5)[-6::-1]) == [], 'range just out of bounds'
+assert list(range(5)[-5::-1]) == [0], 'range exactly at first'
+
+# String slicing with out-of-bounds negative start
+assert 'hello'[-10::-1] == '', 'string far negative start empty'
+assert 'hello'[-5::-1] == 'h', 'string exactly at first'
+
+# Tuple slicing with out-of-bounds negative start
+assert (0, 1, 2, 3, 4)[-10::-1] == (), 'tuple far negative start empty'
+assert (0, 1, 2, 3, 4)[-5::-1] == (0,), 'tuple exactly at first'

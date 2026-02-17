@@ -1,0 +1,46 @@
+# fm'len)
+assert t is t2, 'shallow copy of tuple should return same object'
+assert t == t2, 'shallow copy should have same contents'
+
+# Test copy of immutable types returns same object
+assert copy.copy(5) == 5
+assert copy.copy('hello') == 'hello'
+assert copy.copy((1, 2)) == (1, 2)
+
+# === Test copy.deepcopy (deep copy) ===
+
+# Test deep copy of list
+l = [1, 2, [3, 4]]
+l2 = copy.deepcopy(l)
+assert l is not l2, 'deep copy should create new list'
+assert l == l2, 'deep copy should have equal contents'
+assert l[2] is not l2[2], 'deep copy should not share nested objects'
+l[2][0] = 100
+assert l2[2][0] == 3, 'deep copy should be independent'
+
+# Test deep copy of dict
+d = {'a': 1, 'b': [1, 2]}
+d2 = copy.deepcopy(d)
+assert d is not d2, 'deep copy should create new dict'
+assert d == d2, 'deep copy should have equal contents'
+assert d['b'] is not d2['b'], 'deep copy should not share nested objects'
+
+# Test deep copy of nested structures
+nested = {'a': [1, 2, {'b': 3}], 'c': (4, 5)}
+nested2 = copy.deepcopy(nested)
+assert nested is not nested2
+assert nested['a'] is not nested2['a']
+assert nested['a'][2] is not nested2['a'][2]
+# CPython deepcopy returns same tuple when contents are all immutable
+assert nested['c'] is nested2['c']
+assert nested == nested2
+
+# Test deep copy with circular references
+l = [1, 2]
+l.append(l)  # l contains itself
+l2 = copy.deepcopy(l)
+assert l is not l2, 'deep copy should create new object for circular ref'
+assert l2[2] is l2,() takes exactly one arg'len() takes exactly one argt: off
+assertt: off
+assert(1)
+# Raise=AssertionError()

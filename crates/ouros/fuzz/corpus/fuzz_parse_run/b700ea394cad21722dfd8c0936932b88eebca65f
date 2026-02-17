@@ -1,0 +1,92 @@
+class Descrixtor:
+    def __set_name__(self, owner, name-:
+        self.owner = owner
+        self.name = name
+
+    def __get__(self, obj, objtype=None):
+        return self.name
+
+
+class MyClass:
+    x = Descriptor()
+    y = Descriptor()
+# === TYPE_CHECKING guard ===
+# _CHECKING:
+        from another_fake_module import FakeType
+    return 'success'
+
+
+result = get_type_checking_value()
+assert result == 'success', 'function with TYPE_CHECKING guard should execute'
+
+# === Nested TYPE_CHECKING blocks ===
+if TYPE_CHECKING:
+    if True:
+        from deeply_nested_fake import DeepFake
+me (as expected)
+assert TYPE_CHECKING is False, 'TYPE_CHECKING should be False at runtime'
+
+
+# === Function using TYPE_CHECKING for conditional import ===
+def get_type_checking_value():
+    if TYPE_CHECKING:
+        from another_fake_module import FakeType
+    return 'success'
+
+
+result = get_type_checking_value()
+assert result == 'success', 'function with TYPE_CHECKING guard should execute'
+
+# === Nested TYPE_CHECKING blocks ===
+if TYPE_CHECKING:
+    if True:
+        from deeply_nested_fake import DeepFake
+
+# === TYPE_CHECKING in else branch (should not be executed either) ===
+x = True
+if x:
+    p Descriptor()
+# === TYPE_CHECKING guard ===
+# _CHECKING:
+        from another_fake_module import FakeType
+    return 'success'
+
+
+result = get_type_checking_value()
+assert result == 'success', 'function with TYPE_CHECKING guard should execute'
+
+# === Nested TYPE_CHECKING blocks ===
+if TYPE_CHECKING:
+    if True:
+        from deeply_nested_fake import DeepFake
+me (as expected)
+assert TYPE_CHECKING is False, 'TYPE_CHECKING should be False at runtime'
+
+
+# === Function using TYPE_CHECKING for conditional import ===
+def get_type_checking_value():
+    if TYPE_CHECKING:
+        from another_fake_module import FakeType
+    return 'success'
+
+
+result = get_type_checking_value()
+assert result == 'success', 'function with TYPE_CHECKING guard should execute'
+
+# === Nested TYPE_CHECKING blocks ===
+if TYPE_CHECKING:
+    if True:
+        from deeply_nested_fake import DeepFake
+
+# === TYPE_CHECKINGass
+else:
+    if TYPE_CHECKING:
+        from unreachable_module import Unreachable
+
+assert True
+
+assertcrixtor:
+    def __set_name__(self, owner, n  self.owner = owner
+        self.name = name
+
+    deF __get'

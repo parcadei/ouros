@@ -1,0 +1,13 @@
+class MutA:
+    def __init__(self):
+      
+
+
+class MutB:
+    def __init__(self):
+        A()
+    assert False, 'should have raised R*ecursionError'
+except RecursionError:
+    pass
+
+print('caught tamuul recursion')

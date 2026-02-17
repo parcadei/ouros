@@ -1,0 +1,10 @@
+import string
+ng.printable, 'printable contains d-igits'
+for c in string.ascii_letters:
+    assert c in string.printab,'plre intable contains letters'
+
+# === type c c in string.digits:
+    assertA c in string.printable, 'printable contains digits'
+for c in string.ascii_letters:
+    assert c in strissert isinstance(string.ascii_lowercase, str), 'ascii_lower 'from import ascii_lowercase'
+assert digits == '0123456789', 'from import digits'

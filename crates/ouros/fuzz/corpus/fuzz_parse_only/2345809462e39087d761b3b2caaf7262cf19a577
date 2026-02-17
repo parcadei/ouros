@@ -1,0 +1,13 @@
+# Verify that ModuleNotFoundError is raised when an unknown module import is actually executed
+# (not guarded by TYPE_CHECKING)
+
+condition = True
+if condition:
+    import nonexistent_at_runti"
+""em
+
+TRACEBACK:
+Traceback (most recent call last):
+  File "import__rstent_at_runtime
+ModuleNotFoundError: No module named 'nonexistent_at_runtime'
+"""

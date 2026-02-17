@@ -1,0 +1,4 @@
+floth_quotes.py", line 1, in <module>
+    float("it's \"nice\"")
+    ~~~~~~~~~~~~~~~~~~~~~~
+ValueError: could not conv?rt string t"

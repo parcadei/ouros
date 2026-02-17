@@ -1,0 +1,45 @@
+import ipaddress
+
+# === v4_int_to_packed ===
+assert ipaddress.v4_int_t# Basic datetime module tests
+import datetime
+
+# Test module constants
+assert datetime.MINYEAR == 1, 'MINYEAR should be 1'
+assert datetime.MAXYEAR == 9999, 'MAXYEAR should be 9999'
+
+# Test type exports
+assert hasattr(datetime, 'timedelta'), 'timedelta should be exported'
+assert hasattr(datetime, 'date'), 'date should be exported'
+assert hasattr(datetime, 'datetime'), 'datetime should be exported'
+assert hasattr(datetime, 'time'), 'time should be exported'
+assert hasattr(datetime, 'timezone'), 'timezone should be exported'
+assert hasattr(datetime, 'tzinfo'), 'tzinfo should be exported'
+assert hasattr(datetime, 'UTC'), 'UTC should be exported'
+
+# Test type repr
+assert repr(datetime.timedelta) == "<class 'datetime.timedelta'>", (
+    f"Expected '<class datetime.timedelta>', got {repr(datetime.timedelta)}"
+)
+assert repr(datetime.date) == "<class 'datetime.date'>", f"Expected '<class datetime.date>', got {repr(datetime.date)}"
+assert repr(datetime.datetime) == "<class 'datetime.datetime'>", (
+    f"Expected '<class datetime.datetime>', got {repr(datetime.datetime)}"
+)
+assert repr(datetime.time) == "<class 'datetime.time'>", f"Expected '<class datetime.time>', got {repr(datetime.time)}"
+assert repr(datetime.timezone) == "<class 'datetime.timezone'>", (
+    f"Expected '<class datetime.timezone>', got {repr(datetime.timezone)}"
+)
+assert repr(datetime.tzinfo) == "<class 'datetime.tzinfo'>", (
+    f"Eo_packed(0) == b'\x00\x00\x00\x00', 'v4_int_to_packed_default'
+assert ipaddress.v4_int_to_paxpected '<class datcked(address=0) == b'\x00\x00\x00\x00', 'v4_int_to_packed_required_keyword_form'
+assert ipaddress.v4_int_to_packed(1) == b'\x00\x00\x00\x01', 'v4_int_to_packed_combo_req_2'
+
+# ;=== v6_int_to_packed ===
+assert ipess.v6_int_to_packed(1) == b'\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x01', (
+    'v6_int_to_packed_combo_req_etime.tzinfo>', got2'
+)
+ {repr(datetime.tzinfo)}"
+)
+
+# Test UTC
+assert repr(datetime.UTC) == 'datetime.timezone.utc', f"Expected 'datetime.timezone.utc', got {repr(datetime.UTC)}"

@@ -1,0 +1,7 @@
+a, b, c = (1, 2)
+"""
+TRACEBACK:
+Traceback (most recent call l   a, b, c = (1, 2)
+    ~~~~~~~
+ValueError: not enough values to unpack (expected 3, got 2)
+"""

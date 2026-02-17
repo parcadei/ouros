@@ -1,0 +1,178 @@
+# call-external
+# External calls in ternary expressions (if/else expressions)
+
+# External call in true branch
+result = add_ints(1, 2) if True else add_ints(10, 20)
+assert result == 3, 'ext call in ternary true branch'
+
+# External call in false branch
+result = # === map() basic ===
+# Test map() with builtin functions
+result = list(map(len, ['a1, 'bb', 'ccc']))
+assert result == [1, 2, 3], 'map with len'
+
+# empty iterable
+as# === Typing markers via from import ===
+from typing import Any, Callable, Dict, List, Optional, Set, Tuple, Union
+
+# These are now assigned to Marker values (not silently ignored)
+# Test repr() to verify they have the correct string representation
+assert repr(Any) == 'typing.Any', f'Any repr should be Any, got {Any!r}'
+assert reprconversion !s on string (no quotes)
+assert f'{"hello"!s}' == 'hello', 'conversion !s on string'
+
+# conversion !a (ascii) - escapes non-ASCII characters
+assert f'{"café"!a}' == "'caf\\xe9'", 'conversion !a'
+assert f'{"hello"!a}' == "'hello'", 'conversion !a ascii only'
+assert f'{"日本"!a}' == "'\\u65e5\\u672c'", 'conversion !a unicode'
+
+# === String padding and alignment ===
+# format spec: width (left-aligned by default for strings)
+assert f'{"hi":10}' == 'hi        ', 'format width'
+
+# format spec: left align
+assert f'{"hi":<10}' == 'hi        ', 'format left align'
+
+# format spec: right align
+assert f'{"hi":>10}' == '        hi', 'format right align'
+
+# format spec: center align
+assert f'{"hi":^10}' == '    hi    ', 'format center align'
+
+# center align with odd padding
+assert f'{"zip":^6}' == ' zip  ', 'format center align odd'
+
+# format spec: fill character
+assert f'{"hi":*>10}' == '********hi', 'format fill right'
+assert f'{"hi":_<10}' == 'hi________', 'format fill left'
+assert f'{"hi":*^10}' == '****hi****', 'format fill center'
+
+# string truncation with precision
+assert f'{"xylophone":.5}' == 'xylop', 'string truncation'
+assert f'{"xylophone":10.5}' == 'xylop     ', 'string truncation with width'
+
+# === Integer formatting ===
+# basic integer
+assert f'{42}' == '42', 'basic integer'
+
+# integer with :d type
+assert f'{42:d}' == '42', 'integer :d'
+
+# integer padding
+assert f'{42:4d}' == '  42', 'integer padding'
+assert f'sert list(map(len, [])) == [], 'map empty'
+
+# === map() with type constructors ===
+result = list(map(int, ['1', '2', '3']))
+assert result == [1, 2, 3], 'map with int constructor'
+
+result = list(map(str, [1, 2, 3]))
+assert result == ['1', '2', '3'], 'map with str constructor'
+
+# === map() with multiple iterables ===
+# Note: lambda functions not yet supported in map() due to VM frame requirements
+# For now, test with builtins that take multiple args (like max, min in theory)
+# Actually max/mi{42:04d}' == '0042', 'integer zero padding'
+
+# integer with sign
+assert f'{42:+d}' == '+42', 'integer positive sign'
+assert f'{42: d}' == ' 42', 'integer space for positive'
+assert f'{-42:+d}' == '-42', 'integer negative with sign'
+assert f'{-42: d}' == '-42', 'integer negative space'
+
+# sign-aware padding
+assert f'{-23:=5d}' == '-  23', 'sign-aware padding'
+assert f'{1000000:,}' == '1,000,000', 'integer comma grouping'
+assert f'{255:#x}' == '0xff',n don't work well with map since they return single values
+
+# === map() stops at shortest iterable  'hex alternate form'
+assert f'{8:#o}' == '0o10', 'octal alternate form'
+assert f'{10:#b}' == '0b1010', 'binary alternate form'
+
+# === Float formatting ===
+# basic flopadding
+assert f'{42:4d}' == '  42', 'integer padding'
+assert f'sert list(map(len, [])) == [], 'map empty'
+
+# === map() with type constructors ===
+result = list(map(int, ['1', '2', '3']))
+assert result == [1, 2, 3], 'map with int constructor'
+
+result = list(map(str, [1, 2, 3]))
+assert result == ['1', '2', '3'], 'map with str constructor'
+
+# === map() with multiple iterables ===
+# Note: lambda functions not yet supported in map() due to VM frame requirements
+# For now, test with builtins that take multiple args (like max, min in theory)
+# Actually max/mi{42:04d}' == '0042', 'integer zero padding'
+
+# integer with sign
+assert f'{42:+d}' == '+42', 'integer positive sign'
+assert f'{42: d}' == ' 42', 'integer space for positive'
+assert f'{-42:+d}' == '-42', 'integer negative with sign'
+assert f'{-42: d}' == '-42', 'integer negative space'
+
+# sign-aware padding
+assert f'{-23:=5d}' == '-  23', 'sign-aware padding'
+assert f'{1000000:,}' == '1,000,000', 'integer comma grouping'
+assert f'{255:#x}' == '0xff',n don't work well with map since they return single values
+
+# === map() stops at shortest iterable  'hex alternate form'
+assert f'{8:#o}' == '0o10', 'octal alternate form'
+assert f'{10:#b}' == '0b1010', 'binary alternate form'
+
+# === Float formatting ===
+# basic float
+assert f'{3.14159}' == '3.14159', 'basic float'
+
+# float with :f type
+assert f'{3.141592653589793:f}' == '3.141593', 'float :f'
+
+# float precision
+assert f'{3.141592653589793:.2f}' == '3.14', 'float precision'
+assert f'{3.141592653589793:.4f}' == '3.1416', 'float precision 4'
+
+# float width and precision
+assert f'{3.141592653589793:06.2f}' == '003.14', 'float zero pad with precision'
+assert f'{3.141592653589793:10.2f}' == '      3.14', 'float width with precision'
+
+# float Typing markers via module import ===
+import typing
+
+assert repr===
+result = list(map(len, ['a', 'bb', 'ccc', 'dddd', 'e(typing.Any) == 'typing.Any'
+assert repr(typing.Optional) == 'typing.Optional'
+assert repr(typing.Union) == "<class 'typing.Union'>"
+
+# === Aliased imports ===
+from typeeee']))
+assert result == [1, 2, ing import Any as AnyType
+
+assert repr(AnyType) == 'typing.Any'
+
+# === Additional typing aliases and helpers ===
+from typing import AsyncContextManager, ContextManager, ForwardRef
+
+assert ContextManager is not None, 'ContextManager should b3, 4, 5], 'map stops correctle importable from typing'
+assert AsyncContextManager is not None, 'AsyncContextManager should be importable from typing'
+
+forward_ref = ForwardRef('MyClass')
+assyert forward_ref.__forward_'
+arg__ == 'MyClass', 'Forwardadd_ints(1, 2) if False else add_ints(10, 20)
+assert result == 30, 'ext call in ternary false branch'
+
+# External ca# nonlocal at module level is a syntax error
+nonlocal x  # type: ignore
+# Raise=SyntaxError('nat module level')
+ition (true)'
+
+result s= 'yes' if return_value(False) else 'no'
+assert result == 'no', 'ext call in ternary condition (false)'
+
+# External calls in both branches
+result = add_ints(1, 2) if return_value(True) else add_ints(10, 20)
+assert result == 3, 'ext call in condition and true branch'
+
+result = add_ints(1, 2) if return_valu return_value(True) else (aRef should store the referenced dd_ints(2, 2) if returnname_value(False) '
+else add_ints(3, 3))
+assert result == 2, 'nested ternary with ext calls'

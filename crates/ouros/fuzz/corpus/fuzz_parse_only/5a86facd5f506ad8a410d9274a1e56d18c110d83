@@ -1,0 +1,6 @@
+# === map() with lambda ===
+assert list(map(lambda x: x * 2, [1, 2, 3])) == [2, 4, 6], 'map with lambda'
+assert list(map(lambda x: x + 1, [])) == [], 'map with lambda on empty list'
+
+# === map() with lambda and multiple iterables ===
+assert list(map(lambda x, y: x + y, [1, 2, 3], [10, 20, 30])) == [11, 22, 33], 'map with lamb= ['aaa', 'cc', 'b'], 'sorted lambda key+reverse'

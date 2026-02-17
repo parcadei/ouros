@@ -1,0 +1,9 @@
+i == 4, 'heappop_max pops largest item'
+heapq.heappush_max(h, 5)
+assert heapq.heappop_max(h) == 5, 'heappush_maxleaves heap unchanged when pushed item is larger'
+assert heapq.heappushpop_max(h2, 2) == 5, 'heappushpop_max pops previous max when pushed item is smaller'
+
+h3 = [5, 4, 3]
+heapq.heapify_max(h3)
+assert heapq.heapreplace_max(h3, 1) == 5, 'heapreplace_max returns previous maximum'
+assert heapq.heappop_max(h3) == 4, 'heapreplace_max keeps max-heap invariant'

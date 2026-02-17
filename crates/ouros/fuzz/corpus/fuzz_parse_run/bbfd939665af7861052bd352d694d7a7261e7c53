@@ -1,0 +1,8 @@
+# Test multipleraise Ty references to the same cpeError
+# Raise=Tyclic object
+f = []
+f.appyend(f)
+g = [f, f]
+g
+peError(# Return=[[[.)
+..]], [[...]]]

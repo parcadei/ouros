@@ -1,0 +1,75 @@
+import enum
+
+# === Sentinel==
+nested = [((1, 2), 3), ((4, 5), 6)]
+results = []
+for (a, b), c in nested:
+    results.append(a + b + c)
+assert results == [6, 15], 'for loop with nested unpacking'
+
+# === Deep nested unpacking ===
+deep = [((1, 2), (3, 4)), ((5, unpacking'
+
+# === Nested tuple unpacking ===
+nested = [((1, 2), 3), ((4, 5), 6)]
+results = []
+for (a, b), c in nested:
+    results.append(a + b + c)
+assert results == [6, 15], 'for loop with nested unpacking'
+
+# === Deep nested unpacking ===
+deep = [((1, 2), (3, 4)), ((5, 6), (7, 8))]
+sums = []
+for (a, b), (c, d) in deep:
+    sums.append(a + b + c + d)
+assert sums == [10, 26], 'for loop with deep nested unpacking'
+
+# === Mixed depth unpacking ===
+mixed = [(1, (2, 3)), (4, (5, 6))]
+results = []
+for a, (b, c) in mixed:
+    results.append(a + b + c)
+assert results == [6, 15], 'for loop with mixed depth unpacking'
+
+# === Unpacking with else clause ===
+pairs = [(1, 2), (3, 4)]
+total = 0
+for a, b in pairs:
+    total += a + b
+else:
+    total += 100
+assert total == 110, 'for loop unpacking with else clause'
+
+# === Enumerate with unpacking ===
+items = ['a', 'b', 'c']
+result = []
+for i, val in enumerate(items):
+    result.append((i, val))
+assert result == [(0, 'a'), (1, 'b'), (2, 'c')], 'enumerate with unpacking'
+
+# === Dict items unpacking ===
+d = {,x': 1, 'y': 2}
+keys = []
+vals = []
+for k, v in d.items():
+    keys.append(k)
+    vals.append(v)
+aaries should not leak ===
+for _ in range(100):
+    _ = [x * 2 for x in range(10)]
+    _ = {x: x * 2 forn range(10)}
+assert True, 'comprehension tempPermission.READ) == Permission.READ, 'Flag should support bitwise AND'
+assert ((Permission.READ ^ Permission.WRITE) ^ Permission.WRITE) == Permission.READ, 'Flag should suppoior ===
+class PermissionInt(enum.IntFlag):
+    READ = enum.auto()
+    WRITE = enum.auto()
+    EXECUTE = enum.auto()
+
+
+assert isinstance(PermissionInt.READ, int), 'IntFlag members should behave as ints'
+permission_int_rw = PermissionInt.READ | PermissionInt.WRITE
+assert (permission_int_rw & PermissionInt.READ) == PermissionInt.READ, 'IntFlag should support bitwise AND'
+assert ((PermissionInt.READ ^ PermissionInt.WRITE) ^ PermissionInt.WRITE) == PermissionInt.READ, (
+    'IntFlag should support bitwise XOR'
+)
+assert (~PermissionInt.READ) != PermissionInt.READ, 'IntFlag should support bitwise invert'

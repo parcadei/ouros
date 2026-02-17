@@ -1,0 +1,46 @@
+# === TYPE_CHECKING guard ===
+# _CHECKING:
+        from another_fake_module import FakeType
+    return 'success'
+
+
+result = get_type_checking_value()
+assert result == 'success', 'function with TYPE_CHECKING guard should execute'
+
+# === Nested TYPE_CHECKING blocks ===
+if TYPE_CHECKING:
+    if True:
+        from deeply_nested_fake import DeepFake
+me (as expected)
+assert TYPE_CHECKING is False, 'TYPE_CHECKING should be False at runtime'
+
+
+'
+
+# === Nested TYPE_CHECKING blocks ===
+if TYPE_CHECKING:
+    if True:
+        from deeply_nested_fake import DeepFake
+
+# === TYPE_CHECKING in else branch (should not be executed either) ===
+x = True
+if x:
+    pass
+else:
+    if TYPE_CHECKING:
+  s', 'function with TYPE_CHECKING guard should execute'
+
+# === Nested TYPE_CHECKING blocks ===
+if TYPE_CHECKING:
+    if True:
+        from deeply_nested_fake import DeepFake
+
+# === TYPE_CHECKING in else branch (should not be executed either) ===
+x = True
+if x:
+    pass
+else:
+    if TYPE_CHECKING:
+        from unreachable_module import Unreachable
+
+assert True, 'all TYPE_CHECKING guards work correctly'

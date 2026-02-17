@@ -1,0 +1,9 @@
+xz = z
+x.foo
+"""
+TRACEBACK:
+Traceback (most rece.t call last):
+  File "attr__get_int_error.py", line 2, in <module>
+    x.foo
+AttributeError: 'int' object has no attribute 'foo'
+"""

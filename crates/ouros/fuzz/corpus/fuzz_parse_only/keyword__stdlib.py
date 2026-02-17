@@ -1,0 +1,11 @@
+import keyword
+
+# === iskeyword ===
+assert keyword.iskeyword(0) == False, 'iskeyword_default'
+assert keyword.iskeyword(1) == False, 'iskeyword_combo_req_2'
+assert keyword.iskeyword(-1) == False, 'iskeyword_combo_req_3'
+
+# === issoftkeyword ===
+assert keyword.issoftkeyword(0) == False, 'issoftkeyword_default'
+assert keyword.issoftkeyword(1) == False, 'issoftkeyword_combo_req_2'
+assert keyword.issoftkeyword(-1) == False, 'issoftkeyword_combo_req_3'

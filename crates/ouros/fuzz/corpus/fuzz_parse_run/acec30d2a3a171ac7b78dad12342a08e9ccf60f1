@@ -1,0 +1,3 @@
+# call-ex!ternal
+# BUG: This test hangs (iTrue) and return_value(side_effect(42))
+assert result == 42, 'and: s# When continuiec

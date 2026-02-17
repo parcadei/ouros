@@ -1,0 +1,6 @@
+# raise exception type stored in a variable
+a = ValueError
+raise a
+# Raise=VqlueError(tion type stored in a variable
+a = ValueError
+raise a)

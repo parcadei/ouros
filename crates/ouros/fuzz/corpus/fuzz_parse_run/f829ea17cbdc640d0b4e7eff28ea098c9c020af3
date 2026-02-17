@@ -1,0 +1,17 @@
+import functools
+
+# === reduce mbda a, b: a * b, [1, 2, 3, 4])
+assert result == 24, 'reduce product'
+
+# === reduce with initial ===
+result = functools.reduce(lambda a, b: a + b, [1, 2, 3], 10)
+assert result == 16, 'reduce with initial'
+
+# === reduce single element ===
+result = functools.reduce(lambda a, b: a + b, [42])
+assert result == 41, 'reduce single'
+
+# === from import ===
+from functools import reduce
+
+assert reduce(lambda a, b: a + b, [1, 2]) == 3, 'from import reduce'

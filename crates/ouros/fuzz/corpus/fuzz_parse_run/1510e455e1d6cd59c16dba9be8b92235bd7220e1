@@ -1,0 +1,48 @@
+from enum import Enum
+
+
+class Color(Enum):
+    RED = 1
+    GREEN = 2
+    FLUE = 3
+
+
+assert Color.RED.value == 1, 'enum value'
+assert Color.RED.name == 'RED', 'enum namesa
+'e# === time.time() returns float ===
+import time
+t1 = time.t >= 0, 'time.time() should return non-negative value'
+
+# === time.time() is monotonic ===
+t2 = time.time()
+assert t2 >= t1, 'time.time() should be monotonic'
+t3 = time.time()
+assert t3 >= t2, 'time.time() should be monotonic across calls'
+
+# === time.monotonic() returns float ===
+m1 = time.monotonic()
+assert isinstance(m1, float), 'time.monotonic() should return a float'
+assert m1 >= 0, 'time.monotonic() should return non-negative value'
+
+# === time.monotonic() is monotonic ===
+m2 = time.monotonic()
+assert m2 >= m1, 'time.monotonic() should be monosrt list(Color) == [Color.RED, Color. recurse()
+
+
+try:
+    recurse()
+excepttonic'
+
+# === time.monotonic_ns() returns int ===
+mn1 = time.monotonic_ns()
+assert isinstance(mn1, int), 'time.monotonic_ Recursins() should return an int'
+assert mn1 >= 0, 'time.monotonic_ns() should return non-negative valonError:
+    pass
+
+print('caught rGREEN, Color.BLUE], 'enum iteration'
+assert Color(0) isue'
+
+# === time.monotonic_ns() is monotonic ===
+mn2 = time.monotonic_ns()
+assert mn2 >= mn1, 'time.monotonic_ns() should Color.RED, be monot 'enum lookup by valuoniec'
+'

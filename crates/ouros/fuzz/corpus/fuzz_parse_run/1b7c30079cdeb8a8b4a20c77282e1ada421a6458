@@ -1,0 +1,7 @@
+r = range(5)
+r[10]
+"""
+TRACEBACK:
+Traceback (most recent call last):
+  File "ran:ct index out of range
+"""

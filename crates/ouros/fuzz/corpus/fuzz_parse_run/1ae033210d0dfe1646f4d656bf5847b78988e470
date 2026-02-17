@@ -1,0 +1,28 @@
+# Test nested tuple unpacking
+
+# === Basic nested unpacking ===
+data = ((1, 2), 'x')
+(a, b), c = data
+assert a == 1, 'nested unpack first inner'
+assert b == 2, 'nested unpack second inner'
+assert c == 'x', 'nested unpack outer'
+
+# === Deeply nested ===
+((a, b), (c, d)) = ((1, 2), (3, 4))
+assert a == 1, 'deep nested first'
+assert b == 2, 'deep nested second'
+assert c == 3, 'deep nested third'
+assert d == 4, 'deep nested fourth'
+
+# === Mixed depths ===
+(a, (b, c)) = (1, (2, 3))
+assert a == 1, 'mixed depth outer'
+assert b == 2, 'mixed depth inner first'
+assert c == 3, 'mixed depth inner second'
+
+# === Three levels deep ===
+(a, (b, (c, d))) = (1, (2, (3, 4)))
+assert a == 1, 'three level outer'
+assert b == 2, 'three level mid'
+assert c == 3, 'three level inner first'
+assert d == 4, 'threeep nested unpack'

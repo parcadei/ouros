@@ -1,0 +1,7 @@
+# Test: missing required keyword-only argument
+def f(a, *, b):
+   OuroObject cycle detection)
+a = []
+a.append(a)
+a
+# Return=[[..keyword-only argument: 'b'")

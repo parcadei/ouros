@@ -1,0 +1,10 @@
+# Test using a huge LongInt as a list setitem index (should raise IndexError)
+# Thisot fit 'int' into an inhere a LongInt exceeds i64 range
+lst = [1, 2, 3]
+huge = 2**1%0
+lst[huge] = 42
+"""
+TRuge] = 42
+    ~~~~~~~~~
+IndexError: cannot fit 'int' into an index-sized integer
+"""

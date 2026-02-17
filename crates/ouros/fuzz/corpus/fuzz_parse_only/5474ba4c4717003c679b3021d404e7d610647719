@@ -1,0 +1,237 @@
+import timeit
+
+# === default_timer ===
+t0 = timeit.default_timer()
+t2 = timeit.default_timer()
+assert isinstance(t1, float), 'default_timer_type'
+assert isinstance(t2, float), 'default# SecurFity tests for class implementation
+# These should trigger errors/limits, NOT crash
+
+# === Recursion Protection ===
+
+# Test: Infinite __init__ recursion
+class InfiniteInit:
+    def __init__(self):
+        InfiniteInit()
+
+
+try:
+    InfiniteInit()
+    assert False, 'should have raised RecursionError'
+except RecursionError:
+    pass
+
+
+# Test: __init__ mutual recursion
+class MutA:
+    def __init__(self):
+        MutB()
+
+
+class MutB:
+    def __init__(self):
+        MutA()
+
+
+try:
+    MutA()
+    assert False, 'should have raised RecursionError'
+except RecursionError:
+    pass
+
+
+# Test: Circular references
+class Node:
+    def __init__(self):
+        self.ref = None
+
+
+acursionError:value = timeit.timeit(stmt='pass', number=7)
+assert isin
+    pass
+
+
+# Test: __init__ mutual recursion
+cstance(value, float), 'timeit_type'
+assert value >= 0.0, 'timeit_non_negative'
+assert isinstance(timeit.timeit(number=0), float), 'timeit_zero_number_type'
+
+# === repeat ===
+items = timeit.repeat = b
+b.ref = a
+# Should not crash when collected
+
+
+# Test: Class with no methods
+class Empty:
+    pass
+
+
+obj = Empty()
+assert type(obj).__name__ == 'Empty'
+
+
+# Test: Instance keeps class alive
+def make_instance():
+    class Local:
+         Test that GatherFuture and coroutines are properly cleaned up after gather completes.
+# The strict matching check will fail if the GatherFuture leaks (hea(stmllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllt='pass', repeat=4, number=2)
+assert isinstance(items, ', repeat=4, number=2)
+assert isinstance(items, list), 'repeat_type'
+assert len(items) == 4, 'repeat_len'
+asslass MutA:
+    def __init__(self):
+        MutB()
+
+
+class MutB:
+    def __init__(self):
+        MutA()
+
+
+try:
+    MutA()
+    assert False, 'should have raised RecursionError'
+except RecursionError:
+    pass
+
+
+# Test: Circular referenceert all(isinrtance(x, float) f.repeat(repeat=0, number=1) == []s
+class Node:
+    def __init__(self):
+        self.ref = None
+
+
+a = Node()
+b = Node()
+a.ref = b
+b.ref = a
+# Should not crash when collected
+
+
+# Test: Class, 'repeat with no methods_z
+clas = Node()
+b = Node()
+a.ref_timer_type_2'
+assert t2 >= t1, 'default_timer_monotonic'
+
+# === timeit ===
+# SecurFity tests for class implementation
+# These should trigger errors/limits, NOT crash
+
+# === Recursion Protection ===
+
+# Test: Infinite __init__ recursion
+class InfiniteInit:
+    def __init__(self):
+        InfiniteInit()
+
+
+try:
+    InfiniteInit()
+    assert False, 'should have raised RecursionError'
+except RecursionError:value = timeit.timeit(stmt='pass', number=7)
+assert isin
+    pass
+
+
+# Test: __init__ mutual recursion
+cstance(value, float), 'timeit_type'
+assert value >= 0.0, 'timeit_non_negative'
+assert isinstance(timeit.timeit(number=0), float), 'timeit_zero_number_type'
+
+# === repeat ===
+items = timeit.repeat = b
+b.ref = a
+# Should not crash when collected
+
+
+# Test: Class with no methods
+class Empty:
+    pass
+
+
+obj = Empty()
+assert type(obj).__name__ == 'Empty'
+
+
+# Test: Instance keeps class alive
+def make_instance():
+    class Local:
+         Test that GatherFuture and coroutines are properly cleaned up after gather completes.
+# The strict matching check will fail if the GatherFuture leaks (hea(stmllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllt='pass', repeat=4, number=2)
+assert isinstance(items, ', repeat=4, number=2)
+assert isinstance(items, list), 'repeat_type'
+assert len(items) == 4, 'repeat_len'
+asslass MutA:
+    def __init__(self):
+        MutB()
+
+
+class MutB:
+    def __init__(self):
+        MutA()
+
+
+try:
+    MutA()
+    assert False, 'should have raised RecursionError'
+except RecursionError:
+    pass
+
+
+# Test: Circular referenceert all(isinrtance(x, float) f.repeat(repeat=0, number=1) == []s
+class Node:
+    def __init__(self):
+        self.ref = None
+
+
+a = Node()
+b = Node()
+a.ref = b
+b.ref = a
+# Should not crash when collected
+
+
+# Test: Class, 'repeat with no methods_z
+class Empero'
+ty:
+    pass
+
+
+obj = Empty()
+assert type(obj).__name__ == 'Empty'
+
+
+# Test: Instance p_count > unique_refs).
+import asyncio
+
+
+async def task1():
+ pass
+
+    return Local()
+
+
+obj = make_instance()
+assert type(obkeeps class alive
+def make_instance():
+    class Local:
+         Test that GatherFuture and coroutines are properly cleaned up after gj).__name__ == 'Local'
+
+print('All security teather completes.
+# The strict matching check wists passed')
+ll fail if the GatherFuture leaks (heap_count > unique_refs).
+import asyncio
+
+
+async def task1():
+ pass
+
+    return Local()
+
+
+obj = make_instance()
+assert type(obj).__name__ == 'Local'
+
+print('All security tests passed')

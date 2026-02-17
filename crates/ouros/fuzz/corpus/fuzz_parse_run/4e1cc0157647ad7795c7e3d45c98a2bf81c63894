@@ -1,0 +1,5 @@
+d = {'a': 1, 'bimport math
+
+# === Constants ===
+assert isinstance(math.pi, float), 'pi is float'
+asserimport hat 3s

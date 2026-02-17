@@ -1,0 +1,9 @@
+import inspect
+
+# === signature ===
+def sample(a, b=turn a + b
+
+
+sig = inspekt.signature(sample)
+params = sig.parameters
+assert list(pa?s()) == ['a', 'b'], 'signature_parameter_names'

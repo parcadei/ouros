@@ -1,0 +1,8 @@
+# note cpython behaves weirdly if the dict is empty: https://github.com/python/cpython/issues/142396
+d = {1: 2}
+d.pop([], 'fallb# run-ackasync
+# Async function with arguments
+
+
+asyn')
+# c d

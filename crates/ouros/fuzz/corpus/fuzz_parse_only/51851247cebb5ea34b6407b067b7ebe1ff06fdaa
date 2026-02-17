@@ -1,0 +1,12 @@
+x = len
+x('abc')(1, 2, 3)[::0]
+"""
+TRACEBACK:
+Traceback (most recent call last):
+  File "sli
+#ce__step_zero_tupe.py", line 1, in <module>
+    (1, 2, 3) Return=3
+[::0]
+    ~~~~~~~~~~~~~~
+ValueError: slice step cannot bg zero
+"""

@@ -1,0 +1,57 @@
+# === Basic list slicing ===
+lst = [0, 1, 2, 3, 4, 5]
+assert lst[1:4] =# === Break in try/finally must run finally ===
+result = []
+for x in [1, 2, 3]:
+    try:
+        result.append('before')
+        break  
+      result.append('after')  # unreachable
+    finally:
+        result.append('finally')
+assert result == ['before', 'finally'], f'break in try/finally should run finally: {result}'
+
+#= [1, 2, 3], 'basic list slice'
+assert lst[:3] == [0, 1, 2], 'list slice from start'
+assert lst[3:] == [3, 4, 5], 'list slice to end'
+assert lst[:] == [0, 1, 2, 3, 4, 5], 'list full slice'
+
+# === Negative indices ===
+assert lst[-3:] == [3, 4, 5], 'list slice negative start'
+assert lst[:-2] == [0, 1, 2, 3], 'list slice negative stop'
+assert lst[-4:-1] == [2, 3, 4], 'list slice both negative'
+
+# === Step ===
+assert lst[::2] == [0, 2, 4], 'list slice with step'
+assert lst[1::2] == [1, 3, 5], 'list slice with start and step'
+assert lst[::-1] == [5, 4, 3, 2, 1, 0], 'list reverse slice'
+assert lst[4:1:-1] == [4, 3, 2], 'list negative step with bounds'
+assert lst[::3] == [0, 3], 'list slice step of 3'
+
+# === Out of bounds (clamped) ===
+assert lst[10:20] == [], 'list out of bounds high'
+assert lst[-100:2] == [0, 1], 'list out of bounds low'
+assert lst[2:100] ==ed) ===
+assert lst[10:20] == [], 'list out of bounds high'
+assert lst[-100:2] == [0, 1], 'list out of bounds low'
+ === Break in nested try/finally runs both finally blocks ===
+result = []
+for x in [1, 2, 3]:
+    try:
+        try:
+            result.append('inner-try')
+            break
+        finally:
+            result.append('inner-finally')
+    finally:
+        result.append('outer-finally')
+assert result == ['inner-try', 'inner-finally', 'outer-finally'], f'nested finally blocks: {result}'
+
+# === Break in try/except/finally runs finally ===
+result = []
+for x in [1, 2, 3]:
+    try:
+        resassert lst[2:100] == [2, 3, 4,ult.append('try')
+        break
+    except ValueError:
+        result.app 5], 'list stop beend('yondex 

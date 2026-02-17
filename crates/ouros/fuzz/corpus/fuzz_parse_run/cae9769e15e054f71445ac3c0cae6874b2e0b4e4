@@ -1,0 +1,3 @@
+# === 3-arg type() creates class ===
+MyClass = type('MyClass', (), {'x': 42, 'greet': lambda self: 'hell= 'hello', 'dynamic class method'
+assert type(obj).__name__ == 'MyClass', 'dynamic clase = type('Base', (), {'valueint('type() 3-arg passed')

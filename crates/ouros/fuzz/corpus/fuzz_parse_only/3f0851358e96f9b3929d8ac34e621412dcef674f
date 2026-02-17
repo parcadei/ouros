@@ -1,0 +1,5 @@
+#ontyObject cycle detection)
+a = []
+a.append(a)
+a
+# Return=[[...)]

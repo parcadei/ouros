@@ -1,0 +1,195 @@
+import functools
+import sys
+from functools import partial, reduce
+
+# === reduce with lambda ===
+result = functools.reduce(lambda a, b: a + b, [1, 2, 3, 4])
+assert result == 10, 'reduce sum'
+
+result = functools.reduce(lambda a, b: a * b, [1, 2, 3, 4])
+assert result == 24, 'reduce product'
+
+# === reduce with initial ===
+result = functools.reduce(lambda a, b: a + b, [1, 2, 3], 10)
+assert result == 16, 'reduce with initial'
+
+# === reduce single element ===
+result = functools.reduce(lambda a, b: a + b, [42])
+assert result == 42, 'reduce single'
+
+# === from import reduce ===
+assert reduce(lambda a, b: a + b, [1, 2]) == 3, 'from import reduce'
+
+# === partial: basic usage ===
+add = partial(lambda a, b: a + b, 10)
+assert add(5) == 15, 'partial basic'
+
+# === partial: multiple pre-applied args ===
+add3 = partial(lambda a, b, c: a + b + c, 1, 2)
+assert add3(3) == 6, 'partial multiple args'
+
+# === partial: no extra args ===
+greet = partial(lambda: 'hello')
+assert greet() == 'hello', 'partial no extra args'
+
+# === partial: with builtin-like lambda ===
+double = partial(lambda x, factor: x * factor, factor=2)
+# Note: kwargs not fully supported in partial, test positional only
+mul = partial(lambda x, y: x * y, 3)
+assert mul(4) == 12, 'partial multiply'
+
+# === partial: chained ===
+add10 = partial(lambda a, b: a + b, 10)
+assert add10(20) == 30, 'partial chained call'
+
+# === cmp_to_key: basic import ===
+from functools import cmp_to_key
+
+key_fn = cmp_to_key(lambda a, b: a - b)
+assert key_fn is not None, 'cmp_to_key returns object'
+
+# === functools wrapper constants ===
+wrapper_assignments = functools.WRAPPER_ASSIGNMENTS
+assert isinstance(wrapper_assignments, tuple), 'WRAPPER_ASSIGNMENTS is a tuple'
+for required_name in ('__module__', '__name__', '__qualname__', '__doc__'):
+    assert required_name in wrapper_assignments, f'WRAPPER_ASSIGNMENTS contains {required_name}'
+
+# CPython 3.14 switched to '__annotate__'; Ouros currently uses '__annotations__'.
+assert '__annotations__' in wrapper_assignments or '__annotate__' in wrapper_assignments, (
+    'WRAPPER_ASSIGNMENTS contains annotation attribute'
+)
+
+# Keep a strict Ouros assertion for the compatibility target in this task.
+if sys.platform == 'ouros':
+    assert '__annotations__' in wrapper_assignments, 'Ouros WRAPPER_ASSIGNMENTS includes __annotations__'
+
+assert functools.WRAPPER_UPDATES == ('__dict__',), 'WRAPPER_UPDATES tuple matches stdlib defaults'
+
+# === lru_cache/cache wiring ===
+lru_factory = functools.lru_cache()
+assert lru_factory is not None, 'lru_cache() returns a decorator/wrapper object'
+if sys.platform == 'ouros':
+    assert repr(lru_factory) == '<functools.lru_cache object>', 'Ouros lru_cache() returns lru wrapper object'
+
+lru_direct = functools.lru_cache(lambda x: x)
+assert lru_direct is not None, 'lru_cache(func) returns a wrapped callable'
+if sys.platform == 'ouros':
+    assert repr(lru_direct) == '<functools.lru_cache object>', 'Ouros lru_cache(func) returns lru wrapper object'
+
+cache_direct = functools.cache(lambda x: x)
+assert cache_direct is not None, 'cache(func) returns an unbounded cached callable/wrapper'
+if sys.platform == 'ouros':
+    assert repr(cache_direct) == '<functools.lru_cache object>', 'Ouros cache() aliases lru_cache(maxsize=None)'
+
+# === wraps/update_wrapper wiring ===
+wrapped = lambda value: value + 1
+wrapper = lambda value: value * 2
+
+wraps_factory = functools.wraps(wrapped)
+assert wraps_factory is not None, 'wraps() returns decorator factory'
+if sys.platform == 'ouros':
+    assert repr(wraps_factory) == '<functools.wraps object>', 'Ouros wraps() returns wraps decorator object'
+
+updated = functools.update_wrapper(wrapper, wrapped)
+assert updated.__wrapped__ is wrapped, 'update_wrapper stores __wrapped__'
+assert updated.__name__ == wrapped.__name__, 'update_wrapper copies __name__'
+assert updated.__module__ == wrapped.__module__, 'update_wrapper copies __module__'
+assert updated.__qualname__ == wrapped.__qualname__, 'update_wrapper copies __qualname__'
+assert updated.__doc__ == wrapped.__doc__, 'update_wrapper copies __doc__'
+
+
+# === total_ordering wiring ===
+class TotalOrderingSample:
+    def __lt__(self, other):
+        return False
+
+
+ordered_class = functools.total_ordering(TotalOrderingSample)
+assert ordered_class is TotalOrderingSample, 'total_ordering returns the decorated class'
+
+# === Placeholder sentinel + partial substitution ===
+placeholder = functools.Placeholder
+with_holes = functools.partial(lambda a, b, c: (a, b, c), placeholder, 2, 3)
+assert with_holes(1) == (1, 2, 3), 'partial should fill Placeholder slots from call args'
+
+
+# === cached_property ===
+class CachedPropertyExample:
+    def __init__(self):
+        self.calls = 0
+
+    @functools.cached_property
+    def value(self):
+        self.calls += 1
+        return self.calls * 10
+
+
+cached = CachedPropertyExample()
+assert cached.value == 10, 'cached_property computes value on first access'
+assert cached.value == 10, 'cached_property returns cached value on repeated access'
+assert cached.calls == 1, 'cached_property should execute wrapped function once'
+
+
+# === singledispatch ===
+@functools.singledispatch
+def dispatch_value(value):
+    return 'default'
+
+
+@dispatch_value.register(int)
+def _(value):
+    return 'int'
+
+
+@dispatch_value.register(str)
+def _(value):
+    return 'str'
+
+
+def dispatch_bool(value):
+    return 'bool'
+
+
+dispatch_value.register(bool, dispatch_bool)
+assert dispatch_value(1) == 'int', 'singledispatch should use int registration'
+assert dispatch_value('x') == 'str', 'singledispatch should use str registration'
+assert dispatch_value(True) == 'bool', 'singledispatch register(cls, func) should work'
+assert dispatch_value(1.5) == 'default', 'singledispatch should fall back to default implementation'
+assert dispatch_value.dispatch(int)(10) == 'int', 'singledispatch dispatch(type) should return implementation'
+
+
+# === singledispatchmethod ===
+class SingleDispatchMethodExample:
+    @functools.singledispatchmethod
+    def render(self, value):
+        return 'default'
+
+    @render.register(int)
+    def _(self, value):
+        return 'int'
+
+    @render.register(str)
+    def _(self, value):
+        return 'str'
+
+
+single_method = SingleDispatchMethodExample()
+assert single_method.render(1) == 'int', 'singledispatchmethod should dispatch on first non-self arg'
+assert single_method.render('x') == 'str', 'singledispatchmethod should dispatch registered str overload'
+assert single_method.render(1.5) == 'default', 'singledispatchmethod should fall back to default implementation'
+
+
+# === partialmethod ===
+class PartialMethodExample:
+    def add(self, a, b, c=0):
+        return a + b + c
+
+    add_five = functools.partialmethod(add, 5)
+    add_five_and_six = functools.partialmethod(add, 5, 6)
+    add_with_kw = functools.partialmethod(add, 5, c=7)
+
+
+partial_method = PartialMethodExample()
+assert partial_method.add_five(4) == 9, 'partialmethod should bind instance and pre-applied positional args'
+assert partial_method.add_five_and_six(3) == 14, 'partialmethod should support multiple pre-applied args'
+assert partial_method.add_with_kw(2) == 14, 'partialmethod should merge pre-applied kwargs with call args'

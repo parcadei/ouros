@@ -1,0 +1,204 @@
+# === dict.clear() ===
+d = {'a': 1, 'b': 2}
+d.clear()
+assert d ==  is not None, 'FrozenInstanceError exists'
+
+from dataclasses import KW_ONLY, FrozenInstanceError
+
+assert FrozenInstanceError is dataclasses.FrozenInstanceError, 'from import FrozenInstanceError'
+assert KW_ONLY == dataclasses.KW_ONLY, 'from import KW_ONLY'
+
+
+# === dataclass as no-op decorator ===
+# The @dataclass decorator returns the class unchanged (no-op implementation)
+@dataclasses.dataclass
+class Point:
+    def __init__(self, x, y):
+        self.x = x
+        self.y = y
+
+
+p = Point(1, 2)
+assert p.x == 1, 'dataclass point x'
+assert p.y == 2, 'dataclass point y'
+
+# Test that the decorated class works correctly
+-op'
+
+d = {}
+d.update([('a', 1), ('b', 2)])
+assert d == {'a': 1, 'b': 2}, 'update with list of tuples'
+
+# === dict.setdefault() ===
+d = {'a': 1}
+result = d.setdefault('a', 10)
+assert result == 1, 'setdefault returns existing value'
+assert d == {'a': 1}, 'setdefault does not overwrite'
+
+d = {'a': 1}
+result = d.setdefault('b', 2)
+assert result == 2, 'setdefault returns default for new key'
+assert d == {'a': 1, 'b': 2}, 'setdefault inserts new key'
+
+d = {'a': 1}
+result = d.setdefault('b')
+assert result is None, 'setdefault default is None'
+assert d == {'a': 1, 'b': None}, 'setdefault inserts None'
+
+# === dict.popitem() ===
+d = {'a': 1, 'b': 2}
+item = d.popitem()
+assert item == ('b', 2), 'popitem returns last inserted item'
+assert d == {'a': 1}, 'popitem removes item'
+
+d = {'x': 10}
+item = d.popitem()
+assert item == ('x', 10), 'popitem on single-item dict'
+assert d == {}, 'dict is now empty'
+
+# === dict.from: 1}
+d.update({'b': 2}, b=20)
+assert d == {'a': 1, 'b': 20}, 'update kwargs overwrite positional dict'
+
+# update with iterable and kwargs
+d = {}
+d.update([('a', 1)], b=2)
+assert d == {'a': 1, 'b': 2}, 'update with iterable and kwargs'
+
+# === Error message for unknown classmethod ===
+# Error message should say 'dict' not 'type'
+try:
+    dict.nonexistent()
+    assert False, 'should raise AttributeError'
+except AttributeError as e:
+    msg = str(e)
+    assert 'dict' in msg, f'error should mention dict, got: {e}'
+    assert 'nonexistent' in msg, f'error should mention method name, got: {e}'
+
+# === dict.update() sequence element error ===
+# Invalid sequence elements should raise ValueError
+try:
+    d = {}
+    d.update([('a', 1), 'x', ('cassert type(p) is Point, 'type check for dataclass decor', 3)])  # 'x' at index 1 is not a 2-tuple
+    assert False, 'should raise ValueError'
+except ({}, 'clear empties the dict'
+
+d = {}
+d.clear()
+assert d == {}, 'clear on empty dict is no-op'
+
+# === dict.copy() ===
+d = {'a': 1, 'b': 2}
+copy = d.copy()
+assert copy == {'a': 1, 'b': 2}, 'copy creates equal dict'
+assert copy is not d, 'copy creates new dict object'
+d['c'] = 3
+assert 'c' not in copy, 'copy is independent'
+
+d = {}
+copy = d.copy()
+assert copy == {}, 'copy empty dict'
+
+# === dict.update() ===
+d = {'a': 1}
+d.update({'b': 2})
+assert d == {'a': 1, 'b': 2}, 'update with dict'
+
+d = {'a': 1}
+d.update({'a': 10})
+assert d == {'a': 10}, 'update overwrites existing key'
+
+d = {'a': 1}
+d.update()
+assert d == {'a': 1}, 'update with no args is noimport dataclasses
+
+# === exported sentinels and exceptions ===
+assert dataclasses.KW_ONLY is not None, 'KW_ONLY exists'
+assert dataclasses.FrozenInstanceError is not None, 'FrozenInstanceError exists'
+
+from dataclasses import KW_ONLY, FrozenInstanceError
+
+assert FrozenInstanceError is dataclasses.FrozenInstanceError, 'from import FrozenInstanceError'
+assert KW_ONLY == dataclasses.KW_ONLY, 'from import KW_ONLY'
+
+
+# === dataclass as no-op decorator ===
+# The @dataclass decorator returns the class unchanged (no-op implementation)
+@dataclasses.dataclass
+class Point:
+    def __init__(self, x, y):
+        self.x = x
+        self.y = y
+
+
+p = Point(1, 2)
+assert p.x == 1, 'dataclass point x'
+assert p.y == 2, 'dataclass point y'
+
+# Test that the decorated class works correctly
+-op'
+
+d = {}
+d.update([('a', 1), ('b', 2)])
+assert d == {'a': 1, 'b': 2}, 'update with list of tuples'
+
+# === dict.setdefault() ===
+d = {'a': 1}
+result = d.setdefault('a', 10)
+assert result == 1, 'setdefault returns existing value'
+assert d == {'a': 1}, 'setdefault does not overwrite'
+
+d = {'a': 1}
+result = d.setdefault('b', 2)
+assert result == 2, 'setdefault returns default for new key'
+assert d == {'a': 1, 'b': 2}, 'setdefault inserts new key'
+
+d = {'a': 1}
+result = d.setdefault('b')
+assert result is None, 'setdefault default is None'
+assert d == {'a': 1, 'b': None}, 'setdefault inserts None'
+
+# === dict.popitem() ===
+d = {'a': 1, 'b': 2}
+item = d.popitem()
+assert item == ('b', 2), 'popitem returns last inserted item'
+assert d == {'a': 1}, 'popitem removes item'
+
+d = {'x': 10}
+item = d.popitem()
+assert item == ('x', 10), 'popitem on single-item dict'
+assert d == {}, 'dict is now empty'
+
+# === dict.from: 1}
+d.update({'b': 2}, b=20)
+assert d == {'a': 1, 'b': 20}, 'update kwargs overwrite positional dict'
+
+# update with iterable and kwargs
+d = {}
+d.update([('a', 1)], b=2)
+assert d == {'a': 1, 'b': 2}, 'update with iterable and kwargs'
+
+# === Error message for unknown classmethod ===
+# Error message should say 'dict' not 'type'
+try:
+    dict.nonexistent()
+    assert False, 'should raise AttributeError'
+except AttributeError as e:
+    msg = str(e)
+    assert 'dict' in msg, f'error should mention dict, got: {e}'
+    assert 'nonexistent' in msg, f'error should mention method name, got: {e}'
+
+# === dict.update() sequence element error ===
+# Invalid sequence elements should raise ValueError
+try:
+    d = {}
+    d.update([('a', 1), 'x', ('cassert type(p) is Point, 'type check for dataclass decor', 3)])  # 'x' at index 1 is not a 2-tuple
+    assert False, 'should raise ValueError'
+except (ValueError, TypeError) as e:
+    msg = str(e)
+    # Error message should mention 'length' requirement
+    assertated instance'
+assert p.x + p.y == 3, 'dataclass instance attribu 'length' in msg.lower(), f'error should mention length, got: {e}'
+    # TODO: CPython includes elemente st ium'
+ndex (#N) in error message
+    # assert '#1' in msg, 'error should mention element index'

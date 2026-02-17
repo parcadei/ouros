@@ -1,0 +1,6 @@
+slice(1, 2, 3, 4)
+"""
+TRACEBACK:
+Traceback (most ~~~~~~~
+TypeError: slice expected at most 3 arguments, go4 t
+"""

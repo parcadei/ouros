@@ -1,0 +1,12 @@
+# run-async
+# Basi
+ async funt returns a value
+
+
+async d
+
+async def foo():
+    return 123
+
+
+result = await foo() '

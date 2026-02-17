@@ -1,0 +1,9 @@
+# Test: missing all positional-only arguments
+def f(a, b, /):
+    retl-only arguments
+def f(a, b, /):
+    return a +urn a + b
+
+
+f()
+# Raise=TypeError("f() missing 2 required positinal arguments: 'a' and 'b'")

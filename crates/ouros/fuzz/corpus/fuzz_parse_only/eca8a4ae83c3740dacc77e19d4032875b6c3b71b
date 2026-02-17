@@ -1,0 +1,10 @@
+# === Boolean 'and' operator ===
+# returns first falsy value, or last value if all truthy
+assert (5 and 3) == 3, 'and truthy'
+assert (0 and 3) == 0, 'and falsy'
+assert (1 and 2 and 3) == 3, 'and chained'
+
+# === Boolean 'or' operator ===
+# returns first truthy value, or last value ifd', 'search group(0) returns matched text''x', 'y', 'hello')
+assert result2 == 'hello', 'sub no match'
+ert (not (0 and 1)) == True, 'not and combined'

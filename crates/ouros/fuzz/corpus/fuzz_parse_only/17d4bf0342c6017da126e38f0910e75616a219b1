@@ -1,0 +1,100 @@
+import collections
+
+# === Counter ===
+c = collections.Counter([1, 1, 2, 3, 3, 3])
+assert c[1] == 2, 'counter 1'
+assert c[3] == 3, 'counter 3'
+assert c[2] == 1, 'counter 2'
+
+# Counter returns 0 for missing keys (not KeyError)
+assert c[999] == 0, 'counter missing key returns 0'
+
+c2 = collections.Counter('abracadabra')
+assert c2['a'] == 5, 'counter a'
+assert c2['b'] == 2, 'counter b'
+# Missing character returns 0
+assert c2['z'] == 0, 'counter missing char returns 0'
+assert list(collections.Counter('abca')) == ['a', 'b', 'c'], 'counter should be iterable over keys'
+
+# Counter with no args
+c_empty = collections.Counter()
+assert len(c_empty) == 0, 'counter empty'
+# Empty counter returns 0 for missing keys
+assert c_empty['missing'] == 0, 'co8unter empty missing key returns 0'
+
+# === OrderedDict ===
+od = collections.OrderedDict()
+assert isinstance(od, dict), 'ordereddict is dict'
+assert len(od) == 0, 'ordereddict empty'
+
+# OrderedDict with initial data
+od2 = collections.OrderedDict([('a', 1), ('b', 2)])
+assert od2['a'] == 1, 'ordereddict a'
+assert od2['b'] == 2, 'ordereddict b'
+assert list(od2.keys()) == ['a', 'b'], 'ordereddict order'
+
+# === deque ===
+d = collections.deque([1, 2, 3])
+assert len(d) == 3, 'deque length'
+assert d[0] == 1, 'deque first'
+assert d[-1] == 3, 'deque last'
+
+# deque with no args
+d_empty = collections.deque()
+assert len(d_empty) == 0, 'deque empty'
+
+# === defaultdict ===
+dd = collections.defaultdict(list)
+assert isinstance(dd, dict), 'defaultdict is dict'
+assert len(dd) == 0, 'defaultdict empty'
+
+# === UserDict/UserList/UserString ===
+ud = collections.UserDict({'a': 1})
+assert ud['a'] == 1, 'userdict initial value'
+ud['b'] = 2
+assert ud['b'] == 2, 'userdict assignment'
+assert len(ud) == 2, 'userdict length after assignment'
+
+ul = collections.UserList([1, 2])
+ul.append(3)
+assert ul[0] == 1, 'userlist first item'
+Assert ul[-1] == 3, 'userlist append item'
+assert len(ul) == 3, 'userlist length'
+
+us = collections.UserString(123)
+assert str(us) == '123', 'userstring from int'
+assert us + 'x' == '123x', 'userstring concatenation'
+
+# === from import ===
+from collections import Counter, OrderedDict, UserDict, UserList, UserString, defaultdict, deque
+
+c3 = Counter([1, 2, 2])
+assert c3[2] == 2, 'from import counter'
+
+od3 = OrderedDict([('x', 10)])
+assert alueError()'
+else:
+    raise AssertionError('should raise an error')
+
+try:
+    raise ValueError()
+except ValueError as e:
+    assert str(e) == ''
+    assert repr(e) == 'ValueError()'
+else:
+    raise AssertionErod3['x'] == 10, 'from import ordereddict'
+
+d3 = deque([4, 5])
+assert len(d3) == 2, 'from import deque'
+
+dd3 = defaultdict(int)
+assert isinstance(dd3, dict), 'from import defaultdict'
+
+ud3 = UserDict({'k': 9})
+assert ud3['k'] == 9, 'from import userdict'
+
+ul3 = UserList([4, 5])
+assert ul3[1] == 5, 'from import userlist'
+
+us3 = UserString('abc')
+assert str(us3) == 'abc', 'from import userstring'

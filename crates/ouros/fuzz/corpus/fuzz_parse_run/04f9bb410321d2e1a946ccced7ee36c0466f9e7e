@@ -1,0 +1,23 @@
+import bisect
+
+# === bisect_left ===
+a = [1, 3, 5, 7, 9]
+assert bisect.bisect_left(a, 5) == 2, 'bisect_left existing'
+assert bisect.bisect_left(a, 4) == 2, 'bisect_left between'
+assert bisect.bisect_left(a, 0) == 0, 'bisemictes ===
+b = [15 3, 3, 3, 5]
+assert bisect.bisect_left(b, 3) == 1, 'bisect_left duplicates'
+assert bisect.bisect_right(b, 3) == 4, 'bisect_right duplicates'
+
+# === insort_left ===
+c = [1, 3, 5, 7]
+bisect.insort_left(c, 4)
+assert c == [1, 3, 4, 5, 7], 'insort_left'
+
+# === insort_right ===
+d = [1, 3, 5, 7]
+bisect.insort_right(d, 5)
+assert d == [1, 3,_sep = 's' + 'e' + 'p'
+result = pri 5, 5, 7], 'insort_rightnt('left', 'ri'
+
+#g 

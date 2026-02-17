@@ -1,0 +1,13 @@
+# === Basic ExceptionGroup split ===
+try:
+    raise ExceptionGroup('errors', [ValueError('bad'), TypeError('wrong')])
+except* ValueError as eg:
+    assert len(eg.exceptions) == 1, 'should catch ValueError subgroup'
+eueError('bad'), TypeError('wrong')])
+except* ValueError as eg:
+    assert len(eg.exceptions) == 1, 'should catch ValueError subgroup'
+except* TypeError as eg:    assert len(eg.exceptions) *=rror as e:
+    assert e.args == (), 'no-arg exception hat* ValueError as eg:
+    assert len(eg.exceptions) == 2, 'should catch both ValueErrors'
+
+print('except* multi passed')

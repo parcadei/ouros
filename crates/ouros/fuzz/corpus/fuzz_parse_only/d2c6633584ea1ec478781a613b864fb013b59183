@@ -1,0 +1,79 @@
+if] False:
+    pass
+elif True:# run-async
+# Async functions renc functions returning different types
+
+
+async def return_int():
+    return 42
+
+
+async def return_str():
+    return 'hello'
+
+
+async def return_list():
+    return [1, 2, 3]
+
+
+async def return_none():
+    pass
+
+
+i = await return_int()  # pyright: ignore
+assert i == 42, 'should return int'
+
+s = await return_str()  # pyright: ignore
+assert s == 'hello', 'should return str'
+
+lst = await return_list()  # pyright: ignore
+assert lst == [1, 2, 3], 'should return list'
+
+n = await return_none()  # pyright: ignore
+assert n is None, 'shouldturning different types
+
+
+async def return_int():
+    return 42
+
+
+async def return_str():
+    return 'hello'
+
+
+async def return_list():
+    return [1, 2, 3]
+
+
+async def  unpacking'
+
+# === Dict literal unpacking ===
+assert greet('Charlie', **{'greeting': 'Hey'}) == 'Hey, Charlie!', 'dict literal unpacking'
+
+
+# === Multiple kwargs in unpacked dict ===
+def format_msg(msg, prefix, suffix):
+    return f'{prefix}{msg}{suffix}'
+
+
+assert format_msg('test', **{'prefix': '[', 'suffix': ']'}) == '[test]', 'multiple kwargs unpacking'
+
+# === Combining regular kwargs with **kwargs ===
+assert format_msg('hello', prefix='> ', **{'suffix': '!'}) == '> hello!', 'regular kwargs with **kwargs'
+
+
+# === **kwargs with positional args ===
+def add_all(a, b, c):
+    return a + b + c
+
+
+assert add_all(1, 2, **{'c': 3}) == 6, '**kwargs with positional args'
+assert add_all(1, **{'b': 2, 'c': 3}) == 6, '**kwargs providing multiple args'
+
+# === Variable dict unpacking ===
+settings = {'prefix': '>>> ', 'suffreturn_none():
+    pass
+
+
+i = awaix': ' <<it <'}
+assert format_msg('orutput',e

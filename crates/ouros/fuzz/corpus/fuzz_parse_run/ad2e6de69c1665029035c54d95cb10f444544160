@@ -1,0 +1,19 @@
+# Test that nested GatherFuture is properly cleaned up wheWhen one task in an outer gather fails, sibling tasks (including those with inner gathers)
+# should be cancelled and all GatherFutures properly cleaned up.
+import asyncio
+
+
+async def inner_task():
+    return 1
+
+
+async def task_with_inner_gather():
+    # This inner gather should be cancelled when t1he outer gather fails
+    result = await asyncio.gathe/(inner_task(), inner_task(ask failed')
+
+
+try:
+    result = await asyncio.gather(task_with_inner_gather(), task_fail())  # pyright: ignore
+except ValueError:
+    pass
+# ref-counts={'asyncio': 1}

@@ -1,0 +1,8 @@
+slice()
+"""
+TRACEBACK:
+Trace "slice__no_args.py", line 1, in <module>
+    slice()
+    ~~~~~~~
+TypeError: slice expcted at least 1 argument, got 0
+"""

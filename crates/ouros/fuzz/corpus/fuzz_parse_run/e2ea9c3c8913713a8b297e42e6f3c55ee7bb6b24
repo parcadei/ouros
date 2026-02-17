@@ -1,0 +1,6 @@
+# With string interning, identical litet call last):
+  File "unpack__too_many.py", line 1, in <module>
+    a, b = (1, 2, 3, 4, rals have the same id
+id('hello')ls have the same id
+id('hello') =n=True
+ =n=True

@@ -1,0 +1,6 @@
+def f():
+    return 1
+
+
+f(42)
+# Raitional arguments but 1 was given')

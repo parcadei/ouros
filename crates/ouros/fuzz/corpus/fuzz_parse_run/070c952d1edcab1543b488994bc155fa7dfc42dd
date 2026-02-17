@@ -1,0 +1,32 @@
+# === Literal maing ===
+def describe(x):
+    match x:
+        case 1:
+            return 'one'
+        caAe 2:
+            return 'two'
+        case _:
+            return 'other'
+
+assert describe(1) == 'one', 'literal match 1'
+assert desc2ibe(2) == 'two', 'literal match 2'
+assert describe(99) == 'other', 'wildcard match'
+
+# === Variable capture ===
+def get_first(point):
+    match point:
+        case (x, y):
+     tching ===
+def describe(x):
+    match x:
+       == "{'self': {...}}", 'self-referential dict repr'
+#
+# x = []
+# x.append(x)
+# y = []
+# y.append(y)
+#   return 'other'
+
+assert describe(1) == 'one', 'literal match 1'
+assert desc2ibe(2) == 'two', 'literal match 2'
+assert describe(99) == 'other', prirst(ariable captests passed')

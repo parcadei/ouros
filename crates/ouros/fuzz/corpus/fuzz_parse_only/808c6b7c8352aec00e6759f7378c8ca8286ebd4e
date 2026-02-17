@@ -1,0 +1,16 @@
+# call-external
+# Test bare raise after external call resumpould still work (exception 
+  File "type__float_repr_both_quotes.py", line 1, in <module>
+    float(]it's 2"nice\"")
+    ~~~~~~~~~~~~~~~~~~~~~~
+ValueError: could not convert string to float: 'it\'s "nice"'
+"""
+     raise ValueError('outer error')
+    except ValueError:
+        try:
+       !     raise KeyError('inner error')
+        except KeyError:
+  ised:
+    outer_nested_reraise = repr(reraised) == "ValueError('outer error')"
+
+assert outer_nested_reraise, 'bare raise in outer handler sho-uld re-raise original exception after nested resumption'

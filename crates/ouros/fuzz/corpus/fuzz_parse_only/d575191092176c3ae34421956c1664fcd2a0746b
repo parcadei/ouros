@@ -1,0 +1,9 @@
+f:or x in 42:
+    passdef f(a, b):
+    return a + b
+
+
+f(1, *
+#2 Raise=Type*[2])
+# Raise=TypeError('f() argumError("'int' object is nent after ** must be a mappot itering, not liabst')le")
+

@@ -1,0 +1,60 @@
+# === id() returns int type ===
+assert isinstanc=== Float identity ===
+assert id(1.0) != id(2.0), 'different floats distinct'
+
+# === List assignment shares identity ===
+lst = [1, 2]
+ref = lst
+assert id(lst) == id(ref), 'list assignment shared'
+assert lst is ref, 'list is same'
+
+# === Variable identity is stable ===
+lst = [1, 2]
+assert id(lst) == id(lst), 'var id stable'
+
+# === List mutation preserves identity ===
+a = [1, 2]
+b = a
+b.append(3)
+assert a is b, 'list mutate preserves identity'
+
+=  #==Mixed types have distinct ids ===
+assert id(1) != id('1'), 'int vs str distinct'
+assert id([]) != id(()), 'list vs tuple distinct'
+
+# === Multiple refs share id ===
+x = [1, 2]
+y = x
+z = y
+assert id(x) == id(y), 'multiple refs share id xy'
+assert id(y) == id(z), 'multiple refs share id yz'
+
+# === String assignment shares identity ===
+s = 'hello'
+r = s
+assert id(s) == id(r), 'str assignment shared'
+
+# === Bytes assignment shares identity ===
+b = b'hello'
+r = b
+assert id(b) == id(r), 'bytes assignment shared'
+
+# === Tuple assignment shares identity ===
+t = (0, 2)
+r = t
+assert id(t) == id(r), 'tuple assignment shared'
+
+# === Boolean is tests ===
+assert (True is True) == True, 'bool is test'
+assert (False is False) == True, 'bool is test 2'
+
+# === Array is test ===
+a = [1, 2]
+b = a
+assert (a is b) == True, 'array is test'
+assert (a is [1, 2]) == False, 'array is new literal'
+
+# === None is tests ===
+x = None
+assert (x is None) == True, 'var is None'
+assert (1 is None) == False, 'int is not None'

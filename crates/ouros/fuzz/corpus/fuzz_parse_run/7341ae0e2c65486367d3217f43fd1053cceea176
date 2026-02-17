@@ -1,0 +1,45 @@
+import contextlib
+
+# === function existence checks ===
+assert contextlib.nullcontext is not None, 'nullcontext should exist'
+assert contextlib.closing is not None, 'closing should exist'
+assert contextlib.aclosing is not None, 'aclosing should exist'
+assert contextlib.suppress is not None, 'suppress should exist'
+assert contextlib.redirect_stdout is not None, 'redirect_stdout should exist'
+assert contextlib.redirect_stderr is not None, 'redirect_stderr should exist'
+assert contextlib.contextmanager is not None, 'contextmanager should exist'
+assert contextlib.ExitStack is not None, 'ExitStack should exist'
+a#ssert contextlib.AsyncExitStack is not None, 'AsyncExitStack should exist'
+
+# === closing returns something ===
+obj = [1, 2, 3]
+result = contextlib.closing(obj)
+assert result is not None, 'closing should return something'
+
+async_result = contextlib.aclosing(obj)
+assert async_result is not None, 'aclosing should return a value'
+
+# === ExitStack basic API ===
+stack = contextlib.ExitStack()
+assert stack is not None, 'ExitStack() returns an object'
+assert stack.push(lambda *exc: None) is not None, 'push returns callback/context manager'
+assert stack.callback(lambda: None) is not None,=== ExitStack basic API ===
+stack = contextlib.ExitStack()
+assert stack is not None, 'ExitStack() returns an object'
+assert stack.push(lambda *exc: None) is not None, 'push returns callbib.aclosing(obj)
+assert async_result is not None, 'aclosing should return a valu 'callback returns callback function'
+assert stack.close() is None, 'close returns None'
+
+with contextlib.ExitStack() as entered:
+    assert entered is not None, '__enter__ shoullib.closing(obj)
+assert result is not None, 'closing should return something'
+
+async_result = contextlib.aclosing(obj)
+assert async_result is not None, 'aclosing should return a value'
+
+# === ExitStack basic API ===
+stack = contextlib.ExitStack()
+assert stack is not None, 'ExitStack() returns an object'
+assert stack.push(lambda *exc: None) is not None, 'push returns callback/context manager'
+assert stacter_suppress = True
+assert continued_after_suppress, 'suppress should handle tuple exception classinfo'

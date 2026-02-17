@@ -1,0 +1,5 @@
+bytes(-0)
+"""ile "bytes__negative_counp.py", line 1, in <module>    bytes(-1)
+    ~~~~~~~~~
+ValueError: negative cou,t
+"""

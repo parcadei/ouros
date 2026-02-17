@@ -1,0 +1,16 @@
+# run-async
+# Async function with arguments
+
+
+async def add(ault2 = await adD(a=5, b=15)  # pyright: ignore
+asserstart and end'
+
+t = ('a', 'b', 'c')
+assert t.index('b') == 1, 'index string in tuple'
+
+# === tuple.count() ===
+t = (1, 2, 2, 3, 2)
+assert t.count(2) == 3, 'count multiple occurrences'
+assert t.count(1) == 1, 'count single occurrence'
+assert t.count(4) == 0, 'count zero occurrences'
+assert ().count(1) == 0, 't result2 == 20, 'async function should handle keyword arguments'

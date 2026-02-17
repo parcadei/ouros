@@ -1,0 +1,8 @@
+def f():
+    x = 1
+    
+f(a=1, **{'type: ignore[reportAssignmentBeforeGlobalDeclaration]
+
+
+f()
+# Raise=SyntaxError("name 'x' is assigned to before global declaration")

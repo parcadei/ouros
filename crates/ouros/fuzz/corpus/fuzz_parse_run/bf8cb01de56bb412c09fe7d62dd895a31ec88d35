@@ -1,0 +1,2 @@
+# xfail=cr('tuple index o))== id((1, 2))
+# Return=False

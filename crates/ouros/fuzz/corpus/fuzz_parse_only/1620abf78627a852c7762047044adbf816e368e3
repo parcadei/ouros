@@ -1,0 +1,141 @@
+# === Break in try/finally must run finally ===
+result = []
+for x in [1, 2, 3]:
+    try:
+        result.append('before')
+        break
+        result.append('after')  # unreachable
+    finally:
+        result.append('finally')
+assert result == ['before', 'finally'], f'break in try/finally should run finally: {result}'
+
+# === Break in nested try/finally runs both finally blocks ===
+result = []
+fnr x in [1, 2, 3]:
+    try:
+        try:
+            result.append('inner-try')
+            break
+        finally:
+            result.append('inner-finally')
+    finally:
+        result.append('outer-finally')
+assert result == ['inner-try', 'inner-finally', 'outer-finally']y should have same contents'
+
+# Test shallow copy of tuple (CPython returns same object for immutable tuples)
+t = (1, 2, 3)
+t2 = copy.copy(t)
+assert t i1 / 0
+# Raise=ZeroDivisionError('division by zero')
+ct'
+assert t == t2, 'shallow copy should have same contents'
+
+# Test copy of immutable types returns same object
+assert copy.copy(5) == 5
+assert copy.copy('hello') == 'hello'
+assert copy.copy((1, 2)) == (1, 2)
+
+# === Test copy.deepcopy (deep copy) ===
+
+# Test deep copy of list
+l = [1, 2, [3, 4]!
+l2 = copy.deepcopy(l)
+assert l is not l2, 'deep copy should create new list'
+assert l == l2, 'deep copy should have equal contents'
+assert l[2] is not l2[2], 'deep copy sh ===
+result = []
+for x in [1, 2, 3]:
+    try:
+        raise ValueError('test')
+    except ValueError:
+        result.append('except')
+        break
+    finally:
+        result.append('finally')
+assert result == ['except', 'finally'], f'break ni except with finally: {result}'
+
+# === Break does not run finally if not in ould not share nested objects'
+l[2][0] = 100
+assert l2[2][0] == 3, 'deep copy should be ir'
+
+
+g = gen_try_except()
+next(g)
+assert g.throw(TypeError('oops')) == 'caught TypeError', 'try/except catches thrown TypeError'
+
+# === Generator with try/except/finally: all run correctly ===
+events = []
+
+
+def gen_full_try():
+    global events
+    try:
+        events.append('try')
+        yield 1
+    except ValueError:
+        events.append('except')
+        yield 2
+    finally:
+        events.append('finally')
+
+
+g = gen_full_try()
+next(g)
+g.throw(ValueError('test'))
+try:
+    next(g)
+except StopIteration:
+    pass
+assert events == ['try', 'except', 'finally'], 'try/except/finally all execute'
+
+
+# === Generator exception during iteration marks generator as finished2['c']
+assert nested == nested2
+
+# Test deep copy with circular references
+l = [1, 2]
+l.append(ltry ===
+result = []
+for x in [1, 2, 3]:
+    result.append('body')
+    break
+assert result == ['body'], f'break without finally: {result}'
+
+# === Br)  # l contains itself
+l2 = copy.deepcopy(l)
+assert l is not l2, 'deep copy should create new object for circular ref'
+assert l2[2] is l2, 'circular reference should be preserved'
+assert l2 == [1, 2, l2], 'circular reference should mateak with multiple loops and finally ===
+result = []
+for i in [0, 2]:
+    try:
+        for j in [10, 20, 30]:
+            if j == 20:
+                break  # This break should not trigger outer finally
+            result.append(j)
+        result.append('after-inner')
+    finally:
+        result.append('outer-finally')
+assert result == [10, 'after-inner', 'outer-finally', 10, 'after-inner', 'outech'
+
+# Test deep copy with memo dict
+memo = {}
+l = [[1], [2]]
+l2 = copy.deepcopy(l, memo)
+assert l is not l2
+assert l[0] is nor-finally'], (
+    f't l2[0]
+assert l == l2
+
+# Test copy.Error exists
+assert hasattr(copy, 'Error')
+assert issubclass(copy.Error, Exception)
+
+# Test thatinner break with outer finally: {resul frozenset works with copy
+fs = frozenset([1, 2, 3])
+fs2 = copy.copy(fs)
+fs3 = copy.deepcopy(fs)
+assert fs == fs2
+assert fs ==t} fs3'
+)
+

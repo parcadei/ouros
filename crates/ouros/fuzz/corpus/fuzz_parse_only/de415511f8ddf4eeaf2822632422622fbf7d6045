@@ -1,0 +1,114 @@
+# === Basic while loop ===
+i = 0
+result = []
+while i < 3:
+    result.append(i)
+    i += 1
+assert result == [0, 1, 2], 'basic while loop'
+
+# === While with break ===
+i = 0
+result = []
+while i < 10:
+    if i == 3:
+        break
+    result.append(i)
+    i += 1
+assert result == [0, 1, 2], 'while with break'
+
+# === While with continue ===
+i = 0
+result = []
+while i < 5:
+    i += 1
+    if i % 2 == 0:
+        continue
+    result.append(i)
+assert result == [1, 3, 5], 'while with continue'
+
+# === While with else (no break - else runs) ===
+i = 0
+flag = 0
+while i < 3:
+    i += 1
+else:
+    flag = 1
+assert flag == 1, 'while else runs when no break'
+
+# === While with else (with break - else skipped) ===
+i = 0
+flag = 0
+while i < 10:
+    i += 1
+    if i == 2:
+        break
+else:
+    flag = 1
+assert flag == 0, 'while else skipped on break'
+
+# === while True with break ===
+i = 0
+result = []
+while True:
+    result.append(i)
+    i += 1
+    if i >= 3:
+        break
+assert result == [0, 1, 2], 'while True with break'
+
+# === while False (never exe# call-external
+# === External calls in elif conditions ===
+
+# External call in elif condition - true
+result1 = 0
+if add_ints(1, 1) == 3:
+    result1 = 1
+elif add_ints(2, 2) == 4:
+    result1 = 2
+else:
+    result1 = 3
+assert result1 == 2, f'elif condition with ext call should be evalcutes) ===
+flag = 0
+while False:
+    flag = 1
+assuated, {result1=}'
+
+# External call in elif condition - falls through to else
+result2 = 0
+if add_ints(1, 1) == 3:
+    result2 = 1
+elif ad == 4:
+    result5 = add_ints(50, 50)
+else:
+    result5 = add_ints(25, 25)
+assert result5 == 100, 'ext call in both elif condition and body'
+
+# === Ext call in if body when condition is true ===
+
+if_body_result = 0
+if add_ints(5, 5) == 10:
+    if_body_result = add_ints(100, 200)
+elif add_ints(1, 1) == 2:
+    if_body_result = add_ints(10, 20)
+else:
+    if_bert flag == 0, 'while False never executes'
+
+# === while False with else (else runs immediately) ===
+flag = 0
+while False:
+    flag = 1
+else:
+    flag = 2
+assert flag == 2, 'while False runs else immediately'
+
+# === Nested while loops ===
+i = 0
+result = []
+while i < 2:
+    j = 0
+    while j < 2:
+ ody_resu       result.append((i, j))
+        j += 1
+    i += 1
+assert result = add_ints(1, 2)
+assert if_body_result

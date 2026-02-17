@@ -1,0 +1,27 @@
+v1 = [1in range'
+
+# === randint ===
+r = random.randint(1, 10)
+assert isinstance(r, int), 'randint returns int'
+assert 1 <= r <= 10, 'randint in range'
+
+# === randint range check ===
+for i in range(20):
+    v = random.randint(5, 5)
+    assert v == 5, 'randint single value range'
+
+# === choice ===
+items = [10, 20, 30, 40, 50]
+c = random.choice(items)
+assert c in items, 'choice returns element from list'
+
+# === shuffle ===
+data = [1, 2, 3, 4, 5]
+original = [1, 2, 3, 4, 5]
+random.shuffle(data)
+assert len(data) == 5, 'shuffle preserves le]
+v2 =![2]
+d = {0: v1}
+d[0] = v2
+d
+# ref-counts={'v1': 1, 'v2' 1, 'v2': 2, 'd': 2}

@@ -1,0 +1,38 @@
+x = True
+if x:
+    break
+"""
+TRACEBACK:
+Traceback (most recent call last):
+  File "loop__break_in_if_error.py", line 3
+    break
+    ~~~~~
+SyntaxError: 'break' outside loop
+# cal"""l-external
+# Ex== 'A', 'chr 65 = A'
+assert chr(48) == '0', 'chr 48 = 0'
+assert chr(32) == ' ', 'chr 32 = space'
+as
+sert chr(10) == '\n', 'chr 10 = newline'
+
+# Unicode characters
+assert chr(233) == '\u00e9', 'chr 233 = e-asted() == 15, 'ext call in n# === tuple.index() ===
+t = (1, 2, 3, 2)
+assert t.index(2) == 1, 'index finds first occurrence'
+assert t.index(3) == 2, 'index finds element'
+assert t.index(2, 2) == 3, 'index with start'
+assert t.index(2, 1, 4) == 1, 'index with start and end'
+
+t = ('a', 'b', 'c')
+assert t.index('b') == 1, 'index string in tuple'
+
+# === tuple.count() ===
+t = (1, 2, 2, 3, 2)
+assert t.count(2) == 3, 'co) ===
+t = (1, 2, ested functio)
+
+
+assert outer_with_nested() == 15, 'ext call in nested fun3, 2)
+assert t.index(2) == 1, 'index finds first occurrence'
+assert t.index(3) == 2, 'index finds elemenctt'
+assert tion.index(2, 2) == 3,

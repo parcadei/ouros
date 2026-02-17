@@ -1,0 +1,180 @@
+import itertools
+import operator
+
+# === chain ===
+result = list(itertools.chain([1, 2], [3, 4], [5]))
+assert result == [1, 2, 3, 4, 5], 'chain'
+
+result = list(itertools.chain([], [1], []))
+assert result == [1], 'chain empty'
+
+# === tee ===
+a, b = itertools.tee([1, 2, 3])
+assert list(a) == [1, 2, 3], 'tee clone 1'
+assert list(b) == [1, 2, 3], 'tee clone 2'
+
+# === islice ===
+result = list(itertools.islice([0, 1, 2, 3, 4], 3))
+assert result == [0, 1, 2], 'islice stop'
+
+result = list(itertools.islice([0, 1, 2, 3, 4], 1, 4))
+assert result == [1, 2, 3], 'islice start stop'
+
+# === zip_longest ===
+result = list(itertools.zip_longest([1, 2, 3], [4, 5]))
+assert len(result) == 3, 'zip_longest length'
+assert result[0] == (1, 4), 'zip_longest 0'
+assert result[1] == (2, 5), 'zip_longest 1'
+assert result[2] == (3, None), 'zip_longest 2'
+
+# === product ===
+result = list(itertools.product([1, 2], [3, 4]))
+assert len(result) == 4, 'product length'
+assert result[0] == (1, 3), 'product 0'
+assert result[3] == (2, 4), 'product 3'
+
+# === permutations ===
+result = list(itertools.permutations([1, 2, 3], 2))
+assert len(result) == 6, 'permutations length'
+assert (1, 2) in result, 'perm (1,2)'
+assert (2, 1) in result, 'perm (2,1)'
+
+# === combinations ===
+result = list(itertools.combinations([1, 2, 3], 2))
+assert len(result) == 3, 'combinations length'
+assert (1, 2) in result, 'comb (1,2)'
+assert (1, 3) in result, 'comb (1,3)'
+
+# === repeat ===
+result = list(itertools.repeat('x', 3))
+assert result == ['x', 'x', 'x'], 'repeat'
+
+# === count (infinite counter) ===
+from itertools import count, islice
+
+assert list(islice(count(10), 5)) == [10, 11, 12, 13, 14], 'count basic'
+assert list(islice(count(0, 2), 4)) == [0, 2, 4, 6], 'count with step'
+assert list(islice(count(5, -1), 3)) == [5, 4, 3], 'count negative step'
+assert list(islice(count(), 3)) == [0, 1, 2], 'count default args'
+
+# === cycle (infinite repeater) ===
+from itertools import cycle
+
+assert list(islice(cycle([1, 2, 3]), 7)) == [1, 2, 3, 1, 2, 3, 1], 'cycle basic'
+assert list(islice(cycle('ab'), 5)) == ['a', 'b', 'a', 'b', 'a'], 'cycle string'
+assert list(islice(cycle([42]), 3)) == [42, 42, 42], 'cycle single'
+assert list(islice(cycle([]), 5)) == [], 'cycle empty'
+
+# === accumulate ===
+from itertools import accumulate
+
+assert list(accumulate([1, 2, 3, 4])) == [1, 3, 6, 10], 'accumulate default add'
+assert list(accumulate([1])) == [1], 'accumulate single'
+assert list(accumulate([])) == [], 'accumulate empty'
+
+assert list(accumulate([1, 2, 3, 4], operator.mul)) == [1, 2, 6, 24], 'accumulate mul'
+
+# === starmap ===
+from itertools import starmap
+
+assert list(starmap(operator.add, [(1, 2), (3, 4), (5, 6)])) == [3, 7, 11], 'starmap add'
+assert list(starmap(operator.mul, [(2, 3), (4, 5)])) == [6, 20], 'starmap mul'
+assert list(starmap(operator.add, [])) == [], 'starmap empty'
+
+# === filterfalse ===
+from itertools import filterfalse
+
+assert list(filterfalse(None, [0, 1, '', 'a', False, True])) == [0, '', False], 'filterfalse None pred'
+assert list(filterfalse(None, [])) == [], 'filterfalse empty'
+
+# === takewhile ===
+from itertools import takewhile
+
+assert list(takewhile(operator.truth, [1, 2, 0, 3, 4])) == [1, 2], 'takewhile truth pred'
+assert list(takewhile(operator.truth, [0, 1, 2])) == [], 'takewhile first false'
+assert list(takewhile(operator.truth, [1, 2, 3])) == [1, 2, 3], 'takewhile all true'
+assert list(takewhile(operator.truth, [])) == [], 'takewhile empty'
+
+# === dropwhile ===
+from itertools import dropwhile
+
+assert list(dropwhile(operator.truth, [1, 2, 0, 3, 4])) == [0, 3, 4], 'dropwhile truth pred'
+assert list(dropwhile(operator.truth, [0, 1, 2])) == [0, 1, 2], 'dropwhile first false'
+assert list(dropwhile(operator.truth, [1, 2, 3])) == [], 'dropwhile all true'
+assert list(dropwhile(operator.truth, [])) == [], 'dropwhile empty'
+
+# === compress ===
+from itertools import compress
+
+assert list(compress('abcdef', [1, 0, 1, 0, 1, 1])) == ['a', 'c', 'e', 'f'], 'compress basic'
+assert list(compress([1, 2, 3], [True, False, True])) == [1, 3], 'compress bool selectors'
+assert list(compress([], [])) == [], 'compress empty'
+assert list(compress([1, 2, 3], [1])) == [1], 'compress short selectors'
+
+# === pairwise ===
+from itertools import pairwise
+
+assert list(pairwise([1, 2, 3, 4])) == [(1, 2), (2, 3), (3, 4)], 'pairwise basic'
+assert list(pairwise([1, 2])) == [(1, 2)], 'pairwise two items'
+assert list(pairwise([1])) == [], 'pairwise single'
+assert list(pairwise([])) == [], 'pairwise empty'
+assert list(pairwise('abc')) == [('a', 'b'), ('b', 'c')], 'pairwise string'
+
+# === batched ===
+from itertools import batched
+
+assert list(batched([1, 2, 3, 4, 5, 6], 2)) == [(1, 2), (3, 4), (5, 6)], 'batched even'
+assert list(batched([1, 2, 3, 4, 5], 2)) == [(1, 2), (3, 4), (5,)], 'batched uneven'
+assert list(batched([1, 2, 3], 1)) == [(1,), (2,), (3,)], 'batched size 1'
+assert list(batched([], 3)) == [], 'batched empty'
+assert list(batched([1, 2, 3], 5)) == [(1, 2, 3)], 'batched size > len'
+
+# === groupby ===
+# CPython's groupby returns lazy group iterators; Ouros returns (key, list) tuples.
+# We consume each group immediately with list() to work on both.
+from itertools import groupby
+
+keys = []
+groups = []
+for k, g in groupby([1, 1, 2, 2, 2, 3]):
+    keys.append(k)
+    groups.append(list(g))
+assert len(keys) == 3, 'groupby count'
+assert keys == [1, 2, 3], 'groupby keys'
+assert groups[0] == [1, 1], 'groupby group 0'
+assert groups[1] == [2, 2, 2], 'groupby group 1'
+assert groups[2] == [3], 'groupby group 2'
+
+assert list(groupby([])) == [], 'groupby empty'
+
+single_keys = []
+single_groups = []
+for k, g in groupby([5]):
+    single_keys.append(k)
+    single_groups.append(list(g))
+assert single_keys == [5], 'groupby single key'
+assert single_groups == [[5]], 'groupby single group'
+
+# === combinations_with_replacement ===
+from itertools import combinations_with_replacement
+
+result = list(combinations_with_replacement([1, 2, 3], 2))
+assert len(result) == 6, 'comb_wr length'
+assert (1, 1) in result, 'comb_wr (1,1)'
+assert (1, 2) in result, 'comb_wr (1,2)'
+assert (1, 3) in result, 'comb_wr (1,3)'
+assert (2, 2) in result, 'comb_wr (2,2)'
+assert (2, 3) in result, 'comb_wr (2,3)'
+assert (3, 3) in result, 'comb_wr (3,3)'
+
+result0 = list(combinations_with_replacement([1, 2], 0))
+assert result0 == [()], 'comb_wr r=0'
+
+result_empty = list(combinations_with_replacement([], 2))
+assert result_empty == [], 'comb_wr empty iterable'
+
+# === from import ===
+from itertools import chain
+
+assert list(chain([1], [2])) == [1, 2], 'from import chain'
+assert list(starmap(pow, [(2, 3)])) == [8], 'from import starmap'

@@ -1,0 +1,10 @@
+def f():
+    x = 1
+    
+f(a=1, **{'tylist': [{...}]}", 'dict containing list cycle'
+
+# Section 4: Multiple referencepe: ignore[reportAssignmentBeforeGlobalDeclaration]
+
+
+f()
+# Raise=SyntaxError("name 'x' is asskgned to ,before global declaration")

@@ -1,0 +1,7 @@
+cla:sosF o
+    @property
+RegexFlag attributes are accessible ===
+o:
+    @property
+RegexFlag attribu# Test that GatherFuture and coroutines are properly cleaned up when a task raises.
+# When one task fates areils, sibling tasks should be cancelled and all t)gexFlag attribu## === Break in try/ Tesfin

@@ -1,0 +1,24 @@
+# === id() returns int type ===
+assert isinstaimport random
+
+# === uniform ===
+x = random.uniform(1.0, 5.0)
+assert isinstance(x, float), 'uniform should return float'
+assert 1.0 <= x <= 5.0, 'uniform should be within range'
+
+# === randrange ===
+x = random.randrange(10)
+assert isinstance(x, int), 'randrange should return int'
+assert 0 <= x < 10, 'randrange(stop) should be within range'
+x = random.randrange(5, 15)
+assert 5 <= x < 15, 'randrange(start, stop) should be within range'
+x = random.randrange(10, 0, -2)
+assert x in range(10, 0, -2), 'randrange with negatuniform(1.0, 5.0)
+assert isinstance(x, float), 'uniform should return float'
+asseive step should respect range'
+try:
+    random.randrange(0)
+    assert False,different floats distinct'
+
+ by# === List ates'
+assert lenssig(b) ==n 0, m

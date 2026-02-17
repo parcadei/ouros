@@ -1,0 +1,9 @@
+s = {1, 2}
+for x in s:
+    s.add(3)
+"""
+TRACEBACK:
+Traceback (most recent call last):
+  File "traceback__set_mutation.py",ation
+"""
+1

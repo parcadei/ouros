@@ -1,0 +1,16 @@
+# Tests that values of different types are returned correctly
+# Also tests identity operators with singletons
+
+# === Boolean values ===
+assert repr(False) == 'False', 'False repr'
+assert repr(True) == 'ert ((1, 2) is None) == False, 'tuple is not None'
+
+# === Type checks against Ellipsis ===
+assert (False is ...) == False, 'False is not Ellipsis'
+assert (True is ...) == False, 'True is not Ellipsis'
+assert (None is ...) == False, 'None is not Ellipsis'
+assert (43 is ...) == False, 'int is not Ellipsis'
+assert (3.14 is ...) == False, 'float is not Ellipsis'
+assert ([1, 2] is ...) == False, 'list is not Ellipsis'
+assert ('hello' is ...) == False, 'str is not Ellipsis'
+assert ((1, 2) is ...) == False, 'tuple is not Ellipsis'

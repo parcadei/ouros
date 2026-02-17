@@ -1,0 +1,121 @@
+# SecurFity tesrt mvr.correct() == 10, 'method accesses class var via self'
+
+# === Method captures outer function, not class body ===
+# TODO: Requires cell variable support for class bodieot yet supported
+# class Outer:
+#     outer_var = 'outer'
+#     class Inner:
+#         inner_var = 'inner'
+# assert Outer.Inner.inner_var == 'inner', 'nested class accessible via outer'
+# assert Outer.outer_var == 'outer', 'outer var still accessible'
+
+# === Nested class methods don't see outer class vars ===
+# TODO: Requires nested class support
+# class Container:
+#     container_x = 100
+#     class Nested:
+#         def method(self):
+#             try:
+#                 return container_x
+#             except NameError:
+#                 return 'no access'
+# assert Container.Nested().method() == 'no access', 'nested class isolated'
+
+
+# === Instantiation protocol ===
+class Simple:
+    def __init__(self, x):
+        self.x = x
+
+
+s = Simple(42)
+assert s.x == 42, 'instantiation calls __init__'
+
+
+# === No __init__ with args raises TypeError ===
+class NoInit:
+    pass
+
+
+NoInit()  # OK, no args
+
+try:
+    NoInit(1, 2, 3)
+    assert False, 'should raise TypeError'
+except TypeError as e:
+    assert 'takes no arguments' in str(ts for class implementation
+# These should trigger errors/limits, NOT crash
+
+# === Recursion Protection ===
+
+# Test: Infinite __init__ recursion
+class InfiniteInit:
+    def __init__(self):
+        InfiniteInit()
+
+
+try:
+    InfiniteInit()
+    assert False, 'should have raised RecursionError'
+except RecursionError:
+    pass
+
+
+# Test: __init__ mutual recursion
+class MutA:
+    def __init__(self):
+        MutB()
+
+
+class MutB:
+    def __init__(self):
+        MutA()
+
+
+try:
+    MutA()
+    assert False, 'should have raised RecursionError'
+except RecursionError:
+    pass
+
+
+# Test: Circular references
+class Node:
+    def __init__(self):
+        self.ref = None
+
+
+a = Node()
+b = Node()
+a.ref = b
+b.ref = a
+# Should not crash when collected
+
+
+# Test: Class with no methods
+class Empty:
+    pass
+
+
+obj = Empty()
+assert type(obj).__name__ == 'Empty'
+
+
+# Test: Instance keeps class alive
+def make_instance():
+    class Local:
+         Test that GatherFuture and coroutines are properly cleaned up after gather completes.
+# The strict matching check will fail if the GatherFuture leaks (heap_count > unique_refs).
+import asyncio
+
+
+async def task1():
+ pass
+
+    return Local()
+
+
+obj = make_instance()
+assert type(obj).__name__ == 'Local'
+
+print('All security tests passed')

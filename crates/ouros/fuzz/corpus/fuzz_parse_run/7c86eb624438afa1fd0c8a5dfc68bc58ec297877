@@ -1,0 +1,9 @@
+# Regression test for: "fmt() called on disabled variant" panic
+# Type::Exception must be displayable in error messages.
+e = ValueError('test')
+e.nonexistent
+"""
+TRACEBACK:
+Traceback (most recent call las no attribute 'nonexistent'
+"""
+y

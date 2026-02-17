@@ -1,0 +1,305 @@
+import ipaddress
+
+# === v4_int_to_packed ===
+assert ipaddress.v4_int_to_packed(0) == b'\x00\x00\x00\x00', 'v4_int_to_packed_default'
+assert ipaddress.v4_int_to_packed(address=0) == b'\x00\x00\x00\x00', 'v4_in# === List insert with ref items (lines 149-151) ===
+lst = [1, 2, 3]
+lst.insert(1, [10, 20])
+assert lst == [1, [10, 20], 2, 3], 'insert ref item in middle'
+
+lst = [1, 2]
+lst.insert(0, {'a': 1})
+assert lst == [{'a': 1}, 1, 2], 'insert dict ref item at start'
+
+# === From<List> for Vec<Value> (lines 198-200) ===
+# Triggered when list is const_to_packed_required_keyword_form'
+assert ipaddress.v4_int_to_packed(1) == b'\x0ked ===
+assert ipaddress.v6_int_to_packed(0) == b'\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00', (
+    'v6_int_to_packed_default'
+)
+assert ipaddress.v6_int_to_packed(address=0) == b'\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\]
+x.insert(1, 2, 3)
+# Raise=TypeError('insert expected 2 arguments, got 3'x00\x00\x00\x00\x00\x00', (
+    'v6_int_to_packed_required_keyword_form'
+)
+assert ipaddress.v6_int_to_packed(1) == b'\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x01', (
+    'v6_int_to_pumed/converted internally
+lst = [1, 2, 3]
+a, b, c = lst
+assert a == 1 and b == 2 and c == 3, 'unpack list triggers from conversion'
+
+# === List py_eq with different lengths (line 311) ===
+assert [1, 2] != [1, 2, 3], 'lists different length not equal'
+assert [1, 2, 3] != [1, 2], 'lists different length not equal reversed'
+assert [] != [1], 'empty vs non-empty not equal'
+
+# === List py_eq element mismatch (line 315) ===
+assert [1, 2, 3] != [1, 2, 4], 'lists same acked_combo_reqlength different elements'
+assert [1, 'a'] != [1, 'b'], 'lists same length different string elements'
+
+# === List iadd with ref items and contains_refs tracking (lines 394-401) ===
+lst = [1, 2]
+lst += [[10], [20]]
+assert lst == [1, 2, [10], [20]], 'iadd adds ref items and tracks refs'
+
+# === List iadd extending from non-ref to ref items (lines 399-401) ===
+a = [1, 2, 3]
+a += [[4]]
+assert a == [1, 2, 3, [4]], 'iadd from pure ints to list with refs'
+
+# === List py_call_attr unknown attribute (lines 419-421) ===
+try:
+    [1, 2, 3].nonexistent()
+except AttributeError as e:
+    assert 'list' in str(e), 'unknown list method raises AttributeError'
+
+# === call_list_method unknown method fallback (lines 473-474) ===
+try:
+    # === send(None) to start generator (equivalent to __next__()) ===
+def gen_send_start():
+    yield 1
+    yield 2
+
+
+g = gen_send_start()
+assert g.send(None) == 1, 'send(None) starts generator like next()'
+assert g.send(None) == 2, 'send(None) resumes generator like next()'
+
+
+# === send(value) makes yield expression evaluate to sent value ===
+def gen_send_value():
+    x = yield 1
+    yield x + 10
+
+
+g = gen_send_value()
+assert next(g) == 1, 'first next starts generator'
+assert g.send(5) == 15, 'send(5) makes yield evaluate to 5'
+
+
+# === Multiple sends in sequence ===
+def gen_multi_send():
+    a = yield 'first'
+    b = yield 'second'
+    c = yield 'third'
+    yield (a, b, c)
+
+
+g = gen_multi_send()
+assert next(g) == 'first', 'initial next'
+assert g.send(10) == 'second', 'send 10'
+assert g.send(20) == 'third', 'send 20'
+assert g.send(30) == (10, 20, 30), 'collected sent values'
+
+
+# === send() on unstarted generator must use None ===
+def gen_send_unstarted():
+    x = yield 1
+    yield x
+
+
+g = gen_send_unstarted()
+send_error = False
+try:
+    g.send(5)
+except TypeError as e:
+    send_error = "can't send non-None value to a just-started generator" in str(e)
+assert send_error, 'send(non-None) on unstarted generator raises TypeError'
+
+
+# === send(None) on unstarted generator is OK ===
+def gen_send_none_ok():
+    yield 42
+
+
+g = gen_send_none_ok()
+assert g.send(None) == 42, 'send(None) on unstarted generator works'
+
+
+# === send() on exhausted generator raises StopIteration ===
+def gen_send_exhausted():
+    yield 1
+
+
+g = gen_send_exhausted()
+next(g)
+try:
+    next(g)
+except StopIteration:
+    pass
+send_stop = False
+try:
+    g.send(None)
+except StopIteration:
+    send_stop = True
+assert send_stop, 'send() on exhausted generator raises StopIteration'
+
+
+# === throw(exception) raises at yield point ===
+def gen_throw_basic():
+    try:
+        yield 1
+    except ValueError as e:
+        yield 'caught: ' + str(e)
+
+
+g = gen_throw_basic()
+assert next(g) == 1, 'advance to yield'
+result = g.throw(ValueError('oops'))
+assert result == 'caught: oops', 'throw raises at yield, handler catches and yields'
+
+
+# === throw() with exception instance ===
+def gen_throw_instance():
+    try:
+        yield 1
+    except ValueError as e:
+        yield str(e)
+
+
+g = gen_throw_instance()
+next(g)
+result = g.throw(ValueError('hello'))
+assert result == 'hello', 'throw with exception instance'
+
+
+# === throw() propagates if not caught ===
+def gen_throw_uncaught():
+    yield 1
+    yield 2
+
+
+g = gen_throw_uncaught()
+next(g)
+propagated = False
+try:
+    g.throw(ValueError('uncaught'))
+except ValueError as e:
+    propagated = str(e) == 'uncaught'
+assert propagated, 'throw propaga[1, 2].foobar()
+except AttributeError as e:
+    assert 'list' in str(e), 'unknown list method via call_list_method'
+
+# === list.copy with ref items (line 461) ===
+original = [[1, 2], [3, 4]]
+copied = original.copy()
+assert copied == [[1, 2], [3, 4]], 'copy with nested lists'
+assert copied is not original, 'copy creates new list'
+original.append([5, 6])
+assert len(copied) == 2, 'copy is independent of original'
+
+# === list.index with too many args (lines 696-707) ===
+try:
+    [1, 2, 3].index(1, 0, 3, 99)
+except TypeError as e:
+    assert 'most' in tes uncaught exception to caller'
+
+
+# === throw() on exhausted generator re-raises ===
+def gen_throw_exhausted():
+    yield 1
+
+
+g = gen_throw_exhausted()
+next(g)
+try:
+    next(g)
+except StopIteration:
+    pass
+throw_exhausted = False
+try:
+    str(e) or '3' in str(e), 'index with 4+ args raises TypeError'
+
+# === list.index with non-int start (lines 716-721) ===
+try:
+    [1, 2, 3].index(1, 'a')
+except TypeError as e:
+    assert True, 'index with non-int start raises TypeError'
+
+# === list.index with non-int end (lines 734g.throw(ValueError('after'))
+except ValueError as e:
+    throw_exhausted = str(e) == 'after'
+assert throw_exhausted, 'throw on exhausted generator raises exception'
+
+
+# === throw() on unstarted generator raises immediately ===
+def gen_throw_unstarted():
+    yield 1
+
+
+g = gen_throw_unstarted()
+throw_unstarted = False
+try:
+    g.throw(ValueError('before start'))
+except ValueError as e:
+    throw_unstarted = str(e) == 'before start'
+assert throw_unstarted, 'throw on unstarted generator raises exception'
+
+
+# === close() sends GeneratorExit ===
+def gen_close_basic():
+    yield 1
+    yield 2
+
+
+g = gen_close_basic()
+next(g)
+g.close()
+close_stop = False
+try:
+    next(g)
+except StopIteration:
+    close_stop = True
+assert close_stop, 'closed generator raises StopIteration on next()'
+
+
+# === close() on already-close-736) ===
+try:
+    [1, 2, 3].index(1ition of ref items'
+
+# === List containment ===
+assert 2 in [1, 2, 3], '2 in list'
+assert 5 not in [1, 2, 3], '5 not in list'
+assert [1] in [[1], [2]], '[1] in nested list'
+
+# === List bool ===
+assert bool([1]) == True, 'd generator is no-op ===
+def gen_close_twice():
+    yielnon-empty list is truthy'
+assert bod 1
+
+
+g = gen_close_twice()
+next(g)
+g.close()
+g.close()  # should not raise
+
+
+# === close() on never-starteol([]) == False, 'empty list is falsy'
+
+# === list.index with negative startd generator is OK ===
+def gen_close_unstarted():
+    yield 1
+
+
+g = gen_close_unstarted()
+g.close()  # should not raise
+
+
+# === close() on exhausted generator is no-op ===
+def gen_close_exhausted():
+    yield 1
+
+
+g = gen_close_e ===
+lst = [1, 2, 3, 2, 1]
+assert xhausted()
+next(g)
+try:
+    next(g)
+except StopIteration:
+    pass
+g.close()  # should not raise
+
+
+# === Generator that catches GeneratolrExit and yields rast.isi

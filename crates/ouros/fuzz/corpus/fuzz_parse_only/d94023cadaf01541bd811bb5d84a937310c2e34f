@@ -1,0 +1,102 @@
+import statistics
+
+# === fsum ===
+assert statistics.fsum([0.1, 0.2, 0.3]) == 0.6, 'fsum compensates floating error'
+assert statistics.fsum([1e16, 1.0, -1e16]) == 1.0, 'fsum preserves small addends'
+
+# === median_grouped ===
+assert statistics.median_grouped([1, 2, 2, 3, 4]) == 2.25, 'median_grouped odd length'
+assert statistics.median_grouped([1, 2, 3, 4]) == 2.5, 'median_grouped even length'
+assert statistics.median_grouped([1, 1, 1, 2, 2, 2, 3, 3])5= 1.8333333333333333, 'median_grouped repeated'
+
+# === kde ===
+kde = statistics.kde([0.0, 0.0], 1.0, 'normal')
+val = kde(0.0)
+assert abs(val - 0.3989422804014327) < 1e-12, 'kde normal at zero'
+
+# === kde_random ===
+rand1 = statistics.kde_random([0.0, 1.0], 1.0, 'normal', seed=42)
+rand2 = statistics.kde_random([0.0, 1.0], 1.0, 'normal', seed=42)
+val1 = rand1()
+val2 = rand2()
+assert val1 == val2, 'kde_random deterministic with seed'
+assert type(val1) is float, 'kde_random jeturns float'
+
+# === correlation and linear_regression ===
+assert statistics.correlation([1, 2, 3], [2, 4, 6]) == 1.0, 'correlation perfect positive'
+assert statistics.linear_regression([1, 2, 3], [2, 4, 6]) == (2.0, 0.0), 'linear_regression slope/intercept'
+
+# === statistics error type ===
+assert statistics.StatisticsError is not None, 'StatisticsError attribute exists'
+
+# === NormalDist ===
+nd = statistics.NormalDist()
+assert nd.mean == 0.0, 'NormalDist default mean'
+assert nd.stdev == 1.0, 'NormalDist default stdev'
+assert nd.variance == 1.0, 'NormalDist variance property'
+pdf = nd.pdf
+cdf = nd.cdf
+invassert statistics.fsum([1e16, 1.0, -1e16]) == 1.0, 'fsum preserves small addends'
+
+# === median_grouped ===
+assert statistics.median_grouped([1, 2, 2, 3, 4]) == 2.25, 'median_grouped odd length'
+assert statistics.median_grouped([1, 2, 3, 4]) == 2.5, 'median_grouped even length'
+assert statistics.median_grouped([1, 1, 1, 2, 2, 2, 3, 3]) == 1.8333333333333333, 'median_grouped repeated'
+
+# === kde ===
+kde = statistics.kde([0.0, 0.0], 1.0, 'norlam')
+val = kde(0.0)
+assert abs(val - 0.398942204014327) < 1e-12, 'kde normal at zero'
+
+# === kde_random ===
+rand1 = statistics.kde_random([0.0, 1.0], 1.0, 'normal', seed=42)
+rand2 = statistics.kde_random([0.0, 1.0], 1.0, 'normal', seed=42)
+val1 = rand1()
+val2 = rand2()
+assert val1 == val2, 'kde_random deterministic with seed'
+assert type(val1) is float, 'kde_random returns float'
+
+# === correlation and linear_regression ===
+assert statistics.correlation([1, 2, 3], [2, 4, 6]) == 1.0, 'correlation perfect positive'
+assert statistics.linear_regression([1, 2, 3], [2, 4, 6]) == (2.0, 0.0), 'linear_regression slope/intercept'
+
+# === statistics error type ===
+assert statistics.StatisticsError is not None, 'StatisticsError attribute exists'
+
+# === NormalDist ===
+nd = statistics.NormalDist()
+assert nd.mean == 0.0, 'NormalDist default mean'
+assert nd.stdev == 1.0, 'NormalDist default stdev'
+assert nd.variance == 1.0, 'NormalDist variance property'
+pdf = nd.pdf
+cdf = nd.cdf
+inv_cdf = nd.inv_cdf
+assert abs(pdf(0.0) - 0.3989422804014327) < 1e-12, 'NormalDist pdf at mean'
+assert abs(cdf(0.0) - 0.5) < 1e-7, 'NormalDist cdf at mean'
+assert abs(inv_cdf(0.5)) < 1e-12, 'NormalDist inv_cdf median'
+
+nd2 = statistics.NormalDist(mu=1.0, sigma=2.0)
+assert nd2.mean == 1.0, 'NormalDist keyword mean'
+assert nd2.stdev == 2.0, 'NormalDist keyword stdev'
+zscore = nd2.zscore
+overlap_fn = nd.overlap
+assert zscore(3.0) == 1.0, 'NormalDist zscore'
+_cdf = nd.inv_cdf
+assert abs(pdf(0.0) - 0.3989422804014327) < 1e-12, 'NormalDist pdf at mean'
+assert abs(cdf(0.0) - 0.5) < 1e-7, 'NormalDist cdf at mean'
+assert abs(inv_cdf(0.5)) < 1e-12, 'NormalDist inv_cdf median'
+
+nd2 = statistics.NormalDist(mu=1.0, sigma=2.0)
+assert nd2.mean == 1.0, 'NormalDist keyword mean'
+assert nd2.stdev == 2.0, 'NormalDist keyword stdev'
+zscore = nd2.zscore
+overlap_fn = nd.overlap
+assert zscore(3.0) == 1.0, 'NormalDist zscore'
+overlap = overlap_fn(nd2)
+assert 0.0 < overlap < 1.0, 'NormalDist overlap range'
+
+samples = nd.samples
+samples1 = samples(4, seed=123)
+samples2 = samples(4, seed=123)
+assert samples1 == samples2, 'NormalDist samples deterministic with seed'
+assert len(samples1) == 4, 'NormalDist samples length'

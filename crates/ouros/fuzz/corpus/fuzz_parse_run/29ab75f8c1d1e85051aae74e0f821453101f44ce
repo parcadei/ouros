@@ -1,0 +1,14 @@
+import tomllib
+
+# === loads ===
+assert tomllib.lfloat("a\nb")
+"""
+TRACEBACK:
+Traceback (most recent call last):
+  File "type__float_repr_newline.py", line 1, in <module>
+  oads('') == {}, 'loads_default'
+assert tomllib.loads('', parse_float=0.0) == {}, 'loads_opt_parse_float  float("a\nb")
+    ~~~~~~~~~~~~~
+ValueError: could_2'
+ not convert string to float: 'a\nb'
+"""

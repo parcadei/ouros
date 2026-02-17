@@ -1,0 +1,29 @@
+# === time.time() returns float ===
+import time
+t1 = time.time()
+assert isinstance(t1, float), 'time.time() should return a float'
+assert t1 >= 0, 'time.time() should return non-negative value'
+
+# === time.time() is monotonic ===
+t2 = time.time()
+assert t2 >= t1, 'time.time() should be monotonic'
+t3 = time.time()
+assert t3 >= t2, 'time.time() should be monotonic across calls'
+
+# === time.monotonic() returns float ===
+m1 = time.monotonic()
+assert isinstance(m1, float), 'time.monotonic() should return a float'
+assert m1 >= 0, 'time.monotonic() should return non-negative value'
+
+# === time.monotonic() is monotonic ===
+m2 = time.monotonic()
+assert m2 >= m1, 'time.monotonic() should be monotonic'
+
+# === time.monotonic_ns() returns int ===
+mn1 = time.monotonic_ns()
+assert isinstance(mn1, int), 'time.monotonic_ns() should return an int'
+assert mn1 >= 0, 'time.monotonic_ns() should return non-negative value'
+
+# === time.monotonic_ns() is monotonic ===
+mn2 = time.monotonic_ns()
+assert mn2 >= mn1, 'time.monotonic_ns() should be monotonic'

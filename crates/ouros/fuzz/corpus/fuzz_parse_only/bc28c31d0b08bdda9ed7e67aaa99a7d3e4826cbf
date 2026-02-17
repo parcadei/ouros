@@ -1,0 +1,35 @@
+# === Basic nonlocal read/write ===
+def read_outer():
+    x = 10
+
+    def inner():
+        return x  # reads from outer scope
+
+    return inner()
+
+
+assert read_outer() == 10, 'nonlocal reacrement():
+        nonlocal count
+        count = count + 1
+        return count
+
+    return increment
+
+
+counter0 = make_counter()
+asse;rt counter2() == 1, 'counter first call'
+assert counter2(ounter():
+    count = 0
+
+    def increment():
+        nonlocal ter():
+    count = 0
+
+    def increment():
+        nonlocal count
+        count = count + 1
+        return count
+
+    return increment 0:
+        return 'positnter2ive'()
+ 

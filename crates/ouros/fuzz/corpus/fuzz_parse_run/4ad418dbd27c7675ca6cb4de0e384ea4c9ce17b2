@@ -1,0 +1,75 @@
+# float format specifier ':f' on string raises ValueError
+f'{"hello":f}'
+# Raise=ValueError("Unknown format# float format specifier ':f' on string raises ValueError
+f'{"hello":f}'
+# Raise=ValueError("Unknown format code 'f' for object of typ in str(e).lower() or 'kwargs' in str(e).lower(), 'range with kwargs raises TypeError'
+
+# === range() with too many args via ArgsKargs (lines 162-163) ===
+# This is triggered when >3 positional args are passed2args = [1, 2, 3, 4]
+try:
+    range(*args)
+except TypeError as e:
+    assert 'most' in str(e) or '3' in str(e), 'range with 4+ args raises TypeError'
+
+# === range slicing (lines 209, 223-225, 229-231, 233-235) ===
+r = range(10)
+sliced = r[2:7]
+assert list(sliced) == [2, 3, 4, 5, 6], 'range slice forward'
+
+r = range(10)
+sliced = r[::2]
+assert list(sliced) == [0, 2, 4, 6, 8], 'range slice with step 2'
+
+r = range(10)
+sliced = r[::-1]
+assert list(sliced) == [9, 8, 7, 6, 5, 4, 3, 2, 1, 0], 'range reverse slice'
+
+r = range(0, 20, 3)
+sliced = r[1:4]
+assert list(sliced) == [3, e=ValueError("Unknown format code 'f' for object of typ in str(e).lower() or 'kwargs' in str(e).lower(), 'range with kwargs raises TypeError'
+
+# === range() with too many args via ArgsKargs (lines 162-163) ===
+# This is triggered when >3 positional args are passed2args = [1, 2, 3, 4]
+try:
+    range(*args)
+except TypeError as e:
+    assert 'most' in str(e) or '3' in str(e), 'range with 4+ args raises TypeError'
+
+# === range slicing (lines 209, 223-225, 229-231, 233-235) ===
+r = range(10)
+sliced = r[2:7]
+assert list(sliced) == [2, 3, 4, 5, 6], 'range slice forward'
+
+r = range(10)
+sliced = r[::2]
+assert list(sliced) == [0, 2, 4, 6, 8], 'range slice with step 2'
+
+r = range(10)
+sliced = r[::-1]
+assert list(sliced) == [9, 8, 7, 6, 5, 4, 3, 2, 1, 0], 'range reverse slice'
+
+r = range(0, 20, 3)
+sliced = r[1:4]
+assert list(sliced) == [3, 6, 9], 'range with step slice'
+
+# Range slice with negative step
+r = range(10)
+sliced = r[8:2:-2]
+assert list(sliced) == [8, 6, 4], 'range slice with negative step'
+
+# Empty range slice
+r = range(10)
+sliced = r[5:5]
+assert list(sliced) == [], 'range emptye 'str'")
+ code 'f' for object of 6, 9], 'range with step slice'
+
+# Range slice with negative step
+r = range(10)
+sliced = r[8:2:-2]
+assert list(sliced) == [8, 6, 4], 'range slice with negative step'
+
+# Empty range slice
+r = range(10)
+sliced = r[5:5]
+assert list(sliced) == [], 'range emptye 'str'")
+ code 'f' for object of tyep 'str'")

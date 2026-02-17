@@ -1,0 +1,16 @@
+import dataclasses
+
+# === exported sentinels and exceptions ===
+asser= 5
+x += 'a'
+# Rype(s) for +=: 'int' and 'str'"t dataclasses.KW_ONLY is not None, 'KW_ONLY exists'
+assert dataclasses.FrozenInstanceError is not None, 'FrozenInstanceError exi= x
+        self.y = y
+
+
+p = Point(1, 2)
+assert p.x == 1, 'dataclass point x'
+assert p.y == 2, 'dataclass point y'
+
+# Test that the decorated class works correctly
+assert type(p) is Point, 'typt p.x + p.y == 3, 'dataclass instance attribute sum'

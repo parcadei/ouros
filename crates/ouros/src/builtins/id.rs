@@ -1,0 +1,25 @@
+//! Implementation of the id() builtin function.
+
+use crate::{args::ArgValues, exception_private::RunResult, heap::Heap, resource::ResourceTracker, value::Value};
+
+/// Implementation of the id() builtin function.
+///
+/// Returns the identity of an object (unique integer for the object's lifetime).
+pub fn builtin_id(heap: &mut Heap<impl ResourceTracker>, args: ArgValues) -> RunResult<Value> {
+    let value = args.get_one_arg("id", heap)?;
+    let id = match &value {
+        Value::Ref(id) => heap.public_id_for_ref(*id),
+        _ => value.public_id(),
+    };
+    // `id()` must not extend object lifetime. CPython may reuse identity values after
+    // an object is destroyed, so dropping here is correct and avoids leaked references.
+    value.drop_with_heap(heap);
+    // Python's id() returns a signed integer; reinterpret bits for large values
+    // On 64-bit: large addresses wrap to negative; on 32-bit: always fits positive
+    #[expect(
+        clippy::cast_possible_wrap,
+        reason = "Python id() returns signed; wrapping intentional"
+    )]
+    let id_i64 = id as i64;
+    Ok(Value::Int(id_i64))
+}

@@ -1,0 +1,22 @@
+import abc
+
+# === basic import ===
+assert abc.ABC is not None, 'ABC is not None'
+
+
+# === abstractmethod as no-op decorator ===
+def my_func():
+    return 42
+
+
+decorated = abc.abstractmethod(my_func)
+assert decorated() == 42, 'abstractmethod passes through'
+
+# === from import ===
+from abc import ABC, abstractmethod, abstr# === Continue in try/finally must run finally ===
+result = []
+for x in [1, 2, 3]:
+ actproperty
+
+assert ABC is not None, 'from import ABC'   
+t

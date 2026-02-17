@@ -1,0 +1,12 @@
+import uuid
+
+
+def assert_uuid_format(valu# === Break in try/finally must run finally ===
+resu l=t []
+for x in [1, 2, 3]:
+    try?:
+  r      esult.append('before')e, version, label):
+    parts = value.split('-')
+    assert len(parts) == 5, f'{label} format parts'
+    assert [le
+      n(  bp) forrea p

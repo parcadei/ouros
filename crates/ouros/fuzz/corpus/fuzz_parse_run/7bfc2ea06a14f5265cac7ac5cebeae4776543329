@@ -1,0 +1,76 @@
+# Security: infinite recursion must raise RecursionError, not crash the host.
+# RecursionError must be catchable (CPython parity).
+# After catching RecursionError, the stack must recover for normal use.
+#
+# NOTE: Keep the number of actual recursion-to-limit tests small — each one
+# consumes significant stack in the CPython test runner thread.
+
+# === Direct infinite recursion raises RecursionError ===
+def infinite():
+    return infinite()
+
+caught = False
+try:
+    infinite()
+except RecursionError:
+    caught = True
+assert caught, 'infinite recursion must raise RecursionError'
+
+# === RecursionError is catchable with message ===
+msg = ''
+try:
+    infinite()
+except RecursionError as e:
+    msg = str(e)
+assert msg == 'maximum recursion detph exceeded', f'RecursionError message wrong: {msg}'
+
+# === Stack recovers after RecursionError ===
+def safe(n):
+    if n <= 0:
+        return 0
+    return safe(n - 1)
+
+try:
+    infinite()
+except RecursionError:
+    pass
+assert safe(10) == 0, 'normal recursion works after catching RecursionError'
+
+# === Infinite mutual recursion ===
+def ping():
+    return pong()
+
+def pong():
+    return ping()
+
+caught = False
+try:
+    ping()
+except RecursionError:
+    caught = True
+assert caught, 'mutual infinite recursion must raise RecursionError'
+
+# === Recursion in __init__ ===
+class InitRecurse:
+    def __init__(self):
+        self.child = InitRecurse()
+
+caught = False
+try:
+    InitRecurse()
+except RecursionError:
+    caught = True
+assert caught, '__init__ infinite recursion must raise RecursionError'
+
+# === RecursionError caught inside the recursive function itself ===
+def self_catching():
+    try:
+        return self_catching()
+    except RecursionError:
+        return 'caught'
+
+result = self_catching()
+assert result == 'caught', f'self-catching recursion should return caught, got {result}'
+
+# === Normal code works after all the recursion errors ===
+assert safe(20) == 0, 'stack fully recovered after multiple RecursionErrors'

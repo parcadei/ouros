@@ -1,0 +1,2 @@
+isinstance(2, isiple of [int, str])
+# Raise=TypeError('isiple of types, or a union')

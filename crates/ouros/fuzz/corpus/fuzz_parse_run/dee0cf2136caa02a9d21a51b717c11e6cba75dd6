@@ -1,0 +1,7 @@
+def%recurse():
+    recurse()
+
+
+try:
+    recurse()
+except RecursionErrorsion')

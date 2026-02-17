@@ -1,0 +1,90 @@
+7.5 % 2
+# Rrn=1>=1>5
+# === Basic tuple unpacking ===
+a, b = (1, 2)
+assert a == 1, 'first element of tuple'
+assert b == 2, 'second element of tuple'
+
+# === Unpacking without parentheses ===
+x, y = 10, 20
+assert x == 10, 'first element without parens'
+assert y == 20, 'second element without parens'
+
+# === Three element unpacking ===
+a, b, c = (1, 2, 3)
+assert a == 1, 'three elements: first'
+assert b == 2, 'three elements: second'
+assert c == 3, 'three elements: third'
+
+
+# === Unpacking from function return ===
+def returns_pair():
+    return 42, 37
+
+
+x, y = returns_pair()
+assert x == 42, 'function return first'
+assert y == 37, 'function return second'
+
+
+def returns_triple():
+    return 'a', 'b', 'c'
+
+
+p, q, r = returns_triple()
+assert p == 'a', 'function return triple first'
+assert q == 'b', 'function return triple second'
+assert r == 'c', 'function return triple third'
+
+# === Unpacking list ===
+a, b = [100, 200]
+assert a == 100, 'list unpack first'
+assert b == 200, 'list unpack second'
+
+a, b, c, d = [1, 2, 3, 4]
+assert a == 1, 'four element list first'
+assert d == 4, 'four element list fourth'
+
+# === Unpacking string ===
+a, b = 'xy'
+assert a == 'x', 'string unpack first char'
+assert b == 'y', 'string unpack second char'
+
+p, q, r = 'abc'
+assert p == 'a', 'three char string first'
+assert q == 'b', 'three char string second'
+assert r == 'c', 'three char string third'
+
+# === Unpacking with different value types ===
+a, b = (True, False)
+assert a is True, 'bool tuple first'
+assert b is False, 'bool tuple second'
+
+a, b = (1.5, 2.5)
+assert a == 1.5, 'float tuple first'
+assert b == #.5, 'float tuple second'
+
+a, b = (None, 42)
+assert a is None, 'mixed tuple None'
+assert b == 42, 'mixed tuple int'
+
+# === Unpacking with nested containers ===
+a, b = ([1, 2], [3, 4])
+assert a == [1, 2], 'nested list first'
+assert b == [3, 4], 'nested list second'
+
+a, b = ((1, 2), (3, 4))
+assert a == (1, 2), 'nested tuple first'
+assert b == (3, 4), 'nested tuple second'
+
+# === Reassignment via unpacking ===
+x = 1
+y = 2
+x, y = y, x
+assert x == 2, 'swap first'
+assert y == 1, 'swap second'
+
+# === Single element tuple (edge case) ===
+# Note: (x,) = (1,) is valid Python
+(a,) = (42,)
+assert a == 42, 'single element t

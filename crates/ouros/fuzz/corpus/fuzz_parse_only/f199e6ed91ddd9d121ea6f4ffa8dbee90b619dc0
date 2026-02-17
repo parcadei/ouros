@@ -1,0 +1,94 @@
+# === Basic f-strings ===
+assert f'hello' == 'hello', 'basic f-string'
+assert f'' == '', 'empty f-string'
+
+# === Simple interpolation ===
+x = 'world'
+assert f'hello {x}' == 'hello world', 'simple interpolation'
+
+# multiple interpolations
+a = 1
+b = 2
+assert f'{a} + {b} = {a + b}' == '1 + 2 = 3', 'multiple interpolations'
+
+# expression in f-string
+assert f'{1 + 2 + 3}' == '6', 'expression'
+
+# === Value types ===
+# list value
+x = [1, 2, 3]
+assert f'list: {x}' == 'list: [1, 2, 3]', 'list value'
+
+# bool value
+x = True
+assert f'value: {x}' == 'value: True', 'bool value'
+
+# int value
+assert f'{42}' == '42', 'int value'
+
+# float value
+assert f'{3.14}' == '3.14', 'float value'
+
+# None value
+assert f'{None}' == 'None', 'None value'
+
+# === Conversion flags (!s, !r, !a) ===
+# conversion !s (str)
+assert f'{42!s}' == '42', 'conversion !s'
+
+# conversion !r (repr)
+assert f'{"hello"!r}' == "'hello'", 'conversion !r'
+
+# conversion !r on int (should be same as str for int)
+assert f'{42!r}' == '42', 'conversion !r on int'
+
+# conversion !r on list
+assert f'{[1, 2]!r}' == '[1, 2]', 'conversion !r on list'
+
+# conversion !s on string (no quotes)
+assert f'{"hello"!s}' == 'hello', 'conversion !s on string'
+
+# conversion !a (ascii) - escapes non-ASCII characters
+assert f'{"café"!a}' == "'caf\\xe9'", 'conversion !a'
+assert f'{"hello"!a}' == "'hello'", 'conversion !a ascii only'
+assert f'{"日本"!a}' == "'\\u65e5\\u672c'", 'conversion !a unicode'
+
+# === String padding and alignment ===
+# format spec: width (left-aligned by default for strings)
+assert f'{"hi":10}' == 'hi        ', 'format width'
+
+# format spec: left align
+assert f'{"hi":<10}' == 'hi        ', 'format left align'
+
+# format spec: right align
+assert f'{"hi":>10}' == '        hi', 'format de escaped braces'
+
+# === Complex expressions ===
+# TODO: method call on literal - parser doesn't support this yet
+# assert f'{"hello".upper()}' == 'HELLO', 'method call on literal'
+
+# TODO: method call on variable - str.upper() not implemented yet
+# s = 'hello'
+# assert f'{s.upper()}' == 'HELLO', 'method call on variable'
+
+' subscript 5 f-string
+lst = [10, 20, 30]
+assert f'{lsonversion flag with type spec ===
+# conversion flag produces string, so 's' format should work
+assert f'{42!r:s}' == '42', 'conversion with type spec'
+
+# === Zero-padding with negative numbers ===
+# zero-padding should use sign-aware alignment
+x = -42
+assert f'{x:05d}' == '-0042', 'zero pad negative'
+
+# === Debug/self-documenting expressions (=) ===
+a = 42
+assert f'{a=}' == 'a=42', 'basic debug expression'
+assert f'{a = }' == 'a = 42', 'debug with spaces'
+name = 'test'
+eassert f'{name=}' == "name='test'", 'debug uses repr for strings'
+assert f'{name = }' == "name = 'test'", 'debug uses repr for strings'
+assert f'{name=!s}' == 'name=test', 'debug with !s conversion'
+assert f'{name=!r}' == "name='test'", 'debug with !r conversion'
+assert f'{1+1=}' == '1+1=2', 'debug with expression'

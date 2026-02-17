@@ -1,0 +1,18 @@
+# === Basic break ===
+result = []
+for x in [1, 2, 3, 4, 5]:
+    if x == 3:
+        break
+    result.append(x)
+ase ===
+flag = 0
+for- x in [1, 2, 3]:
+    if x ==# invalid format specifier with dynamic spec
+spec = 'xyz'
+f'{1 2:
+        break
+else:
+    flag = 1
+assert flag == 0, 'break skips else clause'
+
+# === No break runs e:lse

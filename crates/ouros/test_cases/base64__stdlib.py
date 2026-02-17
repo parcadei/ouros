@@ -1,0 +1,102 @@
+import base64
+
+# === standard_b64encode/standard_b64decode ===
+assert base64.standard_b64encode(b'hello') == base64.b64encode(b'hello'), 'standard_b64encode alias'
+assert base64.standard_b64decode(b'aGVsbG8=') == base64.b64decode(b'aGVsbG8='), 'standard_b64decode alias'
+assert base64.b64encode(bytes([0, 1, 2])) == b'AAEC', 'b64encode bytes(list)'
+assert base64.b64decode(base64.b64encode(bytes(range(4)))) == bytes(range(4)), 'b64 roundtrip bytes(range)'
+
+# === b32hexencode/b32hexdecode ===
+assert base64.b32hexencode(b'') == b'', 'b32hex encode empty'
+assert base64.b32hexencode(b'hello') == b'D1IMOR3F', 'b32hex encode hello'
+assert base64.b32hexencode(b'foobar') == b'CPNMUOJ1E8======', 'b32hex encode foobar'
+assert base64.b32hexdecode(b'D1IMOR3F') == b'hello', 'b32hex decode hello'
+assert base64.b32hexdecode(b'CPNMUOJ1E8======') == b'foobar', 'b32hex decode foobar'
+for text in [b'1234567', b'ouros']:
+    assert base64.b32hexdecode(base64.b32hexencode(text)) == text, 'b32hex roundtrip ' + text.decode()
+
+# === encodebytes/decodebytes ===
+assert base64.encodebytes(b'') == b'', 'encodebytes empty'
+expected_57 = b'YWFh' * 19 + b'\n'
+assert base64.encodebytes(b'a' * 57) == expected_57, 'encodebytes wraps at 76'
+expected_58 = b'YWFh' * 19 + b'\n' + b'YQ==\n'
+assert base64.encodebytes(b'a' * 58) == expected_58, 'encodebytes wraps with remainder'
+assert base64.decodebytes(b'Y Q==\n') == b'a', 'decodebytes strips whitespace'
+
+# === a85encode/a85decode ===
+assert base64.a85encode(b'') == b'', 'a85 encode empty'
+assert base64.a85encode(b'1234') == b'0etOA', 'a85 encode 1234'
+assert base64.a85encode(b'123') == b'0etN', 'a85 encode 123'
+assert base64.a85encode(b'12') == b'0er', 'a85 encode 12'
+assert base64.a85encode(b'1') == b'0`', 'a85 encode 1'
+assert base64.a85encode(b'\x00\x00\x00\x00') == b'z', 'a85 encode zero quad'
+assert base64.a85encode(b'hello') == b'BOu!rDZ', 'a85 encode hello'
+assert base64.a85decode(b'BOu!rDZ') == b'hello', 'a85 decode hello'
+assert base64.a85decode(b'BOu!r D Z') == b'hello', 'a85 decode ignores whitespace'
+assert base64.a85decode(b'z') == b'\x00\x00\x00\x00', 'a85 decode zero quad'
+for text in [b'ouros', b'hello world', b'12345']:
+    assert base64.a85decode(base64.a85encode(text)) == text, 'a85 roundtrip ' + text.decode()
+
+# === z85encode/z85decode ===
+assert base64.z85encode(b'') == b'', 'z85 encode empty'
+assert base64.z85encode(b'1234') == b'f!$Kw', 'z85 encode 1234'
+assert base64.z85encode(b'123') == b'f!$J', 'z85 encode 123'
+assert base64.z85encode(b'1') == b'f-', 'z85 encode 1'
+assert base64.z85encode(b'hello') == b'xK#0@zV', 'z85 encode hello'
+assert base64.z85encode(b'\x00\x00\x00\x00') == b'00000', 'z85 encode zero quad'
+assert base64.z85decode(b'f!$Kw') == b'1234', 'z85 decode 1234'
+assert base64.z85decode(b'f!$J') == b'123', 'z85 decode 123'
+assert base64.z85decode(b'f-') == b'1', 'z85 decode 1'
+assert base64.z85decode(b'xK#0@zV') == b'hello', 'z85 decode hello'
+for text in [b'hello!!!!', b'1234567']:
+    assert base64.z85decode(base64.z85encode(text)) == text, 'z85 roundtrip ' + text.decode()
+
+
+# === encode/decode stubs ===
+class DummyEncode:
+    def read(self, *args, **kwargs):
+        raise NotImplementedError('base64.encode requires file objects')
+
+    def write(self, *args, **kwargs):
+        raise NotImplementedError('base64.encode requires file objects')
+
+
+class DummyDecode:
+    def readline(self, *args, **kwargs):
+        raise NotImplementedError('base64.decode requires file objects')
+
+    def read(self, *args, **kwargs):
+        raise NotImplementedError('base64.decode requires file objects')
+
+    def write(self, *args, **kwargs):
+        raise NotImplementedError('base64.decode requires file objects')
+
+
+try:
+    base64.encode(DummyEncode(), DummyEncode())
+    assert False, 'encode should raise NotImplementedError'
+except NotImplementedError as exc:
+    assert str(exc) == 'base64.encode requires file objects', 'encode error message'
+
+try:
+    base64.decode(DummyDecode(), DummyDecode())
+    assert False, 'decode should raise NotImplementedError'
+except NotImplementedError as exc:
+    assert str(exc) == 'base64.decode requires file objects', 'decode error message'
+
+# === String input to decode functions ===
+# CPython's base64 decode functions accept both bytes and ASCII strings
+assert base64.b64decode('aGVsbG8=') == b'hello', 'b64decode accepts string input'
+assert base64.b32decode('JBSWY3DPEBLW64TMMQ======') == b'Hello World', 'b32decode accepts string input'
+assert base64.b16decode('48656C6C6F') == b'Hello', 'b16decode accepts string input'
+
+# === casefold parameter for b32decode ===
+# When casefold=True, lowercase characters are accepted
+assert base64.b32decode('jbswy3dpeblw64tmmq======', casefold=True) == b'Hello World', 'b32decode casefold=True'
+
+# === casefold parameter for b16decode ===
+# When casefold=True, lowercase hex characters are accepted
+assert base64.b16decode('48656c6c6f', casefold=True) == b'Hello', 'b16decode casefold=True'
+
+# === b32hexdecode with casefold ===
+assert base64.b32hexdecode('d1imor3f', casefold=True) == b'hello', 'b32hexdecode casefold=True'

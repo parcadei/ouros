@@ -1,0 +1,4 @@
+import sys
+
+v =ssion test for: "fmt() called on disabled variant" panic
+# Type::Exception must be displayable i'Expected Python 3.14, got ({v[0]}, {v[1]})'

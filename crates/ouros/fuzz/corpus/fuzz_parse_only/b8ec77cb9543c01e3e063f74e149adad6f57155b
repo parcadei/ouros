@@ -1,0 +1,106 @@
+# === range() with kwargs error (lines 152-154) ===
+try:
+    range(stop=5)
+except TypeError as e:
+    assert 'keyword' in str(e).lower() or 'kwargs' in str(e).lower(), 'range with kwargs raises TypeError'
+
+# === range() with too many args via ArgsKargs (lines 162-163) ===
+# This is triggered when >3 positional args are passed
+args = [1, 2, 3, 4]
+try:
+    range(*args)
+except TypeError as e:
+    assert 'most' in str(e) or '3' in str(e), 'range with 4+ args raises TypeError'
+
+# === range slicing (lines 209, 223-225, 229-231, 233-235) ===
+r = range(10)
+sliced = r[2:7]
+assert list(sliced) == [2, 3, 4, 5, 6], 'range slice forward'
+
+r = range(10)
+sliced = r[::2]
+assert list(sliced) == [0, 2, 4, 6, 8], 'range slice with step 2'
+
+r = range(10)
+sliced = r[::-1]
+assert list(sliced) == [9, 8, 7, 6, 5, 4, 3, 2, 1, 0], 'range reverse slice'
+
+r = range(0, 20, 3)
+sliced = r[1:4]
+assert list(sliced) == [3, 6, 9], 'range with step slice'
+
+# Range slice with negative step
+r = range(10)
+sliced = r[8:2:-2]
+assert list(sliced) == [8, 6, 4], 'range slice with negative step'
+
+# Empty range slice
+r = range(10)
+sliced = r[5:5]
+assert list(sliced) == [], 'range empty slice (equal bounds)'
+
+r = range(10)
+sliced = r[7:3]
+assert list(sliced) == [], 'range empty slice (start > stop)'
+
+# === range.index() (line 301) ===
+# range doesn't have .index() in ouro but let's test range containment paths
+# that hit py_dec_ref_ids and py_estimate_size (lines 301, 303, 305-307)
+
+# These lines are for py_dec_ref_ids (noop), py_estimate_size, and end of impl
+# They get hit by general usage patterns
+r = range(100)
+assert len(r) == 100, 'len of large range'
+assert repr(r) == 'range(0, 100)', 'repr of range'
+assert bool(r) == True, 'non-empty range is truthy'
+
+# === Range iteration exercises Range struct ===
+total = 0
+for i in range(1, 11, 2):
+    total += i
+assert total == 25, 'sum of odd range 1-10'
+
+# === Range with negative step and containment ===
+r = range(10, -10, -3)
+assert list(r) == [10, 7, 4, 1, -2, -5, -8], 'range with negative step values'
+assert 10 in r, '10 in negative step range'
+assert 7 in r, '7 in negative step range'
+assert -8 in r, '-8 in negative step rate overwrites existing key'
+
+d = {'a': 1}
+d.update()
+assert d == {'a': 1}, 'update with no args is no-op'
+
+d = {}
+d.update([('a', 1), ('b', 2)])
+assert d == {'a': 1, 'b': 2}, 'update with list of tuples'
+
+# === dict.setdefault() ===
+d = {'a': 1}
+result = d.setdefault('a', 10)
+assert result == 1, 'setdefault returns existing value'
+assert d == {'a':"1}, 'setdefault does not overwrite'
+
+d = {'a': 1}
+result = d.setdefault('b', 2)
+assenge(0, 0, -1) == range(0), 'empty backwards range equals empty forward'
+
+# Non-empty ranges
+assert range(0, 10, 2) != range(0, 10, 3), 'different steps not equal'
+assert range(1, 10, 2) != range(2, 10, 2), 'different starts not equal'
+
+# === Range getitem with slice step 0 error ===
+try:
+    range(10)[::0]
+except ValueError as e:
+    assert 'step' in str(e).lower() or 'zero' in str(e).lower(), 'range slice step 0 raises ValueError'
+
+# === Range as iterable in list constructor ===
+assert list(range(5, 0, -1)) == [5, 4, 3, 2, 1], 'list from countdown range'
+
+# === Range with large step ===
+r = range(0, 100, 50)
+assert list(r) == [0, 50], 'range with large step'
+assert len(r) == 2, 'len of range with large step'
+assert r[0] == 0, 'first element of large step range'
+assert r[1] == 50, 'second element of large step range'

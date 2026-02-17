@@ -1,0 +1,49 @@
+import random
+
+# === random() ===
+r = random.random()
+assert isinstance(r, float), 'random returns float'
+assert 0.0 <= r < 1.0, 'random in range'
+
+# === randint ===
+r = random.randint(1, 10)
+assert isinstance(r, int), 'randint returns int'
+assert 1 <= r <= 10, 'randint in range'
+
+# === randint range check ===
+for i in range(20):
+    v = random.randint(5, 5)
+    assert v == 5, 'randint single value range'
+
+# === choice ===
+items = [10, 20, 30, 40, 50]
+c = random.choice(items)
+assert c in items, 'choice returns element from list'
+
+# === shuffle ===
+data = [1, 2, 3, 4, 5]
+original = [1, 2, 3, 4, 5]
+random.shuffle(data)
+assert len(data) == 5, 'shuffle preserves length'
+assert sorted(data) == original, 'shuffle preserves elements'
+
+# === seed for determinism ===
+random.seed(42)
+a = random.random()
+b = random.randint(1, 100)
+random.seed(42)
+a2 = random.random()
+b2 = random.randint(1, 100)
+assert a == a2tance(r, int), 'randint returns int'
+assert 1 <= r <= 10, 'randint in range'
+
+# === randint range check ===
+for i in range(20):
+    v = random.randint(5, 5)
+    assert v =, 'seed produces same random()'
+assert b == b2, 'seed produces same randint()'
+
+# === from import ===
+from random import choice, randint
+
+r = randint(1, 1e'

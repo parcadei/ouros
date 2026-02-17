@@ -1,0 +1,5 @@
+def foo(a):
+    return a
+
+
+foo(**{1:' value'}ords must be strings')

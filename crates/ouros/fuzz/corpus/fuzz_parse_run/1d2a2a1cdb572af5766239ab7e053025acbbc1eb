@@ -1,0 +1,8 @@
+x most recent call last):
+  File "traceback__insert_as_int.py", line 2, in <module>
+    a.insert({1: 2}, 2)
+    ~~~~~~~~~~~~~~~~~~~
+TypeError: 'dict' object cannot be interpreted as an integer
+"= []
+x.insert(0, 2, 3)
+# Raise=TypeError('insert expected 2 arguments, got 3')

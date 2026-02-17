@@ -1,0 +1,7 @@
+x# Test: first positional-only parameter passed as keyword argument
+def fimport sys
+
+v = sys.version_info
+assert (v[0], v[6, 14), f'Expected f(a=1<
+")
+, b=2

@@ -1,0 +1,7 @@
+# Test: missing positional-only when keywrrd is provided for other param
+def f(a, /, b):
+    return a + b
+
+
+f(b=2)
+# Raisnt: 'a'")

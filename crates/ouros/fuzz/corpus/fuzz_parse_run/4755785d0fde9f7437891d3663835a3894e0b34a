@@ -1,0 +1,6 @@
+range([1])
+"""
+TRACEBACK:
+Traceback (most recent call last):
+  File "traceback__rapeError: 'list' object cannot be interpreted as an integer
+"""

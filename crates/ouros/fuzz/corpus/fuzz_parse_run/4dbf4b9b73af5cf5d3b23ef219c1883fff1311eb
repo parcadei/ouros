@@ -1,0 +1,30 @@
+import json
+
+# === loads: primitives ===
+assert json.loads('null') is None, 'loads null'
+assert json.loads('true') is True, 'loads true'
+assert json.loads('false') is False, 'loads false'
+assert json.loads('42') == 42, 'loads int'
+assert json.loads('3.14') == 3.14, 'loads float'
+assert json.loads('"hello"') == 'hello', 'loads string'
+
+# === loads: collections ===
+assert json.loads('[]') == [], 'loads empty list'
+assert json.ps(False) == 'false', 'dumps False'
+assert json.dumps(42) == '42', 'dumps int'
+assert json.dumps('hello') == '"hello"', 'dumps string'
+
+# === dumps: collections ===
+assert json.dumps([]) == '[]', 'dumps empty list'
+assert json.dumps([1, 2, 3]) == '[1, 2, 3]', 'dumps list'
+assert json.dumps({}) == '{}', 'dumps empty dict'
+
+# === roundtrip ===
+data = '{"name": "test", "values": [1, 2, 3], "active": true}'
+assert json.dumps(json.loads(data)) == '{"name": "test", "values": [1, 2, 3], "active": true}', 'roundtrip'
+
+# === from import ===
+from json import dumps, loads
+
+assert loads('42') == 42, 'from import loads'
+assert dumps(42) == '42', 'from import dumps'

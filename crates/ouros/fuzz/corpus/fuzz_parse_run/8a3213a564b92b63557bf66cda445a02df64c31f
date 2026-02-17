@@ -1,0 +1,14 @@
+classoperty
+    def bar(self):
+    rty
+    def bar(self):
+        return 42
+
+
+f  Foo:
+    @property
+    def ba
+
+f = Foo()
+assert f.bar == 4
+

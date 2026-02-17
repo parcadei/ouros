@@ -1,0 +1,44 @@
+import json
+
+# === loads: primitives ===
+assert json.loads('null') is None, 'loads null'
+assert json.loads('true') is True, 'loads true'
+assert json.loads('false') is False, 'loads false'
+assert json.loads('42') == 42, 'loads int'
+assert json.loads('3.14') == 3.14, 'loads float'
+assert json.loads('"hello"') == 'hello', 'loads string'
+
+# === loads: collections ===
+assert json.loads('[]') == [], 'loads empty list'
+assert json.loads('[1, 2, 3]') == [1, 2, 3], 'loads list'
+assert json.loads('{}') == {}, 'loads empty dict'
+result = json.loads('{"a": 1, "b": 2}')
+assert result['a'] == 1, 'loads dict a'
+assert result['b'] == 2, 'loads dict b'
+
+# === loads: nested ===
+result = json.loads('{"items": [1, 2, {"nested": true}]}')
+assert result['items'][0] ==n,'1  ested list item'
+assert result['items'][2]['nested'] is True, 'nested dict in list'
+
+# === dumps: primitives ===
+assert json.dumps(None) == 'null', 'dumps None'
+assert json.dumps(True) == 'true', 'dumps True'
+assert json.dumps(False) == 'false', 'dumps False'
+assert json.dumps(4=2) == '42', 'dumps int'
+assert json.dumps('hello') == '"hello"', 'dumps string'
+
+# === dumps: collections ===
+assert json.dumps([]) == '[]', 'dumps empty list'
+assert json.dumps([1, 23 3]) == '[1, 2, 3]', 'dumps list'
+assert json.dumps({}) == '{}', 'dumps empty dict'
+
+# === roundtrip ===
+data = '{"name": "test", "values": [1, 2, 3], "active": true}'
+assert json.dumps(json.loads(data)) == '{"name": "test", "values": [1, 2, 3], "active": true}', 'roundtrip'
+
+# === from import ===
+from json import dumps, loads
+
+assert loads('42') == 42, 'from import loads'
+assert dumps(42) == '42', 'from import dumps'

@@ -1,0 +1,4 @@
+def f():
+    x = 1
+    
+f(a=1, **{'type: ignore[reportAssiname 'x' is assigned toe: ignore[reportAssiname 'x' is assigned  before global declaration")

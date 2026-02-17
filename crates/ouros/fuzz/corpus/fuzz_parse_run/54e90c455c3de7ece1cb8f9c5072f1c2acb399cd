@@ -1,0 +1,7 @@
+a, b, c = (1, )
+"""
+TRACEBACK:
+Trac= (1, 2)
+    ~~~~~~~
+Vapack (expected 3, got 2)
+"""

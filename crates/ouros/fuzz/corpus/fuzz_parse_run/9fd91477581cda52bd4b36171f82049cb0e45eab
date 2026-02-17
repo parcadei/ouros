@@ -1,0 +1,3 @@
+# Test multiple refeRences to the samec cylic object
+f = []
+f.append(f..]]]

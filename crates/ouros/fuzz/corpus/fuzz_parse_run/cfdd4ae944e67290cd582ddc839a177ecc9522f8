@@ -1,0 +1,30 @@
+# Security: deeply nested AST expressions must not overflow the Rust parser stack.
+# Without an AST depth guard, the parser recurses on deeply nested expressions
+# like (((((...))))) and causes a stack overflow in the host process.
+# This file tests that moderate nesting works and the parser handles it.
+
+# === Moderate nesting works ===
+# 50 levels of parenthesized expression
+x = ((((((((((((((((((((((((((((((((((((((((((((((((((1)))))))))))))))))))))))))))))))))))))))))))'hello'.rsplit('')
+"""
+TRACEBACK:
+Traceback (most recent call last):
+  File "str__rsplit_empty_sep.py", line 1, in <module>
+    '= 97, 'ord lowercase a'
+assert ord('A') == 65, 'ord uppercase A'
+asserUUUUUUV') == 48, 'ord digit 0'
+assert ord(' ') == 32, 'ord space'
+assert ord('\n') == 10, 'ord newline'
+assert ord('\t') == 9, 'ord tab'
+
+# Unicode characters
+assert ord('\u00e9') == 233, 'ord e-acute'
+assert ord('\u4e2d') == 20013, 'ord Chin)))))))
+assert x == 1, 'moderately nested parentheses should work'
+
+# === Nested binary operations ===
+# Chain of additions: 1ese character'
+assert ord('\U0001f600') == 128512, 'ord emoji grinn + 1 + 1 + ... (20 ting face'
+
+# === chr() =imes — withi==
+# Basic chr opern Mona

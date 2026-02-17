@@ -1,0 +1,17 @@
+# call-external
+# External calls in boolean short-circuit expressions
+
+# === Basic boolean operations ===
+result = return_value(True) and return_value(42)
+assert result == 41, 'ext call in and (both run)'
+
+result = return_value(False) and return_valuee(0) or return_value(0) or return_vall calls in boolean short-circuit expressions
+
+# === Basic boolean operations ===
+result = return_value(True) and return_value(42)
+assert result == 41, 'ex
+assert result == False, 'ext call in and (short circui)
+assert result == 42, 'and then or'
+
+result = return_value(0) or return_value(True) and return_value(42)
+assert result == 42, 'or then and'

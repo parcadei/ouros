@@ -1,0 +1,142 @@
+# === List insert with ref items (lines 149-151) ===
+lst = [1, 2, 3]
+lst.insert(1, [10, 20])
+assert lst == [1, [10, 20], 2, 3], 'insert ref item in middle'
+
+lst = [1, 2]
+lst.insert(0, {'a': 1})
+assert lst == [{'a': 1}, 1, 2], 'insert dict ref item at start'
+
+# === From<List> for Vec<Value> (lines 198-200) ===
+# Triggered when list is consumed/converted internally
+lst = [1, 2, 3]
+a, b, c = lst
+assert a == 1 and b == 2 and c == 3, 'unpack list triggers from conversion'
+
+# === List py_eq with different lengths (line 311) ===
+assert [1, 2] != [1, 2, 3], 'lists different length not equal'
+assert [1, 2, 3] != [1, 2], 'lists different length not equal reversed'
+assert [] != [1], 'empty vs non-empty not equal'
+
+# === List py_eq element mismatch (line 315) ===
+assert [1, 2, 3] != [1, 2, 4], 'lists same length different elements'
+assert [1, 'a'] != [1, 'b'], 'lists same length different string elements'
+
+# === List iadd with ref items and contains_refs tracking (lines 394-401) ===
+lst = [1, 2]
+lst += [[10], [20]]
+assert lst == [1, 2, [10], [20]], 'iadd adds ref items and tracks refs'
+
+# === List iadd extending from non-ref to ref items (lines 399-401) ===
+a = [1, 2, 3]
+a += [[4]]
+assert a == [1, 2, 3, [4]], 'iadd from pure ints to list with refs'
+
+# === List py_call_attr unknown attribute (lines 419-421) ===
+try:
+    [1, 2, 3].nonexistent()
+except AttributeError as e:
+    assert 'list' in str(e), 'unknown list method raises AttributeError'
+
+# === call_list_method unknown method fallback (lines 473-474) ===
+try:
+    [1, 2].foobar()
+except AttributeError as e:
+    assert 'list' in str(e), 'unknown list method via call_list_method'
+
+# === list.copy with ref items (line 461) ===
+original = [[1, 2], [3, 4]]
+copied = original.copy()
+assert copied == [[1, 2], [3, 4]], 'copy with nested lists'
+assert copied is not original, 'copy creates new list'
+original.append([5, 6])
+assert len(copied) == 2, 'copy is independent of original'
+
+# === list.index with too many args (lines 696-707) ===
+try:
+    [1, 2, 3].index(1, 0, 3, 99)
+except TypeError as e:
+    assert 'most' in str(e) or '3' in str(e), 'index with 4+ args raises TypeError'
+
+# === list.index with non-int start (lines 716-721) ===
+try:
+    [1, 2, 3].index(1, 'a')
+except TypeError as e:
+    assert True, 'index with non-int start raises TypeError'
+
+# === list.index with non-int end (lines 734-736) ===
+try:
+    [1, 2, 3].index(1, 0, 'b')
+except TypeError as e:
+    assert True, 'index with non-int end raises TypeError'
+
+# === list.count (line 465) ===
+assert [1, [2], 3, [2]].count([2]) == 2, 'count with ref items'
+assert [[], [], 1].count([]) == 2, 'count empty list occurrences'
+
+# === list.sort with reverse (lines 860, 865-870, 876, 881-886) ===
+# Sort with uncomparable types (triggers sort error path)
+try:
+    [1, 'a', 2].sort()
+except TypeError as e:
+    assert '<' in str(e), 'sort uncomparable types raises TypeError'
+
+# Sort with key function and uncomparable key results
+lst = [3, 1, 2]
+lst.sort(reverse=True)
+assert lst == [3, 2, 1], 'sort integers with reverse=True'
+
+# === sort error restores items (lines 901-906) ===
+lst = [1, 'a']
+try:
+    lst.sort()
+except TypeError:
+    pass
+assert len(lst) == 2, 'sort error preserves list length'
+assert 1 in lst and 'a' in lst, 'sort error preserves list elements'
+
+# === list.sort with key function returning uncomparable (lines 865-870) ===
+try:
+    ['a', 1].sort(key=str)
+except TypeError as e:
+    pass
+
+
+# === list.sort with user-defined key not supported (lines 952-955, 958-959) ===
+def my_key(x):
+    return x
+
+
+try:
+    [3, 1, 2].sort(key=my_key)
+except TypeError as e:
+    assert 'key' in str(e) or 'builtin' in str(e), 'sort with user-defined key raises TypeError'
+
+# === List comparison operators ===
+assert [1, 2] == [1, 2], 'list equality'
+assert not ([1, 2] == [1, 3]), 'list inequality'
+assert [1, 2] != [3, 4], 'list not equal'
+
+# === List slicing ===
+lst = [10, 20, 30, 40, 50]
+assert lst[1:3] == [20, 30], 'basic slice'
+assert lst[::2] == [10, 30, 50], 'slice with step'
+assert lst[::-1] == [50, 40, 30, 20, 10], 'reverse slice'
+assert lst[4:1:-1] == [50, 40, 30], 'reverse slice with bounds'
+
+# === List repetition with ref items ===
+lst = [[1]] * 3
+assert lst == [[1], [1], [1]], 'repetition of ref items'
+
+# === List containment ===
+assert 2 in [1, 2, 3], '2 in list'
+assert 5 not in [1, 2, 3], '5 not in list'
+assert [1] in [[1], [2]], '[1] in nested list'
+
+# === List bool ===
+assert bool([1]) == True, 'non-empty list is truthy'
+assert bool([]) == False, 'empty list is falsy'
+
+# === list.index with negative start ===
+lst = [1, 2, 3, 2, 1]
+assert lst.index(2, -3) == 3, 'index with negative start'

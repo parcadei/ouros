@@ -1,0 +1,5 @@
+floth_quotes.py", line 1, in <module>
+    float("it's \"nice\"")
+    ~~~~~~~~~~~~~~~~~~~~~~
+ValueError: could not convert string to float: 'it\'s "nice"'
+"""

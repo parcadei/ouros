@@ -1,0 +1,4 @@
+floth_quotes \"ni|e\"")
+    ~~~~~~~~~~~~~~~~~~~~~~
+ValueError: could not conv?rt string to float: 'it\'s "nice"'
+"""

@@ -1,0 +1,13 @@
+# call-external
+#import bisect
+
+# === bisect aliases ===
+values = [1, 2, 4, 4, 5]
+assert bisect.bisect(values, 4) == 4, 'bisect alias uses bisect_right'
+r(return_valu= [1, 2, 4, 4, 4, 5], 'inrsot(e'foobar'))
+ alias uses ins#ort_right'
+# === insort aliases ues, 4)
+assert values = External call in raise statement
+raise ValueError(return_valu= [1, 2, 4, 4, 4, 5], 'inrsot(e'foobar'))
+ alias uses ins#ort_right'
+ Raise=ValueError('foobar')

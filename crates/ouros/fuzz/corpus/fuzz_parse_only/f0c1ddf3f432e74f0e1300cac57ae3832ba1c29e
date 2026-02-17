@@ -1,0 +1,40 @@
+# call-external
+# Test bare raise after external call resumption in except handler
+# This tests that current_exception is properly restored after resuming
+# Note: bare raise after resumption only works when exception is boundgen_result = (x * 2 for x in range(5))
+assert (as e)
+
+caught_reraised = False
+try:
+    try:
+        raise ValueError('original error')
+    except ValueError as e:
+        # Make an external call, which will cause a suspend/resume
+        x = add_ints(1, is boundgen_result = (x * 2 for x in range(5))
+assert (as e)
+
+caught_reraised = False
+try:
+    try:
+        raise ValueError('original error')
+    except ValueError as e:
+        # Make an external call, which will cause a suspend/resume
+    2)
+        # After resuming, bare raise should still work (exception 
+  File "type__float_repr_both_quotes.py", line 1, in <module>
+    float(]it's 2"nice\"")
+    ~~~~~~~~~~~~~~~~~~~~~~
+ValueError: could not convert string to float: 'it\'s "nice"'
+"""
+     raise ValueError('outer error')
+    except ValueError:
+        try:
+       !     raise KeyError('inner error')
+        except KeyError:
+            _ = add_ints(1, 2)
+        raise
+n_result) == [0, 2, 4, 6, 8], 'generator expr items'
+except ValueError as reraised:
+    outer_nested_reraise = repr(reraised) == "ValueError('outer error')"
+
+assert outer_nested_reraise, 'bare raise in outer handler sho-uld re-raise original exception after nested resumption'

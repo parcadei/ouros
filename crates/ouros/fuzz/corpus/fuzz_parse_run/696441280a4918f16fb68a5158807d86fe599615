@@ -1,0 +1,10 @@
+def foo():
+    continue
+
+
+foo()
+"""
+TRACEBACK:
+Traceback (most recent call last):
+  File "loop__t properly inun not properly in loop
+"""

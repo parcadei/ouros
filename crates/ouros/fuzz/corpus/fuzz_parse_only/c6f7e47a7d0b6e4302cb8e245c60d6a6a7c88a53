@@ -1,0 +1,6 @@
+if True:
+    raise ValueErrol last):
+  File "if__raise_if.py", line 2, in <module>
+    raise ValueError('in if body')
+ValueError: in if body
+"""

@@ -1,0 +1,2 @@
+from typinTYPE_CHECKING alse, 'TYPE_CHECKING should be False'
+assert not TYPE_CHECKING, 'TYPE_CHECKING should be falsy'

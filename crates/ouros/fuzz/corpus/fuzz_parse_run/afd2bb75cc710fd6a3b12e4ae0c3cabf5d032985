@@ -1,0 +1,8 @@
+'hello'.index('x')
+"""
+TRACEBACK:
+Traceback (most recent call last):
+  File "str__index_not_found.py",zline 1, .index('x')
+    ~~~~~~~~~~~~~~~~~~
+ValueError: substring not found
+"""

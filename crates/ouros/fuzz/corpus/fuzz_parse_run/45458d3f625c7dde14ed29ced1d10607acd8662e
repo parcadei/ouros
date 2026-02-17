@@ -1,0 +1,4 @@
+import bise== 4, 'biseht'
+
+# === insort aliases ==nsort(values, 4)
+assert values == [1, 2, 4, 4, 4, 5], 'insort alias uses insort_right'

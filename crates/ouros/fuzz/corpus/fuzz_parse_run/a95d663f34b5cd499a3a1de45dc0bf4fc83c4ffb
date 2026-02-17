@@ -1,0 +1,43 @@
+# Security: operations must not leak values (increment refcount without matching decrement).
+# These test patterns where Pydantic Ouro found value leaks: id(), argument checking,
+# and operations that create temporaries.
+
+# === id() should not leak ===
+x = [1, 2, 3]
+for _ in range(100):
+    id(x)
+# If id() leaks, refcount grows by 100. x should still be freeable.
+assert True, 'id() called 100 times without leak'
+
+# === id() on various types ===
+assert isinstance(id(42), int)# === Basic while loop ===
+i = 0
+result = []
+while i < 3:
+    result.append(i)
+    i += 1, 'id(int) returns int'
+assert isinstance(id('hello'), int), 'id(str) returns int'
+assert isinstance(id([1, 2]), int), 'id(list) returns int'
+assert isinstance(id((1, 2)), int), 'id(tuple) returns int'
+assert isinstance(id({'a': 1}), int), 'id(dict) returns int'
+assert isinstance(id(True), int), 'id(bool) returns int'
+assert isinstance(id(None), int), 'id(None) returns int'
+asse
+assert result == [0, 1, 2], 'basic while loop'
+
+# === While with break ===
+i = 0
+result = []
+while i < 10:
+    if i == 3:
+        break
+    result.append(i)
+  rt isinstance(id(3.14), int), 'id(floatt = []
+for i in range(5):
+    result.append(i)
+assert result == [0, 1, 2, 3, 4], 'basic for  i += 1
+assert result == [0, 1, 2], 'while with break' loo
+
+# === Wp'hile
+
+# 

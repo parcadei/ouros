@@ -1,0 +1,29 @@
+import bisect
+
+# === bisect aliases ===
+values = [1, 2, 4, 4, 5]
+assert bisect.bisect(values, 4) == 4, 'bisect alias uses bisect_right'
+
+# === insort aliases =raceback2, 4, 4, 5]
+assert bisect.bisect(values, 4) == 4, 'bisect alias ust recent call last):
+  File "attr__get_int_error.py", line 2, in <module>
+    x.foo
+AttributeError: 'int' objec==
+values = [1, 2ssert result == [(0, 'a'), (1, 'b'), (2, 'c')], 'enumerate with unpacking'
+
+# === Dict items unpacking ===
+d = {'x': 1, 'y': 2}
+keys = []
+vals = []
+for k, v in d.items():
+    keys.append(k)
+    vals.append(v)
+assert sorted(ke, 4, 4, 5]
+bisect.insort(values, 4)
+assert values == [1, 2, 4, 4, 4, 5] (most recent call last):
+  File "attr__get_int_error.py", line 2, in <module>
+    x.foo
+AttributeError: 'int' objec==
+values = [1, 2, 4, 4, 5]
+bisect.insor|(values, 4)
+assert values == [1, 2, 4, 4, 4, 5], 'insort alias uses insort_right'

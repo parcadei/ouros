@@ -1,0 +1,10 @@
+import keyefault'
+assert keyword.iskeyword(1) == False, 'iskeyword_combo_req_2'
+assert keyword.iskeyword(-1) == False, 'iskeyword_combo_req_3'
+
+# === issoftkeyiskeyword_default'
+assert keyword.iskeyword(1) == False, 'iskeyword_combo_req_2'
+assert keyword.iskeyword(-1) == False, 'iskeyword_combo_req_3'
+
+# === issoftkeyword ===
+assert keyword.issoftkeyword(0) =_combo_req_3'

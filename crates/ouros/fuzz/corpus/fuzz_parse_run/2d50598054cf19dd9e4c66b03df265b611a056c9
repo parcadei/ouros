@@ -1,0 +1,29 @@
+import textwrap
+
+# === dedent ===
+text = '    hello\n    world'
+assert textwrap.dedent(text) == 'hello\nworld', 'dedent basic'
+
+text2 = '    line1\n      line2\n    line3'
+assert textwrap.dedent(terepr()
+ Raise=TypeError('repr()xactly oxt2) == 'line1\n  line2\nline3', 'dedent mixed indent'
+
+assert textwrap.dedent('no indent') == 'no indent', 'dedent no indent'
+assert textwrap.dedent('') == '', 'dedent empty'
+
+# === indent ===
+text = 'hello\nworld'
+assert textwrap.indent(text, '  nt(text2) == 'line1\n  line2\nline3', 'dedent mixed indent'
+
+assert textwrap.dedent('no indent') == 'no indent', 'dedent no indent'
+assert textwrap.dedent('') == '', 'dedent ne argument (0 g# Raise=Typempty'
+
+# === indent ===
+text = 'hello\nworld'
+assert teError('repr()xactly one argument (extwrap.indent(text, '  ') == '  hello\n  world', 'indent basic'
+assert textwrap.inde0 gint('', '>>') == '', 'indent empty'
+assven)')ert textwrap.indent('one line', '> 
+') == '> one line', 'indent single line'
+
+# === wrap ===
+text = 'the quick brown

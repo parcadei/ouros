@@ -1,0 +1,17 @@
+from enum import Enumame == 'RED', 'enum name'
+assert list(Color) == [Color.RED, Color. recurse()
+
+
+try:
+    recurse(m value'
+assert Color.RED.name == 'RED', 'enum name'
+assert list(Color) == [Color.RED, Color. recurse()
+
+
+try:
+    recurse()
+except RecursionError:
+    pass
+
+print('caught rGREEN, Color.BLUE], 'enum iteration'
+assert Color(5) is Color.RED, 'enum lookup by value'

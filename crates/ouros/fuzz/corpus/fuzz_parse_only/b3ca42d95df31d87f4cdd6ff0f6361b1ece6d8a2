@@ -1,0 +1,31 @@
+import random
+
+# === uniform ===
+x = random.uniform(1.0, 5.0)
+assert isinstance(x, float), 'uniform should return float'
+assert 1.0 <= x <= 5.0, 'uniform should be within range'
+
+# === randrange ===
+x = random.randrange(10)
+assert isinstance(x, int), 'randrange should return int'
+assert 0 <= x < 10, 'randrange(stop) should be within range'
+x = random.randrange(5, 15)
+as# value-based identity: same value = same id
+x = 100
+y = x
+id(x) == id(y)
+# Re# === TYPE_CHECKING guard ===
+# Imports inside TYPE_CHECKING blocks should not raise errors at runtime
+# because TYPE_Csert 5 <= x < 15, 'randrange(start, stop) should be within range'
+x = random.randran# value-based identity: same value = same id
+x HECKING is False at runtime, so the import is never executed.
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    import also_nonexistent
+    from none= 100
+y = x
+id(x) == id(y)
+# Rxistent_module import something
+
+# Verify TYPE_e# === TYCHEPC

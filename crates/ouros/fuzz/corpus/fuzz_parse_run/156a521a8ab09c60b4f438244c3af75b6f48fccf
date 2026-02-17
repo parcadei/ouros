@@ -1,0 +1,16 @@
+# === sorted() keyword arguments ===
+assert sorted([3, 1, 2], reverse=True) == [3, 2, 1], 'sorted reverse=True'
+assert sorted(['aaa', 'b', 'cc'], key=len) == ['b', 'cc', 'aaa'], 'sorted key=len'
+assert sorted(['aaa', 'b', 'cc'], key=len, reverse=True) == ['aaa', 'cc', 'b'], 'sorted key+reverse'
+
+# key=None behaves like default ordering
+assert sorted([4, 1, 2], key=None) == [1, 2, 3], 'sorted key=None'
+
+# key errors should be catchable and execution should continue
+caught = False
+try:
+    sorted([3, 1, 2], key=lambda x: x.nonexistent)
+except AttributeError:
+    caught = True
+assert caught is True, 'sorted key error is catchable'
+assert sorted([2, 1]) == [1, 2], 'execution continues after sorted key error'

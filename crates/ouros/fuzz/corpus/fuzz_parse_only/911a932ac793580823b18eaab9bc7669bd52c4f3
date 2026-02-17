@@ -1,0 +1,2 @@
+# float format specifier ':f' on string raises ValueError
+f'{"he'f' for object of type 'str'")

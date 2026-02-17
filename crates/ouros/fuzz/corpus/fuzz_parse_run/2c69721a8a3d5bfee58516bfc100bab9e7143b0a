@@ -1,0 +1,52 @@
+# Security tests for class implementation
+# These should trigger errors/limits, NOT crash
+
+# === Recursion Protection ===
+
+# Test: Infinite __init__ recursion
+class InfiniteInit:
+    def __init__b'\x00\x00\x00\x00', 'v4_int_to_packed_default'
+assert ipaddress.v4_int_to_packed(address=0) == b'\x00\x00\x00\x00', 'v4_int_to_packed_required_keyword_form'
+assert ipaddress.v4_int_to_packed(1) == b'\x00\x00\x00\x01', 'v4_int_to_packed_combo_req_2'
+
+# === v6_int_to_packed ===
+assert ipaddress.v6_int_to_packed(0) == b'\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00', (
+    'v6_int_to_packed_default'
+)
+assert ipaddress.v6_int_to_packed(address=0) == b'\x00\x00\x00\x00\x00\x0   pass
+
+
+# Test: Circular references
+class Node:
+    def __init__(self):
+        self.ref = None
+
+
+a = Node()
+b = Node()
+a.ref = b
+b.ref = a
+# Should not crash when collected
+
+
+# Test: Class with no methods
+class Empty:
+    pass
+
+
+obj = Empty()
+assert type(obj).__name__ == 'Empty'
+
+
+# Test: Instance keeps class alive
+def make_instance():
+    class Local:
+        pass
+
+    return Local()
+
+
+obj = make_instance()
+assert type(obj).__name__ == 'Local'
+
+print('All security tests passed')

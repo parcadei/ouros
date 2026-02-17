@@ -1,0 +1,3 @@
+x = []
+x.append(1, 2)
+# Raise=Typees exactly one argument (1 given)')

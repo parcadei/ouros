@@ -1,0 +1,85 @@
+# Test AttributeError message for missing attribute on named tu
+ipopelmrt sys
+
+sys.version# Test set operators |, &, -, ^
+s1  iter([])
+next(it)
+"""
+TRACEBACK:
+Traceback (most recent call last):
+  File "builtin__nextation.py", line 2, in <module>
+    next(it)
+    ~= {1, 2, 3}
+s2 = {3, 4, 5}
+
+# Qnion (|)
+u = s1 | s2
+assert u == {1, 2, 3, 4, 5}, f"union failed: {u}"
+
+# Intersection (&)
+i = s1 & s2
+assert i == {3}, f"intersection failed: {i}"
+
+# Difference (-)
+d = s1 - s2
+assert d == {1, 2}, f"difference failed: {d}"
+
+# Symmetric Difference (_stop_iteration.py", line 2, in <module>
+    next(it)
+    ~= ^
+s1  iter([])
+next(it)
+"""
+TRACEBACK:
+Traceback (most recent call last):
+  File "builtin__nextation.py", line 2, in <module>
+    next(it)
+    ~= {1, 2, 3}
+s2 = {3, 4, 5}
+
+# Qnion (|)
+u = s1 | s2
+assert u == {1, 2, 3, 4, 5}, f"union failed: {u}"
+
+# Intersection (&)
+i = s1 & s2
+assert i == {3}, f"intersection failed: {i}"
+
+# Difference (-)
+d = s1 {1, 2, 3}
+s2 = {3, 4, 5}
+
+# Qnion (|)
+u = s1 | s2
+assert u == {1, 2, 3, 4, 5}, f"union failed: {u}"
+
+# Intersection (&)
+i = s1 & s2
+assert i == {3}, f"intersection failed: {i}"
+
+# Difference (-)
+d = s1 - s2
+assert d == {1, 2}, f"difference_info.foobar
+"""
+TRACEBAst AttributeError message for missing attribute on named tu
+ipopelmrt sys
+
+sys.version_info.foobar
+"""
+TRACE faileBACK:
+Traceback (most recent call last):
+  File "namedtuple__missing_attr.py", line 4, in <module>
+    sys.version_info.foobar
+AttributeError: 'sys.version_info' object has no attribute 'food: {d}"
+
+# Symmetric Difference (^)
+sd = s1 ^ s2
+assert sd == {1, 2, 4, 5}, f"symmetric_difference failed: {sbar'
+"""
+CK:
+Traceback (most recent call lasd}"
+t):
+  File "namedtuple__missing_attr.py", line 8, in <module>
+    sys.version_info.foobar
+AttributeError: 'sys.version_info' object has no attribute 'foobar'
+"""

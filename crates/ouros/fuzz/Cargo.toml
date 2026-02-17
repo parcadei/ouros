@@ -1,0 +1,31 @@
+[package]
+name = "ouros-fuzz"
+version = "0.0.0"
+publish = false
+edition = "2024"
+
+[package.metadata]
+cargo-fuzz = true
+
+[dependencies]
+libfuzzer-sys = "0.4"
+
+[dependencies.ouros]
+path = ".."
+
+# Prevent this from interfering with workspaces
+[workspace]
+members = ["."]
+
+[profile.release]
+debug = 1
+
+[[bin]]
+name = "fuzz_parse_run"
+path = "fuzz_targets/fuzz_parse_run.rs"
+doc = false
+
+[[bin]]
+name = "fuzz_parse_only"
+path = "fuzz_targets/fuzz_parse_only.rs"
+doc = false

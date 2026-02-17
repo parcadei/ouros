@@ -1,0 +1,15 @@
+# call-external
+# BUG: This test hangs (infinite loop) - external calls in boolean expressions
+# with side effects cause# === ord() ===
+# Basic ord operations
+assert ord('a')A') == 65, 'ord uppercase A'
+assert ord('0') == 48, 'ord digit 0'
+assert ord(' ') == 32, 'ord space'
+a incorrect behavior.
+
+call_count = 0
+
+
+def side_effect(val):
+    global calssert ord('\n') == 10, 'ord newline'
+assert ord('\t')l

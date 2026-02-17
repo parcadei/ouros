@@ -1,0 +1,35 @@
+import csv
+from csv import reader
+
+# === basic reader ===
+rows = list(csv.reader(['a,b,c', '1,2,3']))
+assert len(rows) == 2, 'reader returns 2 rows'
+assert rows[0] == ['a', 'b', 'c'], 'reader first row'
+assert rows[1] == ['1', '2', '3'], 'reader second row'
+
+# === single row ===
+rows = list(csv.reader(['hello,world']))
+assert len(rows) == 1, 'reader single row'
+assert rows[0] == ['hello', 'world'], 'reader single row values'
+
+# === empty input ===
+rows = list(csv.reader([]))
+assert rows == [], 'reader empty list'
+
+# === single column ===
+rows = list(csv.reader(['no_comma']))
+assert rows[0] == ['no_comma'], 'reader no comma'
+
+# === many columns ===
+rows = list(csv.reader(['a,b,c,d,e,f']))
+assert len(rows[0]) == 6, 'reader many columns'
+assert rows[0][5] == 'f', 'reader last column'
+
+# === empty fields ===
+rows = list(csv.reader(['a,,c']))
+assert rows[0] == ['a', '', 'c'], 'reader empty field'
+
+# === from import ===
+rows = list(reader(['x,y', '1,2']))
+assert rows[0] == ['x', 'y'], 'from import reader'
+assert rows[1] == ['1', '2'], 'from import reader row 2'

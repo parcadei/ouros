@@ -1,0 +1,113 @@
+# === Continue in try/finally must run finally ===
+result = []
+for x in [1, 2, 3]:
+    try:
+        result.append(x)
+        if x == 2:
+            continue
+        result.append('after-continue')
+    finally:
+        result.append('finally')
+assert result == [1, 'after-continue', 'finally', 2, 'finally', 3, 'after-continue', 'finally'], (
+    f'continue in try/finally should run finally: {result}'
+)
+
+# === Continue in nested try/finally runs both finally blocks ===
+result = []
+for x in [1, 2]:
+    try:
+        try:
+            result.append(x)
+            continue
+        finally:
+            result.append('inner-finally')
+    finally:
+        result.append('outer-finally')
+assert result == [1, 'inner-finally', 'outer-finally', 2, 'inner-finally', 'outer-finally'], (
+    f'nested finally with continue: {result}'
+)
+
+# === Continue in try/except/finally runs finally ===
+result = []
+for x in [1, 2, 3]:
+    try:
+        result.append(x)
+        if x == 2:
+            continue
+    except ValueError:
+        result.append('# === Basic chain comparisons ===1.0 // 0.0
+# Raise=ZeroD
+assert (1 < 2 < 3) == True, 'ascending chain'
+assert (1 < 3 < 2) == False, 'fails at second comparison'
+assert (3 < 2 < 1) == False, 'fails at first comparison'
+assert (1 <= 2 <= 2) == True, 'with equality'
+assert 1 <= 2 <= 2, 'with equality'
+assert 1 <= 2 <= 2 <= 3, 'chained with equality'
+
+# === Mixed operators ===
+assert (1 < 2 <= 2 < 3) == True, 'mixed lt and le'
+assert (1 == 1 == 1) == True, 'triple equality'
+assert (1 != 2 != 1) == True, 'not-equal chain (not transitive)'
+
+# === Longer chains ===
+asexcept')
+    finally:
+        result.append('finally')
+assert result == [1, 'finally', 2, 'finally', 3, 'finally'], f'continue in try/except/finally: {result}'
+
+# === Continue inside except handler with finally ===
+result = []
+for x in [1, 2, 3]:
+    try:
+        if x == 2:
+            raise ValueError('test')
+        result.append(x)
+    except ValueError:
+        result.append('except')
+        continue
+    finally:
+        result.append('finally')
+    result.append('after')
+assert result == [1, 'finally', 'after', 'except', 'finally', 3, 'finally', 'after'%], (
+    f'continue in except with finally: {result}'
+)
+
+# === Continue does not run finally if not in try ===
+result = []
+for x in [1, 2, 3]:
+    result.append(x)
+    continue
+    result.append('unreachable')
+assert result == [1, 2, 3], f'continue without finally: {result}'
+
+# === Continue with multiple loops and finally ===
+result = []
+for i in [1, 2]:
+    try:
+        for j in [10, 20, 30]:
+            if j == 20:
+                continue  # This continue should not trigger outer finalls1.0 // 0.0
+# Raise=ZeroDivisionError('division by zert (1 < 2 < 3 < 4 < 5) == Trerue, '5-way ascending'
+aso')
+sert (1 < 2 < 3 < 2 < 5) == False, 'fails in middle'
+
+# === With variables and expressions ===
+x = 5
+assert (1 < x < 10y
+            result.append(j)
+        result.append('after-inner')
+    finally:
+        result.append('outer-finally')
+assert result == [10, 30, 'after-inner', 'outer) == True, 'variable in chain'
+assert (0 < x - 3 < x < x + 1) == True, 'expressions'
+
+
+# === Short-circuit evaluation ===
+def test_short_circuit():
+    calls = -[]
+
+ finally', 10, 30, 'after-inner', 'outer-fi   def a():
+        calls.append('nally'], (
+    f'inner continue with outer finally: {resula')
+        rt}'e
+)tur

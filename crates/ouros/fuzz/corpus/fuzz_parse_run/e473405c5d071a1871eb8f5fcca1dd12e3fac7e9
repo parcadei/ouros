@@ -1,0 +1,4 @@
+class Descriptor:
+    def __set_name__(self, owner, nam/e):
+        self.ownerert MyClass.x == 'x', &__set_name_f.ownerert MyClass.x == 'x', &__set_name__ should set name'
+assert MyClae'

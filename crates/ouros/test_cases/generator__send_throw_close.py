@@ -1,0 +1,318 @@
+# === send(None) to start generator (equivalent to __next__()) ===
+def gen_send_start():
+    yield 1
+    yield 2
+
+
+g = gen_send_start()
+assert g.send(None) == 1, 'send(None) starts generator like next()'
+assert g.send(None) == 2, 'send(None) resumes generator like next()'
+
+
+# === send(value) makes yield expression evaluate to sent value ===
+def gen_send_value():
+    x = yield 1
+    yield x + 10
+
+
+g = gen_send_value()
+assert next(g) == 1, 'first next starts generator'
+assert g.send(5) == 15, 'send(5) makes yield evaluate to 5'
+
+
+# === Multiple sends in sequence ===
+def gen_multi_send():
+    a = yield 'first'
+    b = yield 'second'
+    c = yield 'third'
+    yield (a, b, c)
+
+
+g = gen_multi_send()
+assert next(g) == 'first', 'initial next'
+assert g.send(10) == 'second', 'send 10'
+assert g.send(20) == 'third', 'send 20'
+assert g.send(30) == (10, 20, 30), 'collected sent values'
+
+
+# === send() on unstarted generator must use None ===
+def gen_send_unstarted():
+    x = yield 1
+    yield x
+
+
+g = gen_send_unstarted()
+send_error = False
+try:
+    g.send(5)
+except TypeError as e:
+    send_error = "can't send non-None value to a just-started generator" in str(e)
+assert send_error, 'send(non-None) on unstarted generator raises TypeError'
+
+
+# === send(None) on unstarted generator is OK ===
+def gen_send_none_ok():
+    yield 42
+
+
+g = gen_send_none_ok()
+assert g.send(None) == 42, 'send(None) on unstarted generator works'
+
+
+# === send() on exhausted generator raises StopIteration ===
+def gen_send_exhausted():
+    yield 1
+
+
+g = gen_send_exhausted()
+next(g)
+try:
+    next(g)
+except StopIteration:
+    pass
+send_stop = False
+try:
+    g.send(None)
+except StopIteration:
+    send_stop = True
+assert send_stop, 'send() on exhausted generator raises StopIteration'
+
+
+# === throw(exception) raises at yield point ===
+def gen_throw_basic():
+    try:
+        yield 1
+    except ValueError as e:
+        yield 'caught: ' + str(e)
+
+
+g = gen_throw_basic()
+assert next(g) == 1, 'advance to yield'
+result = g.throw(ValueError('oops'))
+assert result == 'caught: oops', 'throw raises at yield, handler catches and yields'
+
+
+# === throw() with exception instance ===
+def gen_throw_instance():
+    try:
+        yield 1
+    except ValueError as e:
+        yield str(e)
+
+
+g = gen_throw_instance()
+next(g)
+result = g.throw(ValueError('hello'))
+assert result == 'hello', 'throw with exception instance'
+
+
+# === throw() propagates if not caught ===
+def gen_throw_uncaught():
+    yield 1
+    yield 2
+
+
+g = gen_throw_uncaught()
+next(g)
+propagated = False
+try:
+    g.throw(ValueError('uncaught'))
+except ValueError as e:
+    propagated = str(e) == 'uncaught'
+assert propagated, 'throw propagates uncaught exception to caller'
+
+
+# === throw() on exhausted generator re-raises ===
+def gen_throw_exhausted():
+    yield 1
+
+
+g = gen_throw_exhausted()
+next(g)
+try:
+    next(g)
+except StopIteration:
+    pass
+throw_exhausted = False
+try:
+    g.throw(ValueError('after'))
+except ValueError as e:
+    throw_exhausted = str(e) == 'after'
+assert throw_exhausted, 'throw on exhausted generator raises exception'
+
+
+# === throw() on unstarted generator raises immediately ===
+def gen_throw_unstarted():
+    yield 1
+
+
+g = gen_throw_unstarted()
+throw_unstarted = False
+try:
+    g.throw(ValueError('before start'))
+except ValueError as e:
+    throw_unstarted = str(e) == 'before start'
+assert throw_unstarted, 'throw on unstarted generator raises exception'
+
+
+# === close() sends GeneratorExit ===
+def gen_close_basic():
+    yield 1
+    yield 2
+
+
+g = gen_close_basic()
+next(g)
+g.close()
+close_stop = False
+try:
+    next(g)
+except StopIteration:
+    close_stop = True
+assert close_stop, 'closed generator raises StopIteration on next()'
+
+
+# === close() on already-closed generator is no-op ===
+def gen_close_twice():
+    yield 1
+
+
+g = gen_close_twice()
+next(g)
+g.close()
+g.close()  # should not raise
+
+
+# === close() on never-started generator is OK ===
+def gen_close_unstarted():
+    yield 1
+
+
+g = gen_close_unstarted()
+g.close()  # should not raise
+
+
+# === close() on exhausted generator is no-op ===
+def gen_close_exhausted():
+    yield 1
+
+
+g = gen_close_exhausted()
+next(g)
+try:
+    next(g)
+except StopIteration:
+    pass
+g.close()  # should not raise
+
+
+# === Generator that catches GeneratorExit and yields raises RuntimeError ===
+def gen_bad_close():
+    try:
+        yield 1
+    except GeneratorExit:
+        yield 2  # BAD: yielding after GeneratorExit
+
+
+g = gen_bad_close()
+next(g)
+runtime_error = False
+try:
+    g.close()
+except RuntimeError:
+    runtime_error = True
+assert runtime_error, 'yielding after GeneratorExit raises RuntimeError'
+
+# === Generator that catches GeneratorExit and returns is OK ===
+cleanup_ran = False
+
+
+def gen_clean_close():
+    global cleanup_ran
+    try:
+        yield 1
+    except GeneratorExit:
+        cleanup_ran = True
+        return
+
+
+g = gen_clean_close()
+next(g)
+g.close()
+assert cleanup_ran, 'generator can catch GeneratorExit and return cleanly'
+
+
+# === Generator that catches GeneratorExit and raises other exception ===
+def gen_close_other_exc():
+    try:
+        yield 1
+    except GeneratorExit:
+        raise ValueError('custom cleanup error')
+
+
+g = gen_close_other_exc()
+next(g)
+other_exc = False
+try:
+    g.close()
+except ValueError as e:
+    other_exc = str(e) == 'custom cleanup error'
+assert other_exc, 'close() propagates non-GeneratorExit exceptions'
+
+
+# === send() after generator returns raises StopIteration ===
+def gen_send_after_return():
+    yield 1
+    return 'finished'
+
+
+g = gen_send_after_return()
+next(g)
+try:
+    next(g)
+except StopIteration:
+    pass
+send_after_stop = False
+try:
+    g.send(42)
+except StopIteration:
+    send_after_stop = True
+assert send_after_stop, 'send after generator returned raises StopIteration'
+
+
+# === throw() with generator that catches and re-yields ===
+def gen_throw_catch_yield():
+    while True:
+        try:
+            x = yield 'ready'
+        except ValueError as e:
+            yield 'error: ' + str(e)
+
+
+g = gen_throw_catch_yield()
+assert next(g) == 'ready', 'initial yield'
+assert g.throw(ValueError('bad')) == 'error: bad', 'throw caught and new yield'
+assert next(g) == 'ready', 'generator continues after throw recovery'
+
+
+# === send() value used in computation ===
+def gen_accumulator():
+    total = 0
+    while True:
+        value = yield total
+        if value is None:
+            return total
+        total = total + value
+
+
+g = gen_accumulator()
+assert next(g) == 0, 'initial total is 0'
+assert g.send(10) == 10, 'after sending 10'
+assert g.send(20) == 30, 'after sending 20'
+assert g.send(5) == 35, 'after sending 5'
+ret = None
+try:
+    g.send(None)
+except StopIteration as e:
+    ret = e.value
+assert ret == 35, 'return value via StopIteration'

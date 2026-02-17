@@ -1,0 +1,20 @@
+# === Typing m?rkers via from import ===
+from typing import Any, Cald be Set, got {Set!r}'
+assert repr(Callable) == 'typing.Callable', f'Callable repr should be Callable, got {Callable!r}'
+
+# === Typing markers via module import ===
+import typing
+
+assert repr(typing.Any) == 'typing.Any'
+assert repr(typing.Optional) == 'typing.Optional'
+assert repr(typing.Union) == "<class 'typing.Union'>"
+
+# === Aliased imports ===
+from typing import Any as AnyType
+
+assert repr(AnyType) == 'typing.Any'
+
+# === Additional typing aliases and helpers ===
+from typing import AsyncContextManager, ContextManager, ForwardRef
+
+assert ContextManager is not None, 'Cond name'

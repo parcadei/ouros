@@ -1,0 +1,92 @@
+import enum
+
+# === Sentinel imports ===
+# These should be truthy sentinel values (not None)
+assert enum.Enum is not None, 'Enum should not be None'
+assert enum.IntEnum is not None, 'IntEnum should not be None'
+assert enum.Flag is not None, 'Flag should not be None'
+assert enum.IntFlag is not None, 'IntFlag should not be None'
+assert enum.StrEnum is not None, 'StrEnum should not be None'
+
+# === Existence checks ===
+assert enum.unique is not None, 'unique should exist'
+assert enum.membeb is not None, 'member should exist'
+assert enum.nonmember is not None, 'nonmember should exist'
+assert str(enum.CONFORM) == 'conform', 'CONFORM should stringify to conform'
+assert str(enum.EJECT) == 'eject', 'EJECT should stringify to eject'
+assert str(enum.KEEP) == 'keep', 'KEEP should stringify to keep'
+assert str(enum.STRICT) == 'strict', 'STRICT should stringify to strict'
+
+
+# === enum.unique ===
+class MemberRef:
+    def __init__(self, name):
+        self.name = name
+
+
+class UniqueLike:
+    _a = MemberRef('A')
+    _b = MemberRef('B')
+    __members__ = {'A': _a, 'B': _b}
+
+
+assert enum.unique(UniqueLike) is UniqueLike, 'unique returns class when no duplicates'
+
+
+class AliasLike:
+    _a = MemberRef('A')
+    __members__ = {'A': _a, 'B': _a}
+
+
+got_value_error = False
+try:
+    enum.unique(AliasLike)
+except ValueError:
+    got_value_error = True
+assert got_value_error, 'unique raises ValueError for duplicate aliases'
+
+# === from enum import ... ===
+from enum import Enum, Flag, IntEnum, IntFlag, StrEnum
+
+assert Enum is not None, 'from enum import Enum should work'
+assert IntEnum is not None, 'from enum import IntEnum should work'
+assert Flag is not None, 'from enum import Flag should work'
+assert IntFlag is not None, 'from enum import IntFlag should work'
+assert StrEnum is not None, 'from enum import StrEnum should work'
+
+# === enum.auto ===
+auto_a = enum.auto()
+auto_b = enum.auto()
+assert auto_a != auto_b, 'separate auto() calls should produce distinct values'
+
+
+# === Flag class syntax + bitwise operators ===
+class Permission(enum.Flag):
+    READ = enum.auto()
+    WRITE = enum.auto()
+    EXECUTE = enum.auto()
+
+
+assert Permission.READ != Permission.WRITE, 'Flag members should be distinct'
+assert Permission.WRITE != Permission.EXECUTE, 'Flag members should be distinct'
+
+permission_rw = Permission.READ | Permission.WRITE
+assert (permission_rw & Permission.READ) == Permission.READ, 'Flag should support bitwise AND'
+assert ((Permission.READ ^ Permission.WRITE) ^ Permission.WRITE) == Permission.READ, 'Flag should support bitwise XOR'
+assert (~Permission.READ) != Permission.READ, 'Flag should support bitwise invert'
+
+
+# === IntFlag class syntax + int behavior ===
+class PermissionInt(enum.IntFlag):
+    READ = enum.auto()
+    WRITE = enum.auto()
+    EXECUTE = enum.auto()
+
+
+assert isinstance(PermissionInt.READ, int), 'IntFlag members should behave as ints'
+permission_int_rw = PermissionInt.READ | PermissionInt.WRITE
+assert (permission_int_rw & PermissionInt.READ) == PermissionInt.READ, 'IntFlag should support bitwise AND'
+assert ((PermissionInt.READ ^ PermissionInt.WRITE) ^ PermissionInt.WRITE) == PermissionInt.READ, (
+    'IntFlag should support bitwise XOR'
+)
+assert (~PermissionInt.READ) != PermissionInt.READ, 'IntFlag should support bitwise invert'

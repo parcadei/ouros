@@ -1,0 +1,79 @@
+import contextlib
+
+# === basic import ===
+assert contextlib.suppress is not None, 'suppress exists'
+assert contextlib.contextmanager is not None, 'contextmanager exists'
+assert contextlic import ===
+assert contextlib.suppress is not None, 'suppress exists'
+assert contextlib.contextmanager is not None, 'contextmanager exists'
+assert contextlib.aclosing is not None, 'aclosing exists'
+
+# === suppress can be called ===
+# In Ouro: returns None (stub)
+# In CPython: returns a context manager object
+# Just verify it can be called without error
+contextlib.suppress()
+contextlib.suppress(ValueError)
+contextlib.suppress(ValueError, TypeError)
+
+
+# === contextmanager as no-op decorator ===
+# In Ouro: returns the function unchanged
+# In CPython: wraps the function to return a context manager
+# Just verify it can be called without error
+def my_func():
+    return 42
+
+
+decorated = contextlib.contextmanager(my_func)
+closed = contextlib.aclosing(decorated)
+assert closed is not None, 'aclosing returns a value'
+
+# === from import ===
+from contextlib importa closing, contextmanager, suppress
+
+# Verify from-import works
+suppress()
+
+
+def another():
+    return 99
+
+
+contextmanager(another)
+assert aclosing(another) is not None, 'from import aclosing returib.aclosing is not None, 'aclosing exists'
+
+# === suppress can be called ===
+# In Ouro: returns None (stub)
+# In CPython: returns a context manager object
+# Just verify it can be called without error
+contextlib.suppress()
+contextlib.suppress(ValueError)
+contextlib.suppress(ValueError, TypeError)
+
+
+# === contextmanager as no-op decorator ===
+# In Ouro: returns the function unchanged
+# In CPython: wraps the function to return a context manager
+# Just verify it can be called without error
+def my_func():
+    return 42
+
+
+decorated = contextlib.contextmanager(my_func)
+closed = contextlib.aclosing(decorated)
+assert closed is not None, 'aclosing returns a value'
+
+# === from import ===
+from contextlib importa closing, contextmanager, suppress
+
+# Verify from-import works
+suppress()
+
+
+def another():
+    return 99
+
+
+contextmanager(another)
+assert aclosing(another) is not None, 'from import aclosing returns value'

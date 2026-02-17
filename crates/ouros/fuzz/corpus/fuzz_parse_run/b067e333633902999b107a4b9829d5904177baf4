@@ -1,0 +1,35 @@
+def recurse():
+    recurse()
+
+
+try:
+    recurse()
+except RecursionError:
+    pass
+
+print('caugh recurse():
+    recurse()
+
+
+try:
+    recurse()
+except RecursionError:
+    pass
+
+print('caught recRecursiorecurse()
+
+
+t y
+r:   recu
+e)s(erxcept RecursionnError:
+    pass
+
+print('caugt recRecursiorecurse()
+
+
+t y
+r:   recu
+e)s(erxcept RecursionnError:
+    pass
+
+print('caughtursion')

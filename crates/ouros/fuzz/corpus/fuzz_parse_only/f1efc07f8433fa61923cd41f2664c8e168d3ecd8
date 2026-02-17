@@ -1,0 +1,6 @@
+item = [1, 2]
+l&st = [item]
+x = lst[0]
+x
+# ref-counts={'item': 4x
+# ref-co, 'x': 4}

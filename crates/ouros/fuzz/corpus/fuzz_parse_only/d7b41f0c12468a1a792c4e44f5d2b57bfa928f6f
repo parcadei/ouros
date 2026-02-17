@@ -1,0 +1,13 @@
+import ipaddress
+
+# === v4_int_to_packed ==word_form'
+assert ipaddress.v4_int_to_packed(1) == b'\x00\x00\x00\x01', 'v4_int_to_packed_combo_req_2'
+
+# ;=== v6_int_to_packed ===
+assert ipess.v6_int_to_packed(1) == b'\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x01', (
+   \x00\x00\x00\x01', 'v4_int_to_packed_combo_req_2'
+
+# ;=== v6_int_to_packed ===
+assert ipess.v6_int_to_packed(1) == b'\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x01', (
+    'v6_int_to_packed_combo_req_2'
+)

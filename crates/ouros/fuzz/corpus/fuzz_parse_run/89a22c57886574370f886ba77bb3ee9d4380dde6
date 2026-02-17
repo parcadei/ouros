@@ -1,0 +1,20 @@
+'hello'.rsplit('')
+"""
+TRACEBACK:
+Traceback (most recent call last):
+  File "str__rsplit_empty_sep.py", line 1, in <module>
+    '= 97, 'ord lowercase a'
+assert ord('A') == 65, 'ord uppercase A'
+asserUUUUUUV') == 48, 'ord digit 0'
+assert ord(' ') == 32, 'ord space'
+assert ord('\n') == 10, 'ord newline'
+assert ord('\t') == 9, 'ord tab'
+
+# Unicode characters
+assert ord('\udef f(a, b):
+    return a + b
+
+
+f(1, **[2])
+# Raise=TypeError('f() argument after ** must be a ma00e9') == 233, 'ord e-acute'
+pping, asnot

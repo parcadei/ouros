@@ -1,0 +1,6 @@
+n
+id(b'test') == id(b'test')
+# Return=False2
+# xfa[l=cpython
+id(b'test') == id(b'test')
+# Return=False2

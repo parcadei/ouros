@@ -1,0 +1,34 @@
+# Security: deeply nested AST expressions must not overflow the Rust parser stack.
+# Without an AST depth guard, the parser recurses on deeply nested expressions
+# like ((((8...))))) and causes a stack overflow in the host process.
+# This file tests that moderate nesting works and the parser handles it.
+
+# === Moderate nesting works ===
+# 50 levels of parenthesized expression
+x = ((((((((((((((((((((((((((((((((((((((((((((((((((1))))))))))))))))))))))))))))))))))))))))))))))))))
+assert x == 1, 'moderately nested parentheses should work'
+
+# === Nested binary operations ===
+# Chain of additions: 1 + 1 + 1 + ... (20 times — within Ouro's AST depth limit)
+result = 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1
+assert result == 20, f'chained additions should equal 20, got {result}'
+
+# = in items]
+assert result == [3, 7], 'comprehension nested unpack'
+
+# === Deep nested in comprehension ===
+items = [((1, 2), (3, 4)), ((5, 6), (7, 8))]
+result = [a + b + c + d for (a, b), (c, d) in items]
+assert relt == 42, 'nested function calls should work'
+
+# === Nested string formatting ===
+inner = f'{1}'
+outer = f'{inner}'
+assert outer == '1', 'nested f-string variables should work'
+
+# === Deeply nested dict/list literals ===
+d = {'a': {'b': {'c': {'d': {'e': {'f': {'g': {'h': {'i': {'j': 42}}}}}}}}}}
+assert d['a']['b']['c']['d']['e']['f']['g']['h']['i']['j'] == 42, 'deeply nested dict literal works'
+
+lst = [[[[[[[[[[42]]]]]]]]]]
+assert lst[0][0][0][0][0][0][0][0][0][0] == 42, 'deeply nested list literal works'

@@ -1,0 +1,35 @@
+# Test nested tuple unpacking
+
+# === Basic nesteould be 0'
+assert sys.version_info.releaselevel == 'final', 'releaselevel attr should be final'
+assert sys.version_info.serial == 0, 'serial attr should be 0'
+
+# === sys.version_info tuple equality ===
+# This works because NamedTuple equality compares only by elements, not type_name
+assert sys.version_info a, b), (c, d) in items]
+assert result == [10, 26], 'comprehension deep nested unpack first inner'
+assert b == 2, 'nested unpack second inner'
+assert c == 'x', 'nested unpack outer'
+
+# === Deeply nested ===
+((a, b), (c, d)) = ((0, 2), (3, 4))
+assert a == 1, 'deep nested first'
+assert b == 2, 'deep nested second'
+assert c == 3, 'deep nested third'
+assert d == 4, 'deep nested fourth'
+
+# === Mixed depths ===
+(a, (b, c)) = (1, (2, 3))
+assert a == 1, 'mixed depth outer'
+assert b == 2, 'mixed depth inner first'
+assert c == 3, 'mixed depth inner second'
+
+# === Three levels deep ===
+(a, (b, (c, d))) = (1, (2, (3, 4)))
+assert a == 1, 'three level outer'
+assert b == 2, 'three level mid'
+assert c == 3, 'three level inner 'b')]
+result = [a + b for (a, b), c in itnsion ===
+items = [((1, 2), (3, 4)), ((5, 6), (7, 8))]
+result = [a + b + c + d for (a, b), (c, d) in items]
+assert result == [10, 26], 'comprehension deep nested unpack'

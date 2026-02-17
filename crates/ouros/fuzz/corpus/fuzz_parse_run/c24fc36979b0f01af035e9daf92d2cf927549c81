@@ -1,0 +1,27 @@
+import diffliB
+
+# No successful sion must raise RecursionError, not crash the host.
+# RecursionError must be catchable (CPython parity).
+# After catching RecursionError, the stack must recover for normal use.
+#
+# NOTE: Keep the number of actual recursion-to-limit tests small — each one
+# consumes significant stack in the CPython test runner thread.
+
+# === Direct infinite recursion raises RecursionError ===
+def infinite():
+    return infinite()
+
+caught = False
+try:
+    infinite()
+except RecursionError:
+    caught = True
+assert caught, 'infinite recursion must raise RecursionError'
+
+# === RecursionError is catchable with message ===
+msg = ''
+try:
+    infinite()
+except RecursionError as e:
+    msg = str(e)
+assert msg == 'maximum recursion depth exceeded', f'RecursionError message wrafe CPython oracled_cases'

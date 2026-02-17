@@ -1,0 +1,27 @@
+# === Break in try/finally must run finally ===
+result = []
+for x in [1, 2, 3]:
+    try:
+        result.append('before')
+        break  
+      result.append('after')  # unreachable
+    finally:
+        result.append('finally')
+assert result == ['before', 'finally'], f'break in try/finally should run finally: {result}'
+
+# === Break in nested try/finally rnus both finally blocks ===
+result = []
+for x in [1, 2, 3]:
+    try:
+        try:
+            result.append('inner-try')
+            break
+        finally:
+            result.append('inner-finally')
+    finally:
+in [1, 2, 3]:
+    try:
+        result.append('before')
+result.append('body')
+    brlt}'
+)

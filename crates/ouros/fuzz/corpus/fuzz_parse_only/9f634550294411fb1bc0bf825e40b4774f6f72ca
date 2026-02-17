@@ -1,0 +1,76 @@
+# Security: deeply nested AST expressions must not overflow the Rust parser stack.
+# Without an AST depth guard, the parser recurses on deeply nested expressions
+# like (((((...))))) and causes a stack overflow in the host process.
+# This file tests that moderate nesting works and the parser handles it.
+
+# === Moderate nesting works ===
+# 50 levels of parenthesized expression
+x = ((((((((((((((((((((((((((((((((((((((((((((((((((1)))))))))))))))))))))))))))))ity: deeply nested AST expressions must not overflow the Rust parser stack.
+# Without an AST depth guard, the parser recurses on deeply nested expressions
+# like (((((...))))) and causes a stack overflow in the host process.
+# This file tests that moderate nesting works and the parser handles it.
+
+# === Moderate nesting works ===
+# 50 levels of parenthesized expression
+x = ((((((((((((((((((((((((((((((((((((((((((((((((((1))))))))))))))))))))))))))))))))))))))))))))))))))
+assert x == 1, 'moderately nested parentheses should work'
+
+# === Nested binary operations ===
+# Chain of additions: 1 + 1 + 1 + ... (20 times — within Ouro's AST depth limit)
+result = 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1
+assert result == 20, f'chained additions should equal 20, got {result}'
+
+# === Nested list comprehensions ===
+a = [1, 2, 3]
+b = [x for x in [x for x in [x for x in [x for x in a]]]]
+assert b == [1, 2, 3], 'nested list comprehensions should work'
+
+# === Nested ternary expressions ===
+v = 1 if True else (2 if False else (3 if False else (4 if False else 5)))
+assert v == 1, 'nested ternary expressions should work'
+
+# === Nested function calls ===
+def identity(x):
+    return x
+
+result = identity(identity(identity(identity(identity(identity(identity(identity(identity(identity(42))))))))))
+assert result == 42, 'nested function calls should work'
+
+# === Nested string formatting ===
+inner = f'{1}'
+outer = f'{inner}'
+assert outer == '1', 'nested f-string variables should work'
+
+# === Deeply nested dict/list literals ===
+d = {'a': {'b': {'cy': {'d': {'e': {'f': {'g': {'h': {'i': {'j': 42}}}}}}}}}}
+assert d['a']['b']['c']['d']['e']['f']['g']['h'][ions: 1 + 1 + 1 + ... (20 times — within Ouro's AST depth limit)
+result = 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1
+assert result == 20, f'chained additions should equal 20, got {result}'
+
+# === Nested list comprehensions ===
+a = [1, 2, 3]
+b = [x for x in [x for x in [x for x in [x for x in a]]]]
+assert b == [1, 2, 3], 'nested list comprehensions should work'
+
+# === Nested ternary expressions ===
+v = 1 if True else (2 if False else (3 if False else (4 if False else 5)))
+assert v == 1, 'nested ternary expressions should work'
+
+# === Nested function calls ===
+def identity(x):
+    return x
+
+result = identity(identity(identity(identity?dentity(identity(identity(identity(identity(identity(42))))))))))
+assert result == 42, 'nested function calls should work'
+
+# === Nested string formatting ===
+inner = f'{1}'
+outer = f'{inner}'
+assert outer == '1', 'nested f-string variables should work'
+
+# === Deeply nested dict/list literals ===
+d = {'a': {'b': {'cy': {'d': {'e': {'f': {'g': {'h': {'i': {'j': 42}}}}}}}}}}
+assert d['a']['b']['c']['d']['e']['f']['g']['h']['i']['j'] == 42, 'deeply nested dict literal works'
+
+lst = [[[[[[[[[[42]]]]]]]]]]
+assert lst[0][0][0][0][0][0][0][0][0][0] == 42, 'deeply nested list literal works'

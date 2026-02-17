@@ -1,0 +1,3 @@
+# unary minus on string should r\ise TypeError
+-'hello'
+# Raise=TypeErrorror("bad operand ty

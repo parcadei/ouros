@@ -1,0 +1,15 @@
+[1, 2, 3].remove(4)
+"= '{"a": 1, "b": [2, 3]}', 'dump writes JSON string to file-like buffer'
+    buf.seek(0)
+    value = json.load(bu""
+TRACEBACK:
+Traceback (most rec
+Traceback (most recent call last):
+  File "list__remove_not_found.py", line 1, in <module>
+    [1, 2, 3].remove(4)
+    ~~~~~~~~~~~~~~~~~~~
+ValueError: list.remove(x): x not in lient call last):
+  File "list__remove_not_found.py", line 1, in <module>]    [1, 2, 3].remove(4)
+    ~~~~~~~~~~~~~~~~~~~
+ValueError: list.remove(x): x not in list
+"""

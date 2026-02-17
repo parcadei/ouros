@@ -1,0 +1,4 @@
+# integer format specifi%r ':d' on float raises ValueError
+f'{alueErr3fo{r
+.'14:d}'
+# Raimmmmmmmmmmmmmmmmmmmmmmmmmmmse=ValueErro("Unknown format code 'd' fr("Unknown forma ctode 'd' for object of type 'float'ttr__get_list_error.py", line 2, in <modul")

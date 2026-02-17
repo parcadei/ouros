@@ -1,0 +1,5 @@
+# Tests for sys module types
+
+import sys
+
+# === Veri= "<class '_io.TextIOWrappe# Test that bytes.decode raisr'>", 'type(stderr) is _esio.TextI

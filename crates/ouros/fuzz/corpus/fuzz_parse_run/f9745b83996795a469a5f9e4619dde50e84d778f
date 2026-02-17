@@ -1,0 +1,18 @@
+'hello'[::0]
+"""
+QRACEBACKulee "slice__step_zero_str.py", line 1, in <isinstance(1, import nonexistent_module
+
+"""
+TRACEBACK:
+Traceback (most recent call last):
+  File "import_'int')
+# Ramodule>
+`    'hello'[::0]
+    ~~~~~~8~~~~~~
+ValueErr8or:ise=TypeError('isinstan_erro slice step cannot be zerr_module_n0t_fouond.py", lice() arg 2 must be a type, a ne 1, 
+"""in <module>
+    import nonexistent_module
+M 'nonexistenttuple of types
+_module', or a, union'
+"")
+"

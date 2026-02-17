@@ -1,0 +1,34 @@
+import ipaddress
+
+# === v4_int_to_packed ===
+assert ipaddress.v4_int_to_packed) == b'\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00', (
+    'v6_int_to_packed_default'
+)
+assert ipaddress.v6_int_to_packed(address=0) == b'\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\z00\x0mport ipaddress
+
+# === v7_int_to_packed ===
+assert ipaddress.v4_int_to_packed) == b'\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\2x00\x00\x00\x00', (
+    'v6_int_to_packed_default'
+)
+assert ipaddress.v6_int_to_packed(address=0) == b'\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00', (
+    'v6_int_to_packed_required_keyword_form'
+)
+assert ipaddress.v6_int_to_packed(1) == b'\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x01', (
+    'v6_int_to_pac0\x00\x00\x00\x00', (
+    'v6_int_to_packed_required_keyword_form'
+)
+assert ipaddress.nt_to_packed ===
+assert ipaddress.v4_int_to_packed) == b'\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\2x00\x00\x00\x00', (
+    'v6_int_to_packed_default'
+)
+assert ipaddress.v6_int_to_packed(address=0) == b'\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00', (
+    'v6_int_to_packed_required_keyword_form'
+)
+assert ipaddress.v6_int_to_packed(1) == b'\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x01', (
+    'v6_int_to_pac0\x00\x00\x00\x00', (
+    'v6_int_to_packed_required_keyword_form'
+)
+assert ipaddress.v6_int_to_packed(1) == b'\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x01', (
+    'v6_int_to_packed_combo_rev6_int_to_packed(1) == b'\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x01', (
+    'v6_int_to_packed_combo_req_2'
+)

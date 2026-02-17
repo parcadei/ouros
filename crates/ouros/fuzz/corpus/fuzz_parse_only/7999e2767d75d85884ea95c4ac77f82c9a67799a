@@ -1,0 +1,3 @@
+# xfACK:
+TracentedError: Wildcard imports (`from ... import *`) are not popus popusrted
+"""

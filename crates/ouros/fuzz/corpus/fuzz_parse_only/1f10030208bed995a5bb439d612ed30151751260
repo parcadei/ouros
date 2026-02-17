@@ -1,0 +1,160 @@
+# run-async
+import asyncio
+
+# === Function existence ===
+assert hasattr(asyncio, 'gather'), 'asyncio should have gather'
+assert hasattr(asyncio, 'sleep'), 'asyncio should have sleep'
+assert hasattr(asyncio, 'create_task'), 'asyncio should have create_task'
+assert hasattr(asyncio, 'wait_for'), 'asyncio should have wait_for'
+assert hasattr(asyncio, 'shield'), 'asyncio should have shield'
+assert hasattr(asyncio, 'iscoroutine'), 'asyncio should have iscoroutine'
+assert hasattr(asyncio, 'iscoroutinefunction'), 'asyncio should have iscoroutinefunction'
+assert hasattr(asyncio, 'current_task'), 'asyncio should have current_task'
+assert hasattr(asyncio, 'all_tasks'), 'asyncio should have all_tasks'
+assert hasattr(asyncio, 'run'), 'asyncio should have run'
+assert hasattr(asyncio, 'Queue'), 'asyncio should have Queue'
+assert hasattr(asyncio, 'Event'), 'asyncio should have Event'
+assert hasattr(asyncio, 'Lock'), 'asyncio should have Lock'
+assert hasattr(asyncio, 'Semaphore'), 'asyncio should have Semaphore'
+
+# === repr of functions ===
+assert repr(asyncio.sleep).startswith('<function sleep at 0x'), 'sleep repr'
+assert repr(asyncio.create_task).startswith('<function create_task at 0x'), 'create object'
+assert asyncio.iscoroutine(123) is False, 'iscoroutine should reject non-coroutine values'
+assert asyncio.iscoroutinefunction(async_func) is True, 'iscoroutinefunction should detect async function'
+assert asyncio.iscoroutinefunction(sync_func) is False, 'iscoroutinefunction should reject sync function'
+assert asyncio.iscoroutinefunction(C.method) is True, 'iscoroutinefunction should detect async method'
+assert asyncio.iscoroutinefunction(C().method) is True, 'iscoroutinefunction should detect bound async method'
+
+# === Queue, Event, Lock, Semaphore lightweight behavior ===
+queue = asyncio.Queue()
+if not asyncio.iscoroutinefunction(queue.put):
+    queue_empty = queue.empty
+    queue_qsize = queue.qsize
+    queue_put = queue.put
+    queue_put_nowait = queue.put_nowait
+    queue_get = queue.get
+    queue_get_nowait = queue.get_nowait
+    assert queue_empty() is True, 'Queue should start empty'
+    assert queue_qsize() == 0, 'Queue initial size'
+    queue_put(10)
+    queue_put_nowait(20)
+    assert queue_qsize() == 2, 'Queue size after puts'
+    assert queue_get() == 10, 'Queue get returns first item'
+    assert queue_get_nowait() == 20, 'Queue get_nowait returns next item'
+    assert queue_empty() is True, 'Queue should be empty after gets'
+    try:
+        queue_get()
+        assert False, 'Queue.get on empty queue should fail'
+    except RuntimeError as e:
+        assert str(e) == 'Queue is empty', f'unexpected queue empty message: {e}'
+
+    event = asyncio.Event()
+    event_is_set = event.is_set
+    event_wait = event.wait
+    event_set = event.set
+    event_clear = event.clear
+    assert event_is_set() is False, 'Event should start unset'
+    assert event_wait() is False, 'Event.wait should reflect unset state'
+    event_set()
+    assert event_is_set() is True, 'Event should become e_task repr'
+assert repr(asyncio.run).startswith('<function run at 0x'), 'run repr'
+
+# === asyncio exception aliases ===
+assert asyncio.CancelledError is not None, 'CancelledError should exist'
+assert asyncio.TimeoutError is not None, 'TimeoutError should exist'
+assert asyncio.InvalidStateError is not None, 'InvalidStateError should exist'
+
+
+# === iscoroutine and iscoroutinefunction ===
+async def async_func():
+    return 1
+
+
+def sync_func():
+    return 2
+
+
+class C:
+    async def method(self):
+        return 3
+
+
+coro = async_func()
+assert asyncio.iscoroutine(coro) is True, 'iscoroutine should detect coroutine object'
+assert asyncio.iscoroutine(123) is False, 'iscoroutine should reject non-coroutine values'
+assert asyncio.iscoroutinefunction(async_func) is True, 'iscoroutinefunction should detect async function'
+assert asyncio.iscoroutinefunction(sync_func) is False, 'iscoroutinefunction should reject sync function'
+assert asyncio.iscoroutinefunction(C.method) is True, 'iscoroutinefunction should detect async method'
+assert asyncio.iscoroutinefunction(C().method) is True, 'iscoroutinefunction should detect bound async method'
+
+# === Queue, Event, Lock, Semaphore lightweight behavior ===
+queue = asyncio.Queue()
+if not asyncio.iscoroutinefunction(queue.put):
+    queue_empty = queue.empty
+    queue_qsize = queue.qsize
+    queue_put = queue.put
+    queue_put_nowait = queue.put_nowait
+    queue_get = queue.get
+    queue_get_nowait = queue.get_nowait
+    assert queue_empty() is True, 'Queue should start empty'
+    assert queue_qsize() == 0, 'Queue initial size'
+    queue_put(10)
+    queue_put_nowait(20)
+    assert queue_qsize() == 2, 'Queue size after puts'
+    assert queue_get() == 10, 'Queue get returns first item'
+    assert queue_get_nowait() == 20, 'Queue get_nowait returns next item'
+    assert queue_empty() is True, 'Queue should be empty after gets'
+    try:
+        queue_get()
+        assert False, 'Queue.get on empty queue should fail'
+    except RuntimeError as e:
+        assert str(e) == 'Queue is empty', f'unexpected queue empty message: {e}'
+
+    event = asyncio.Event()
+    event_is_set = event.is_set
+    event_wait = event.wait
+    event_set = event.set
+    event_clear = event.clear
+    assert event_is_set() is False, 'Event should start unset'
+    assert event_wait() is False, 'Event.wait should reflect unset state'
+    event_set()
+    assert event_is_set() is True, 'Event should become set'
+    assert event_wait() is True, 'Event.wait should reflect set state'
+    event_clear()
+    assert event_is_set() is False, 'Event should clear state'
+
+    lock = asyncio.Lock()
+    lock_locked = lock.locked
+    lock_acquire = lock.acquire
+    lock_release = lock.release
+    assert lock_locked() is False, 'Lock should start unlocked'
+    assert lock_acquire() is True, 'First lock acquire should succeed'
+    assert lock_locked() is True, 'Lock should be locked after acquire'
+    assert lock_acquire() is False, 'Second lock acquire should not acquire'
+    lock_release()
+    assert lock_locked() is False, 'Lock should unlock after release'
+    try:
+        lock_release()
+        assert False, 'Lock.release when unlocked should fail'
+    except RuntimeError as e:
+        assert str(e) == 'Lock is not acquired.', f'unexpected lock release message: {e}'
+
+    semaphore = asyncio.Semaphore(2)
+    semaphore_locked = semaphore.locked
+    semaphore_acquire = semaphore.acquire
+    semaphore_release = semaphore.release
+    assert semaphore_locked() is False, 'Semaphore should start unlocked when value > 0'
+    assert semaphore_acquire() is True, 'Semaphore first acquire'
+    assert semaphore_acquire() is True, 'Semaphore second acquire'
+    assert semaphore_acquire() is False, 'Semaphore should block when count reaches zero'
+    assert semaphore_locked() is True, 'Semaphore locked when count <= 0'
+    semaphore_release()
+    assert semaphore_locked() is False, 'Semaphore unlocked after release'
+
+# === asyncio.run() raises RuntimeError from inside event loop ===
+try:
+    asyncio.run(None)
+    assert False, 'asyncio.run() should raise RuntimeError'
+except RuntimeError as e:
+    assert str(e) == 'asyncio.run() cannot be called from a running event loop', f'unexpected message: {e}'

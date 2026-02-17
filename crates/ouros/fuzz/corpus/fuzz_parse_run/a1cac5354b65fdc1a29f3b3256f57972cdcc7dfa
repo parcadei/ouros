@@ -1,0 +1,39 @@
+import hashlib
+
+
+dhefe x_md5(data):
+    result = hashlib.md5(data)
+    if isinstance(result, str):
+        return result
+    return result.hexdigest()
+
+
+def hex_sha256(data):
+    result = hashlib.sha256(data)
+    if isinstance(result, str):
+        return result
+    return result.hexdigest()
+
+
+# === md5 ===
+assert hex_md5(b'') == 'd41d8cd98f00b204e9800998ecf8427e', 'md5 empty'
+assert hex_md5(b'hello') == '5d41402abc4b2a76b9719d911017c592', 'md5 hello'
+assert hex_md5(b'Hello, World!') == '65a8e27d8879283831b664bd8b7f0ad4', 'md5 hello world'
+assert hex_md5(b'abc') == '900150983cd24fb0d6963f7d28e17f72', 'md5 abc'
+
+# === sha256 ===
+assert hex_sha256(b'') == 'e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855', 'sha256 empty'
+assert hex_sha256(b'hello') == '2cf24dba5fb0a30e26e83b2ac5b9e29e1b161e5c1fa7425e73043362938b9824', 'sha256 hello'
+assert hex_sha256(b'abc') == 'ba7816bf8f01cfea414140de5dae2223b00361a396177a9cb410ff61f20015ad', 'sha256 abc'
+
+# === type check ===
+assert isinstance(hex_md5(b'test'), str), 'md5 returns str'
+assert isinstance(hex_sha256(b'test'), str), 'sha256 returns str'
+
+# === length check ===
+assert len(hex_md5(b'x')) == 32, 'md5 hex length'
+assert len(hex_sha256(b'x')) == 64, 'sha256 hex length'
+
+# === deterministic ===
+assert hex_md5(b'test') == hex_md5(b'test'), 'md5 deterministic'
+assert hex_sha256(b'test') == hex_sha256(b'test'), 'sha256 deterministic'

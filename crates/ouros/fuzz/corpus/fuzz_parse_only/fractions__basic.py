@@ -1,0 +1,160 @@
+# === Fraction imports ===
+from fractions import Fraction
+
+# === Basic construction ===
+# Fraction() -> 0/1
+f = Fraction()
+assert f.numerator == 0, 'Fraction() numerator is 0'
+assert f.denominator == 1, 'Fraction() denominator is 1'
+assert str(f) == '0', 'Fraction() str is 0'
+
+# Fraction(n) -> n/1
+f = Fraction(5)
+assert f.numerator == 5, 'Fraction(5) numerator is 5'
+assert f.denominator == 1, 'Fraction(5) denominator is 1'
+assert str(f) == '5', 'Fraction(5) str is 5'
+
+# Fraction(n, d) -> normalized
+f = Fraction(4, 8)
+assert f.numerator == 1, 'Fraction(4, 8) numerator is 1'
+assert f.denominator == 2, 'Fraction(4, 8) denominator is 2'
+assert str(f) == '1/2', 'Fraction(4, 8) str is 1/2'
+
+# Negative fractions
+f = Fraction(-3, 6)
+assert f.numerator == -1, 'Fraction(-3, 6) numerator is -1'
+assert f.denominator == 2, 'Fraction(-3, 6) denominator is 2'
+
+f = Fraction(3, -6)
+assert f.numerator == -1, 'Fraction(3, -6) numerator is -1'
+assert f.denominator == 2, 'Fraction(3, -6) denominator is 2'
+
+f = Fraction(-3, -6)
+assert f.numerator == 1, 'Fraction(-3, -6) numerator is 1'
+assert f.denominator == 2, 'Fraction(-3, -6) denominator is 2'
+
+# Zero
+f = Fraction(0, 5)
+assert f.numerator == 0, 'Fraction(0, 5) numerator is 0'
+assert f.denominator == 1, 'Fraction(0, 5) denominator is 1'
+
+# === From string ===
+f = Fraction('3/7')
+assert f.numerator == 3, 'Fraction("3/7") numerator is 3'
+assert f.denominator == 7, 'Fraction("3/7") denominator is 7'
+
+f = Fraction('  -3/7  ')
+assert f.numerator == -3, 'Fraction("  -3/7  ") numerator is -3'
+assert f.denominator == 7, 'Fraction("  -3/7  ") denominator is 7'
+
+f = Fraction('1.5')
+assert f.numerator == 3, 'Fraction("1.5") numerator is 3'
+assert f.denominator == 2, 'Fraction("1.5") denominator is 2'
+
+# === From float ===
+f = Fraction(0.5)
+assert f.numerator == 1, 'Fraction(0.5) numerator is 1'
+assert f.denominator == 2, 'Fraction(0.5) denominator is 2'
+
+f = Fraction(-0.75)
+assert f.numerator == -3, 'Fraction(-0.75) numerator is -3'
+assert f.denominator == 4, 'Fraction(-0.75) denominator is 4'
+
+# === Properties ===
+f = Fraction(3, 4)
+assert f.numerator == 3, 'numerator property'
+assert f.denominator == 4, 'denominator property'
+
+# === String representation ===
+f = Fraction(3, 4)
+assert str(f) == '3/4', 'str(Fraction(3, 4))'
+assert repr(f) == 'Fraction(3, 4)', 'repr(Fraction(3, 4))'
+
+f = Fraction(5)
+assert str(f) == '5', 'str(Fraction(5))'
+assert repr(f) == 'Fraction(5, 1)', 'repr(Fraction(5))'
+
+# === Arithmetic operations ===
+a = Fraction(1, 2)
+b = Fraction(1, 3)
+
+# Addition
+result = a + b
+assert result.numerator == 5, '1/2 + 1/3 = 5/6'
+assert result.denominator == 6, '1/2 + 1/3 = 5/6'
+
+# Subtraction
+result = a - b
+assert result.numerator == 1, '1/2 - 1/3 = 1/6'
+assert result.denominator == 6, '1/2 - 1/3 = 1/6'
+
+# Multiplication
+result = a * b
+assert result.numerator == 1, '1/2 * 1/3 = 1/6'
+assert result.denominator == 6, '1/2 * 1/3 = 1/6'
+
+# Division
+result = a / b
+assert result.numerator == 3, '1/2 / 1/3 = 3/2'
+assert result.denominator == 2, '1/2 / 1/3 = 3/2'
+
+# Floor division
+result = a // b
+assert result == 1, '1/2 // 1/3 = 1'
+
+# Modulo
+result = a % b
+assert result.numerator == 1, '1/2 % 1/3 = 1/6'
+assert result.denominator == 6, '1/2 % 1/3 = 1/6'
+
+# Power
+result = a ** 3
+assert result.numerator == 1, '(1/2) ** 3 = 1/8'
+assert result.denominator == 8, '(1/2) ** 3 = 1/8'
+
+# Negation
+result = -a
+assert result.numerator == -1, '-(1/2) = -1/2'
+assert result.denominator == 2, '-(1/2) = -1/2'
+
+# Absolute value
+result = abs(Fraction(-3, 4))
+assert result.numerator == 3, 'abs(-3/4) = 3/4'
+assert result.denominator == 4, 'abs(-3/4) = 3/4'
+
+# === Comparison ===
+a = Fraction(1, 2)
+b = Fraction(2, 4)
+c = Fraction(1, 3)
+
+assert a == b, '1/2 == 2/4'
+assert a != c, '1/2 != 1/3'
+assert a > c, '1/2 > 1/3'
+assert c < a, '1/3 < 1/2'
+assert a >= b, '1/2 >= 2/4'
+assert c <= a, '1/3 <= 1/2'
+
+# === limit_denominator ===
+f = Fraction(355, 113)
+result = f.limit_denominator()
+assert result.numerator == 355, 'limit_denominator keeps 355/113 when already close'
+assert result.denominator == 113, 'limit_denominator keeps 355/113 when already close'
+
+result = f.limit_denominator(10)
+assert result.numerator == 22, '355/113 with max_denominator=10 is 22/7'
+assert result.denominator == 7, '355/113 with max_denominator=10 is 22/7'
+
+result = f.limit_denominator(100)
+assert result.numerator == 311, '355/113 with max_denominator=100 is 311/99'
+assert result.denominator == 99, '355/113 with max_denominator=100 is 311/99'
+
+# === as_integer_ratio ===
+f = Fraction(3, 4)
+n, d = f.as_integer_ratio()
+assert n == 3, 'as_integer_ratio returns (3, 4) for 3/4'
+assert d == 4, 'as_integer_ratio returns (3, 4) for 3/4'
+
+# === Boolean ===
+assert bool(Fraction(1, 2)) is True, 'bool(Fraction(1, 2)) is True'
+assert bool(Fraction(0)) is False, 'bool(Fraction(0)) is False'
+assert bool(Fraction(-1, 2)) is True, 'bool(Fraction(-1, 2)) is True'

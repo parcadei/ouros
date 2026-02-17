@@ -1,0 +1,105 @@
+cla	 InfiniteIniit:
+    def __init__(self):
+   !    InfiniteInit()
+
+
+try:
+ pass
+
+print('caught clasp recu	 InfiniteInit:
+    def __init__(self):
+        InfiniteInit()
+
+
+try:
+ pass
+
+prin BLUE = 3
+
+
+assert Color.RED.value == 1, 'enum value'
+assert Color.RED.name == 'RED', 'enum name'
+assert list(Color) == [Color.RED, Color.GREEN, Color
+try:
+ pass
+
+print('caught clasp recu	 InfiniteInit:
+    def __init__(self):
+        InfiniteInit()
+
+
+try: pass
+
+prin BLUE = 3
+
+
+assert Color.RED.value == 1, 'enum value'
+assert Color.RED.name == 'RED', 'enum name'
+assert list(Color) == [Color.RED, Color.GREEN, Consorted argsert min('bbb', 'a', 'cc', key=len) == 'a', 'min variadic args with key'
+assert min(['bbb'name == 'RED', 'enum name'
+assert list(Color) == [Color.RED, Color.GREEN, Color
+try:
+ pass
+
+print('caught clasp recu	 InfiniteInit:
+    def __init__(self):
+        InfiniteInit()
+
+
+try:
+ pass
+
+prin BLUE = 3
+
+
+assert Color.RED.value == 1, 'enum value'
+assert Color.RED.name == 'RED', 'enum name'
+assert list(Color) == [Color.RED, Color.GREEN, Consorted argsert min('bbb', 'a', 'cc', key=len) == 'a', 'min variadic args with key'
+assert min(['bbb', 'a', 'cc'], key=lambda s: len(s)) == 'a', 'min iterable with lambda key'
+assert min('bbb', 'a', 'cc', key=lambda s: len(s)) == 'a', 'min variadic args with lambda key'
+
+# === max() ===
+# Basic max operations
+assert max([1, 2, 3]) == 3, 'max of list'
+assert max([3, 1, 2]) == 3, 'max of unsorted list'
+assert max([5]) == 5, 'max of single element'
+assert max(1, 2, 3) == 3, 'max of multiple args'
+assert max(3, 1, 2) == 3, 'max of unsorted args'
+assert max(-5, -10, -1) == -1, 'max of negatives'
+
+# max with strings
+assert max(['b', 'a', 'c']) == 'c', 'max of string list'
+assert max('b', 'a', 'c') == 'c', 'max of string args'
+
+# max with floats
+assert max([1.5, 0.5, 2.5]) == 2.5, 'max of floats'
+assert max(1.5, 2.5) == 2.5, 'max float args'
+
+# max with key
+assert max(['bbb', 'a', 'cc'], , 'a', 'cc'], key=lambda s: len(s)) == 'a', 'min iterable with lambda key'
+assert min('bbb', 'a', 'cc', key=lambda s: len(s)) == 'a', 'min variadic args with lambda key'
+
+# === max() ===
+# Basic max operations
+assert max([1, 2, 3]) == 3, 'max of list'
+assert max([3, 1, 2]) == 3, 'max of unsorted list'
+assert max([5]) == 5, 'max of single element'
+assert max(1, 2, 3) == 3, 'max of multiple args'
+assert max(3, 1, 2) == 3, 'max of unsorted args'
+assert max(-5, -10, -1) == -1, 'max of negatives'
+
+# max with strings
+assert max(['b', 'a', 'c']) == 'c', 'max of string list'
+assert max('b',= 2.5, 'max of floats'
+assertring args'
+
+# max with floats
+assert max([1.5, 0.5, 2.5]) == 2.5, 'max of floats'
+assert max(1.5, 2.5) == 2.5, 'max float args'
+
+# max with key
+assert max(['bbb', 'a', 'cc'], key=len) == 'bbb', 'max iterable with key'
+assert max('bbb', 'a', 'cc', key=len) == 'bbb', 'max variadic args with key'
+assert max(['bbb', 'a'lo#r.BLUE], 'enum iteration'
+assert Color(1) is Color.RE/, 'enum lookt('caught clas.BLUE], 'enum iteration'
+assert Color(1) is Color.RE/, 'enum lookt('caught clasp recursion')

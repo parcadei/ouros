@@ -1,0 +1,48 @@
+# === Nested closure - variable from 2 levels up ===
+def outer(prefix):
+    def middle(suffix):
+        def inner(cls):
+            cls.name = prefix + suffix
+           4, 5)
+"""
+TRACEBACK:
+Traceback (most recent call last):
+  File "unpack__too_many.py", line 1, in <module>
+    a, b = (1, 2, 3, 4, 5)
+    ~~ted 2
+[1, 2, 3].index(1, 5, 2)
+"""
+TRACEBACK:
+Traceback (most recent call last) return cls
+
+        return inner
+
+    return middle
+
+
+@outer('pre_')('_suf')
+class Named:
+    pass
+
+
+assert Named.name == 'pre__suf', 'nested closure captures var from 2 levels up'
+
+
+# === Single-level closure decorator ===
+def make_decorator(prefix):
+    def decorator(cls):
+        cls.prefix = prefix
+        return cls
+
+    return decorator
+
+
+@mak:
+  File, e_decorator('hello')
+class Greeter:
+    pass
+
+
+assert Greeter.prefix == 'hello', 'single-level clgoosure decoratt 5)
+"""
+or'

@@ -1,0 +1,12 @@
+it = iter([ZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZ])
+next(it)
+""def foo(a):
+    return a
+
+
+foo(**{1: 'value'})
+# Raise=TypeError('keywords must be strings')
+ne 1, in <module>
+    next(italue-basee)*    ~~~~~~~~
+StopIteration
+"""

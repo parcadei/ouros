@@ -1,0 +1,244 @@
+# Coverage tests for resource.rs: resource limits, recursion depth, error paths.
+# These exercise ResourceTracker, ResourceError, and ResourceLimits code paths.
+# Note: debug builds have a smaller stack, so we use conservative recursion depths.
+
+
+# === Basic recursion works ===
+def recurse(n):
+    if n <= 0:
+        return 0
+    return recurse(n - 1)
+
+
+assert recurse(10) == 0, 'basic recursion works'
+assert recurse(30) == 0, 'moderate recursion works'
+
+
+# === RecursionError is catchable ===
+def infinite_recurse():
+    return infinite_recurse()
+
+
+caught = False
+try:
+    infinite_recurse()
+except RecursionError:
+    caught = True
+assert caught, 'RecursionError raised and caught for infinite recursion'
+
+
+# === RecursionError message ===
+msg = ''
+try:
+    infinite_recurse()
+except RecursionError as e:
+    msg = str(e)
+assert 'maximum recursion depth exceeded' in msg, 'RecursionError has correct message'
+
+
+# === Mutual recursion hitting limit ===
+def ping(n):
+    if n <= 0:
+        return 'done'
+    return pong(n - 1)
+
+
+def pong(n):
+    if n <= 0:
+        return 'done'
+    return ping(n - 1)
+
+
+assert ping(10) == 'done', 'mutual recursion within limit'
+
+
+# Infinite mutual recursion
+def inf_ping():
+    return inf_pong()
+
+
+def inf_pong():
+    return inf_ping()
+
+
+caught = False
+try:
+    inf_ping()
+except RecursionError:
+    caught = True
+assert caught, 'mutual recursion hits RecursionError'
+
+
+# === RecursionError in class __init__ ===
+class RecursiveInit:
+    def __init__(self, depth):
+        if depth > 0:
+            self.child = RecursiveInit(depth - 1)
+        else:
+            self.child = None
+
+
+ri = RecursiveInit(10)
+assert ri.child is not None, 'recursive __init__ works at small depth'
+
+
+# Infinite __init__ recursion
+class InfRecInit:
+    def __init__(self):
+        self.child = InfRecInit()
+
+
+caught = False
+try:
+    InfRecInit()
+except RecursionError:
+    caught = True
+assert caught, 'RecursionError in infinite recursive __init__'
+
+
+# === Large string allocation ===
+big_str = 'x' * 10000
+assert len(big_str) == 10000, 'large string allocation works'
+
+# Larger string
+big_str2 = 'ab' * 5000
+assert len(big_str2) == 10000, 'repeated string multiplication works'
+
+
+# === Large list creation ===
+big_list = list(range(1000))
+assert len(big_list) == 1000, 'large list creation works'
+
+
+# === Nested function calls (not too deep) ===
+def chain_a(n):
+    if n <= 0:
+        return n
+    return chain_b(n - 1)
+
+
+def chain_b(n):
+    if n <= 0:
+        return n
+    return chain_c(n - 1)
+
+
+def chain_c(n):
+    if n <= 0:
+        return n
+    return chain_a(n - 1)
+
+
+assert chain_a(15) == 0, 'triple mutual recursion works'
+
+
+# Infinite triple chain
+def inf_a():
+    return inf_b()
+
+
+def inf_b():
+    return inf_c()
+
+
+def inf_c():
+    return inf_a()
+
+
+caught = False
+try:
+    inf_a()
+except RecursionError:
+    caught = True
+assert caught, 'triple mutual infinite recursion hits RecursionError'
+
+
+# === RecursionError with try/except recovery ===
+def safe_recurse():
+    try:
+        return safe_recurse()
+    except RecursionError:
+        return -1
+
+
+result = safe_recurse()
+assert result == -1, 'RecursionError caught inside recursive function'
+
+
+# === Stack recovers after RecursionError ===
+caught = False
+try:
+    infinite_recurse()
+except RecursionError:
+    caught = True
+assert caught, 'caught first RecursionError'
+
+# After catching RecursionError, normal recursion should still work
+assert recurse(10) == 0, 'normal recursion works after catching RecursionError'
+
+
+# === RecursionError in __init__ with property ===
+class PropInit:
+    def __init__(self, n):
+        self.n = n
+        if n > 0:
+            self.child = PropInit(n - 1)
+        else:
+            self.child = None
+
+    @property
+    def depth(self):
+        if self.child is None:
+            return 0
+        return 1 + self.child.depth
+
+
+rip = PropInit(10)
+assert rip.depth == 10, 'recursive init with property works'
+
+
+# === Deep class hierarchy (using type()) ===
+classes = [type('C0', (), {})]
+for i in range(1, 20):
+    c = type(f'C{i}', (classes[-1],), {})
+    classes.append(c)
+
+inst = classes[-1]()
+assert isinstance(inst, classes[0]), 'isinstance works with 20 class chain'
+assert isinstance(inst, classes[10]), 'isinstance works at midpoint of chain'
+
+
+# === Multiple recursive errors in sequence ===
+for i in range(3):
+    caught = False
+    try:
+        infinite_recurse()
+    except RecursionError:
+        caught = True
+    assert caught, f'RecursionError caught in iteration {i}'
+
+
+# === Recursion with default args ===
+def recurse_default(n=0, limit=20):
+    if n >= limit:
+        return n
+    return recurse_default(n + 1, limit)
+
+
+assert recurse_default() == 20, 'recursion with default args works'
+
+
+# === Recursion in exception handler ===
+def recurse_in_handler():
+    try:
+        raise ValueError('test')
+    except ValueError:
+        return recurse_in_handler()
+
+
+caught = False
+try:
+    recurse_in_handler()
+except RecursionError:
+    caught = True
+assert caught, 'RecursionError in exception handler recursion'

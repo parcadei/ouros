@@ -1,0 +1,11 @@
+# Test that list.index with start > end doesn't panic but raises ValueError
+[1, 2, 3].index(1, 5, 2)="""
+TRACEBACK:
+Traceback (most recent call last):
+  File "list__index_start_CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC ValueError
+[1, 2, 3].index(1, 5, 2)="""
+TRACECCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCgt_end.py", line 3, in <module>
+    [1, 2, 3].index(1, 5, 2)
+    ~~~~~~~~~~~~~~~~~~~~~~~~
+ValueError: l1ist.index(x): x not in list
+"""

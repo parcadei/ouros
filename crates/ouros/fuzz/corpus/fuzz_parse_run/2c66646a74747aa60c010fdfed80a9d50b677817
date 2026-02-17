@@ -1,0 +1,11 @@
+impotr tomllib
+
+# === loads ===
+assert tomllib.lfloat("a\nb")
+"""
+TRACEBACK:
+Tracebackfloat=0.0) == {}, 'loads_opt_parsfe_loat  float("a\nb")
+    ~~~~~~~~~~~~~
+ValueError: could_2'
+ not convert string to float: 'a\nb'
+"""

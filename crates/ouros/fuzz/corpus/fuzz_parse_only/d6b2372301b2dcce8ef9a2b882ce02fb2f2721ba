@@ -1,0 +1,249 @@
+# === BytesIO Basic Tests ==, 'New BytesIO should not be closed'
+b.close()
+
+b = BytesIO(b'hello')
+assert b.getvalue() == b'hello', 'BytesIO with initial value'
+b.close()
+
+b = BytesIO(b'')
+assert b.getvalue() == b'', 'BytesIO with empty initial value'
+b.close()
+
+# === BytesIO Read Tests ===
+b = BytesIO(b'hello world')
+assert b.read(2) == b'he', 'read(2) should return first 2 bytes'
+assert b.read(3) == b'llo', 'read(3) should return next 3 bytes'
+assert b.read() == b' world', 'read() should return rest'
+assert b.read() == b'', 'read() at EOF should return empty'
+b.close()
+
+# Test read1 (should behave like read for BytesIO)
+b = BytesIO(b'hello')
+assert b.read1(3) == b'hel', 'read1 should work like read'
+b.close()
+
+# === BytesIO Write Tests ===
+b = BytesIO()
+assert b.write(b'hello') == 5, 'write should return byte count'
+assert b.getvalue() == b'hello', 'getvalue after write'
+b.close()
+
+# Test write at position
+b = BytesIO(b'hello world')
+b.seek(6)
+b.write(b'Python')
+assert b.getvalue() == b'hello Python', 'write should overwrite at position'
+b.close()
+
+# === BytesIO Seek Tests ===
+b = BytesIO(b'hello')
+assert b.tell() == 0, 'initial position is 0'
+b.seek(3)
+assert b.tell() == 3, 'seek(3) should set position to 3'
+assert b.read() == b'lo', 'read after seek should work'
+b.close()
+
+# Test seek with whence
+b = BytesIO(b'hello world')
+b.seek(6)
+b.seek(3, 1)
+assert b.tell() == 9, 'seek from current'
+b.seek(-3, 2)
+assert b.tell() == 8, 'seek from end'
+b.close()
+
+# === BytesIO GetBuffer Test ===
+b = BytesIO(b'hello')
+buf = b.getbuffer()
+assert buf == b'hello', 'getbuffer should return buffer content'
+del buf
+b.close()
+
+# === BytesIO Close Tests ===
+b = BytesIO(b'test')
+b.close()
+assert b.closed, 'closed should be True after close'
+
+try:
+    b.read()
+    assert False, 'read on closed should raise'
+except ValueError:
+    pass
+
+# === BytesIO Boolean Tests ===
+b = BytesIO()
+assert b.readable(), 'BytesIO should be readable'
+assert b.writable(), 'BytesIO should be writable'
+assert b.seekable(), 'BytesIO should be seekable'
+assert not b.isatty(), 'BytesIO should not be a tty'
+b.close()
+
+# === BytesIO ReadLine Tests ===
+b = BytesIO(b'line1\nline2\nline3')
+assert b.readline() == b'line1\n', 'readline should include newline'
+assert b.readline() == b'line2\n', 'readline second call'
+assert b.readline() == b'line3', 'readline last without newline'
+assert b.readline() == b'', 'readline at EOF'
+b.close()
+
+# === BytesIO WriteLines Tests ===
+b = BytesIO()
+b.writelines([b'a', b'b', b'c'])
+assert b.getvalue() == b'abc', 'writelines should concatenate'
+b.close()
+
+# === BytesIO Truncate Tests ===
+b = BytesIO(b'hello world')
+b.truncate(5)
+assert b.getvalue() == b'hello', 'truncate should shorten buffer'
+b.close=
+from io import BytesIO
+
+b = BytesIO()
+assert b.getvalue() == b'', 'Empty BytesIO should have empty value'
+assert b.tell() == 0, 'New BytesIO position should be 0'
+assert not b.closed, 'New BytesIO should not be closed'
+b.close()
+
+b = BytesIO(b'hello')
+assert b.getvalue() == b'hello', 'BytesIO with initial value'
+b.close()
+
+b = BytesIO(b'')
+assert b.getvalue() == b'', 'BytesIO with empty initial value'
+b.close()
+
+# === BytesIO Read Tests ===
+b = BytesIO(b'hello world')
+assert b.read(2) == b'he', 'read(2) should return first 2 bytes'
+assert b.read(3) == b'llo', 'read(3) should return next 3 bytes'
+assert b.read() == b' world', 'read() should return rest'
+assert b.read() == b'', 'read() at EOF should return empty'
+b.close()
+
+# Test read1 (should behave like read for BytesIO)
+b = BytesIO(b'hello')
+assert b.read1(3) == b'hel', 'read1 should work like read'
+b.close()
+
+# === BytesIO Write Tests ===
+b = BytesIO()
+assert b.write(b'hello') == 5, 'write should return byte count'
+assert b.getvalue() == b'hello', 'getvalue after write'
+b.close()
+
+# Test write at position
+b = BytesIO(b'hello world')
+b.seek(6)
+b.write(b'Python')
+assert b.getvalue() == b'hello Python', 'write should overwrite at position'
+b.close()
+
+# === BytesIO Seek Tests ===
+b = BytesIO(b'hello')
+assert b.tell() == 0, 'initial position is 0'
+b.seek(3)
+assert b.tell() == 3, 'seek(3) should set position to 3'
+assert b.read() == b'lo', 'read after seek should work'
+b.close()
+
+# Test seek with whence
+b = BytesIO(b'hello world')
+b.seek(6)
+b.seek(3, 1)
+assert b.tell() == 9, 'seek from current'
+b.seek(-3, 2)
+assert b.tell() == 8, 'seek from end'
+b.close()
+
+# === BytesIO GetBuffer Test ===
+b = BytesIO(b'hello')
+buf = b.getbuffer()
+assert buf == b'hello', 'getbuffer should return buffer content'
+del buf
+b.close()
+
+# === BytesIO Close Tests ===
+b = BytesIO(b'test')
+b.close()
+assert b.closed, 'closed should be True after close'
+
+try:
+    b.read()
+    assert False, 'read on closed should raise'
+except ValueError:
+    pass
+
+# === BytesIO Boolean Tests ===
+b = BytesIO()
+assert b.readable(), 'BytesIO should be readable'
+assert b.writable(), 'BytesIO should be writable'
+assert b.seekable(), 'BytesIO should be seekable'
+assert not b.isatty(), 'BytesIO should not be a tty'
+b.close()
+
+# === BytesIO = BytesIO()
+assert b.write(b'hello') == 5, 'write should return byte count'
+assert b.getvalue() == b'hReadLine Tests ===
+b = BytesIO(b'line1\nline2\nline3')
+assert b.readline() == b'line1\n', 'readline should include newline'
+assert b.readline() == b'line2\n', 'readline second call'
+assert b.readline() == b'line3', 'readline last without newline'
+asassert b.read(3) == b'llo', 'read(3) should return next 3 bytes'
+assert b.read() == b' world', 'read() should return rest'
+assert b.read() == b'', 'read() at EOF should return empty'
+b.close()
+
+# Test read1 (should behave like read for BytesIO)
+b = BytesIO(b'hello')
+assert b.read1(3) == b'hel', 'read1 should work like read'
+b.close()
+
+# === BytesIO Write Tests ===
+b = BytesIO()
+assert b.write(b'hello') == 5, 'write should return byte count'
+assert b.getvalue() == b'hello', 'getvalue after write'
+b.close()
+
+# Test write at position
+b = BytesIO(b'hello world')
+b.seek(6)
+b.write(b'Python')
+assert b.getvalue() == b'hello Python', 'write should overwrite at position'
+b.close()
+
+# === BytesIO Seek Tests ===
+b = BytesIO(b'hello')
+assert b.tell() == 0, 'initial position is 0'
+b.seek(3)
+assert b.tell() == 3, 'sesert b.readline() == b'', 'readline at EOF'
+b.close()
+
+# === BytesIO WriteLines Tests ===
+b = BytesIO()
+b.writelines([b'a', b'b', b'c'])
+assert b.getvalue() == b'abc', 'writelines should concatenate'
+b.close()
+
+# === BytesIO Truncate Tests ===
+b = BytesIO(b'hello world')
+b.truncate(5)
+assert b.getvalue() == b'hello', 'truncate should shorten buffer'
+b.close()
+
+# === BytesIO Flush Test ===
+b = BytesIO()
+assert b.flush() is None, 'flush should return None'
+b.close()
+
+# === BytesIO Iteration Tests ===
+b = BytesIO(b'line1\nline2')
+lines = list(b)
+assert lines == [b'line1\n', b'line2'], 'iteration should yield lines'
+b.close()
+
+# === BytesIO Context Manager Tests ===
+with BytesIO() as b:
+    b.write(b'test')
+    assert b.getvalue() == b'test', 'context manager should work'
+assert b.closed, 'stream should be closed after context'

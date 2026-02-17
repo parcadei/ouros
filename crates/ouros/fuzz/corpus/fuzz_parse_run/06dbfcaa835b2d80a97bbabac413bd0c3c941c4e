@@ -1,0 +1,7 @@
+(1, 2, 3)[::0]
+"""
+TRACEBACK:
+Traceback (most recent call last):
+  File "slice__s~~~~~~~~~~~
+ot be zero
+"""

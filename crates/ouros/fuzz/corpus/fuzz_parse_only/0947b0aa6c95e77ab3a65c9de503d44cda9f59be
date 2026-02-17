@@ -1,0 +1,3 @@
+d = {'a': 1, 'b': 2}
+d.items()
+# Return=dict_, 2)])

@@ -1,0 +1,92 @@
+import hashlib
+
+
+def hexdigest(result, length=None):
+    if isinstance(result, str):
+        return result
+    if length is None:
+        return result.hexdigest()
+    return result.hexdigest(length)
+
+
+def digest(result, length=None):
+    if isinstance(result, bytes):
+        return result
+    if length is None:
+        return result.digest()
+    return result.digest(length)
+
+
+# === new() dispatch ===
+h = hashlib.new('sha256', b'hello')
+assert hexdigest(h) == '2cf24dba5fb0a30e26e83b2ac5b9e29e1b161e5c1fa7425e73043362938b9824', 'new sha256'
+assert h.digest_size == 32, 'sha256 digest_size attribute'
+h = hashlib.new('sha512_224', b'hello')
+assert hexdigest(h) == 'fe8509ed1fb7dcefc27e6ac1a80eddbec4cb3d2c6fe565244374061c', 'new sha512_224'
+h = hashlib.new('sha512_256', b'hello')
+assert hexdigest(h) == 'e30d87cfa2a75db545eac4d61baf970366a8357c7f72fa95b52d0accb698f13a', 'new sha512_256'
+
+# These constructors are optional in CPython builds, but should be available in Ouros.
+if hasattr(hashlib, 'sha512_224'):
+    assert hexdigest(hashlib.sha512_224(b'hello')) == 'fe8509ed1fb7dcefc27e6ac1a80eddbec4cb3d2c6fe565244374061c', (
+        'sha512_224 hello'
+    )
+if hasattr(hashlib, 'sha512_256'):
+    assert (
+        hexdigest(hashlib.sha512_256(b'hello')) == 'e30d87cfa2a75db545eac4d61baf970366a8357c7f72fa95b52d0accb698f13a'
+    ), 'sha512_256 hello'
+
+# === sha3 family ===
+assert hexdigest(hashlib.sha3_224(b'hello')) == 'b87f88c72702fff1748e58b87e9141a42c0dbedc29a78cb0d4a5cd81', (
+    'sha3_224 hello'
+)
+assert hexdigest(hashlib.sha3_256(b'hello')) == '3338be694f50c5f338814986cdf0686453a888b84f424d792af4b9202398f392', (
+    'sha3_256 hello'
+)
+assert hexdigest(hashlib.sha3_384(b'hello')) == (
+    '720aea11019ef06440fbf05d87aa24680a2153df3907b23631e7177ce620fa1330ff07c0fddee54699a4c3ee0ee9d887'
+), 'sha3_384 hello'
+assert hexdigest(hashlib.sha3_512(b'hello')) == (
+    '75d527c368f2efe848ecf6b073a36767800805e9eef2b1857d5f984f036eb6df'
+    '891d75f72d9b154518c1cd58835286d1da9a38deba3de98b5a53e5ed78a84976'
+), 'sha3_512 hello'
+
+# === blake2 family ===
+assert hexdigest(hashlib.blake2b(b'hello')) == (
+    'e4cfa39a3d37be31c59609e807970799caa68a19bfaa15135f165085e01d41a6'
+    '5ba1e1b146aeb6bd0092b49eac214c103ccfa3a365954bbbe52f74a2b3620c94'
+), 'blake2b hello'
+assert hexdigest(hashlib.blake2s(b'hello')) == '19213bacc58dee6dbde3ceb9a47cbb330b3d86f8cca8997eb00be456f140ca25', (
+    'blake2s hello'
+)
+assert hexdigest(hashlib.new('blake2b', b'hello')) == hexdigest(hashlib.blake2b(b'hello')), 'new blake2b'
+assert hexdigest(hashlib.new('blake2s', b'hello')) == hexdigest(hashlib.blake2s(b'hello')), 'new blake2s'
+
+# === shake family ===
+assert hexdigest(hashlib.shake_128(b'hello'), 16) == '8eb4b6a932f280335ee1a279f8c208a3', 'shake_128 hello hex'
+assert hexdigest(hashlib.shake_256(b'hello'), 16) == '1234075ae4a1e77316cf2d8000974581', 'shake_256 hello hex'
+assert len(digest(hashlib.shake_128(b'hello'), 16)) == 16, 'shake_128 digest length'
+
+# === algorithms_* ===
+assert isinstance(hashlib.algorithms_available, set), 'algorithms_available should be set'
+assert isinstance(hashlib.algorithms_guaranteed, set), 'algorithms_guaranteed should be set'
+assert 'sha256' in hashlib.algorithms_available, 'sha256 should be available'
+assert 'sha512_224' in hashlib.algorithms_available, 'sha512_224 should be available'
+assert 'sha512_256' in hashlib.algorithms_available, 'sha512_256 should be available'
+assert 'blake2b' in hashlib.algorithms_available, 'blake2b should be available'
+assert 'blake2s' in hashlib.algorithms_available, 'blake2s should be available'
+assert 'sha256' in hashlib.algorithms_guaranteed, 'sha256 should be guaranteed'
+
+# === pbkdf2_hmac ===
+sha256_key = hashlib.pbkdf2_hmac('sha256', b'password', b'salt', 1000, 32)
+assert sha256_key.hex() == '632c2812e46d4604102ba7618e9d6d7d2f8128f6266b4a03264d2a0460b7dcb3', 'pbkdf2_hmac sha256'
+
+sha1_key = hashlib.pbkdf2_hmac('sha1', b'password', b'salt', 1000)
+assert sha1_key.hex() == '6e88be8bad7eae9d9e10aa061224034fed48d03f', 'pbkdf2_hmac sha1 default dklen'
+
+# === scrypt (stub) ===
+try:
+    scrypt_bytes = hashlib.scrypt(b'password', salt=b'salt', n=2**14, r=8, p=1)
+    assert isinstance(scrypt_bytes, bytes), 'scrypt should return bytes when implemented'
+except NotImplementedError as e:
+    assert str(e) == 'hashlib.scrypt() is not implemented', f'unexpected scrypt message: {e}'

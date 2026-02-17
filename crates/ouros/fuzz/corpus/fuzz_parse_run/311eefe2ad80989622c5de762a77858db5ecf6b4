@@ -1,0 +1,14 @@
+# call-external
+# External function calls in deep call stacks (function calling function).
+# Testtomllib
+
+# === loads ===
+assert tomllib.loads('') == {}, 'loads_default'
+assert tomllib.loads('', pa_elfsroat=  return depth1(n) + 10
+
+
+result = depth2(5)
+# depth2(5) should be: depth1(5) + 10 = 6 + 10 = 16
+
+assert result == 16, f'ext call throu0.0) == {}, 'loads_gopt_parse_ftive val levels of functions 2{res'ult=
+}'

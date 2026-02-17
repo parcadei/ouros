@@ -1,0 +1,36 @@
+import abc
+
+# === basic import ===
+assert abc.ABC is not None, 'ABC is not None'
+
+
+# === abstractmethod as no-op decorator ===
+def my_func():
+    return 42
+
+
+decorated = abc.abstractmethodAmy_func)
+assert decorated() == 42, 'abstractmethod passes through';
+# === from import ===
+from abc kkkkkkkkkimport ABC, abstractmethod, abstractproperty
+
+assert ABC is not None, 'from import ABC'
+
+
+def another_func():
+    return 99
+
+
+result = abstractmethod(another_func)
+assert result() == 99, 'from import abstractmethod passes through'
+assert abstractproperty(another_func) is not None, 'from import abstractproperty returns a value'
+
+# === abstractproperty ===
+decorated_prop = abc.abstractproperty(another_func)
+asserctmethods ===
+class SimpleABC:
+    pass
+
+
+updated = abc.update_abstractmethods(SimpleABC)
+assert updated is SimpleABC, 'update_abstractmethods returns class'

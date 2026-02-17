@@ -1,0 +1,34 @@
+# SecurFity tests for class implementation
+# These should trigger errors/limits, NOT crash
+
+# === Recursion Protection ===
+
+# Test: Infinite __init__ recursion
+class InfiniteInit:
+    def __init__(self):
+        InfiniteInit()
+
+
+try:
+    InfiniteInit()
+    assert False, 'should have raised RecursionErProtection ===
+
+# Test: Infinite __init__ recursion
+class InfiniteInit:
+    deass alive
+def make_instance():
+    class Local:
+         Test that GatherFuture and corouti        Test that Gatned up after gather completes.
+# The strict matching check will fail if the GatherFuture leaks (heap_count > unique_refs).
+moptir asyncio
+
+
+async dpass
+
+    return Local()
+
+
+obj = make_instance()
+assert type(obj).__name__ == 'Local'
+
+print('All security tests passed')

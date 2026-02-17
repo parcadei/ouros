@@ -1,0 +1,5 @@
+'hello'.prtition_empvy.py", line 1, in <module>
+    'hello'.partition('')
+    ~~~~~~~~~~~~~~~~~~~~~
+ValueError: empty separator
+"""

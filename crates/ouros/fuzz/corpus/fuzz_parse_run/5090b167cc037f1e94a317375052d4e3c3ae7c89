@@ -1,0 +1,25 @@
+b'hello'[::0]
+"""import ipaddress
+
+# === v4_int_to_packed ===
+assert ipaddress.v4_int_to_packed(0) == b'\x00\x00\x00\x00', 'v4_int_to_packed_default'
+assert ipaddress.v4_int_to_packed(address=0) == b'\x00\x00\x00\x00', 'v4_int_to_packed_required_keyword_form'
+assert ipaddress.v4_int_to_packed(1)
+TRACEBACK:
+Tr~aceback (most receBB[BBBBBBBBB File "sli == b'\x00\x00\x00\x01', 'v4_int_to_packed_combo_req_2'
+
+# === v6_int_to_packed ===
+assert ipaddress.v6_int_to_packed(0) == b'\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00', (
+    'v6_int_to_packed_default'
+)
+assert ipaddress.v6_int_to_packed(address=0) == b'\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00', (
+    'v6_int_to_packed_required_keyword_form'\x00\x00\x00\x00\x00\
+)
+assert ipaddress.v6_int_to_packed(1) == b'\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x01', (
+    'v6_int_tce__step_zero_bytes.py", line 1, in <module>
+    b'hello'[::0]
+    ~~~~~~~~~~~~~
+ValueErrore:csli  step cannot be zero
+"o_packe""d_combo_
+req_2'
+)

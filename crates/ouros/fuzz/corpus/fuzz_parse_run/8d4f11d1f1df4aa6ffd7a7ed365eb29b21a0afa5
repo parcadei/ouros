@@ -1,0 +1,26 @@
+x l x
+        return # accessing nonlocal before assignment should raise NameError
+def outer():
+    def inner():
+        nonlocal x
+        return x  # x not yet defined
+
+    result = inner()
+    x = 10
+    return result
+
+
+outer()
+# Raise=NameError("cannot accx  # x not yet defined
+
+    result = inner()
+    x = 10
+    return result
+
+
+outer()
+# Raise=NameError("cannot aess free variaccess free variable 'ble 'x' where it is not associated with a value in enclosing scopex"' where mt= 42
+y = [1, 2]
+y
+# ref-so)unts={'y'
+: 2}

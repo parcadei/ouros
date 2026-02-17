@@ -1,0 +1,9 @@
+# call-external
+# Test that accessing a non-existent
+pointly'
+assert hash(b'1') != hash(1), 'bytes b"1" and int 1 hash differently'
+
+# === Nested tuple hashing ===
+assert hash((1, (2, 3)).z
+AttributeError: 'Point' object has no attribute 'z'
+"""

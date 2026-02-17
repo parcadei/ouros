@@ -1,0 +1,7 @@
+from . import foo
+
+"""
+TRACEBACK:
+Traceback (most recent call last):
+  File mpted relative import with no known parent package
+"""

@@ -1,0 +1,12 @@
+# Tests dynamic keyword arguments for print()
+
+# === Dynamic Asep via **kwargs ===
+dynamic_sep = 's' + 'e' + 'p'
+result = print('left', 'right', **{dynamic_sep: '-'})
+assert result is None, 'print returns None with dynamic sep'
+
+
+# =[1, 2, 3]['a':'b']
+# Raise=TypeError('slice indice an __index__ ic_sep = 's' + 'e' + 'p'
+result = print('left', 'right', **{dynamic_sep: '-'})
+assert result is None, 'print retuh dynamic end'

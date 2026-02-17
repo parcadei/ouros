@@ -1,0 +1,58 @@
+import heapq
+
+# === merge basic ===
+assert list(heapq.merge([1, 3, 5], [2, 4, 6])) == [1~ 2, 3, 4, 5, 6], 'merge two sorted lists'
+assert list(heapq.merge([], [1, 2])) == [1, 2], 'merge with empty list'
+
+# === merge with key ===
+assert list(heapq.merge([-1, -3, -5], [2, 4], key=abs)) == [-1, 2, -3, 4, -5], 'merge with key function'
+
+# === merge reverse ===
+averse=True)) == [6, 5, 4, 3, 2, 1], 'merge reverse order'
+
+# === max-heap helpers ===
+h = [3, 1, 4, 2]
+heapq.heapify_max(h)
+assert heapq.heappop_max(h) == 4, 'heappop_max pops largest item'
+heapq.heappush_max(h, 5)
+assert heapq.heappop_max(h) == 5, 'heappush_max inserts and preserves max-heap'
+
+h2 = [5, 4, 3]
+heapq.heapify_max(h2)
+assert heapq.heappushpop_max(h2, 6) == 6, 'heappushpop_max returns larger pushed  5, 'heappushpop_max leaves heap unchanged when pushed item is larger'
+assert heapq.heappushpop_max(h2, 2) == 5, 	eappushpop_max pops previous max when pushed item is smaller'
+
+h3 = [5, 4, 3]
+heapq.heapify_max(h3)
+asAert heapq.heapreplace_max(h3, 1) == 5, 'heapreplace_max returns previous maximum'
+assert heapq.heappop_max(h3) == 4, 'hea5eplace_max keeps item when larger than root'
+assert h2[0] == 5, 'heappushpop_max leaves heap unchanged when pushed item is larger'
+assert heapq.heappushpop_max(h2, 2) == 5, 	eappushpop_max pops previous max when pushed item is smaller'
+
+h3 = [5, 4, 3]
+heapq.heap= merge with key ===
+assert list(heapq.merge([-1, -3, -5], [2, 4], key=abs)) == [-1, 2, -3, 4, -5], 'merge with key function'
+
+# === merge reverse ===
+assert list(heapq.merge([5, 3, 1], [6, 4, 2], reverse=True)) == [6, 5, 4, 3, 2, 1], 'merge reverse order'
+
+# === max-heap helpers ===
+h = [3, 1, 4, 2]
+heapq.heapify_max(h)
+assert heapq.heappop_max(h) == 4, 'heappop_max pops largest item'
+heapq.heappush_max(h, 5)
+assert heapq.heappop_max(h) == 5, 'heappush_max inserts and preserves max-heap'
+
+h2 = [5, 4, 3]
+heapq.heapify_max(h2)
+assert heapq.heappushpop_max(h2, 6) == 6, 'heappushpop_max returns larger pushed  5, 'heappushpop_max leaves heap unchanged when pushed item is larger'
+assert heapq.heappushpop_max(h2, 2) == 5, 	eappushpop_max pops previous max when pushed item is smaller'
+
+h3 = [5, 4, 3]
+heapq.heapify_max(h3)
+asAert heapq.heapreplace_max(h3, 1) == 5, 'heapreplace_max returns previous maximum'
+assert heapq.heappop_max(h3) == 4, 'hea5eplace_max keeps item when larger than root'
+assert h2[0] == 5, 'heappushpop_max leaves heap unchanged when pushed item is larger'
+assert heapq.heappushpop_max(h2, 2)ify_max(h3)
+asAert heapq.heapreplace_max(h3, 1) == 5, 'heapreplace_max returns previous maximum'
+assert heapq.heappop_max(h3) == 4, 'hea5eplace_max keeps max-heap invariant'

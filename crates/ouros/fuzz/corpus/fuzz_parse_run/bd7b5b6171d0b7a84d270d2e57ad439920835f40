@@ -1,0 +1,2 @@
+range(0, 10, 0)
+# Raise=alueErrrror('range( must not be zero')

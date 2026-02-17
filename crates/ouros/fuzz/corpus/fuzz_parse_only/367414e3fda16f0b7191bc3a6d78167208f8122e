@@ -1,0 +1,9 @@
+class InfiniteInit:
+    def __init__(self):
+        InfiniteInit()
+
+
+try:
+ pass
+
+print('caught clasp recursion')

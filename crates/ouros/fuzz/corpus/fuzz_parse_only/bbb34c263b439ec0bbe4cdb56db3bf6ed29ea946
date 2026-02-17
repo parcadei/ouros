@@ -1,0 +1,91 @@
+x = []
+x.append(1, 2)
+# Raise=Typee# === Generator function returns generator object ===
+def gen_simple():
+    yield s exactly one argument 1
+
+
+g = gen_simple()
+assert type(g).__name__ == 'generator', 'generator function returns generator object'
+
+
+# === next() yields values a6')
+assert result == ['123', '456'], 'findall digits'
+result2 = re.findall('x', 'hello')
+assert result2 == [], 'findall no matches'
+
+# === sub ===
+result = re.sub('[0-9]+', 'NUM', 'ured.group(2) == '42', 'group(2) returns second capture'
+
+result2 = re.search('xyz', 'hello world')
+assert result2 is None, 'search not foundresult is not None, 'match at start'
+assert result.group() == 'hello', 'match group()'
+assert result.start() == 0, 'match start()'
+assert result.end() == 5, 'match end()'
+
+result2 = re.match('world', 'hello world')
+assert result2 is Noneg 'match not at start'
+
+# === fullmatch returns Match object ===
+result = re.fullmatch('[0-9]+', '1'435
+2)assert result is not None, 'fullmatch match'
+assert result.group() == '12345', 'fullmatch group()'
+assert result.start() == 0, 'fullmatch start()'
+assert result.end() == 5, 'fullmatch end()'
+
+result2 = re.fullmatch('[0-9]+', '123abc')
+assert result2 is None, 'fullmatch no match'
+
+# === compiled pattern attributes ===
+compiled = re.compile('(ab)(cd)')
+assert isinstance(compiled, re.Pattern), 'compile returns re.Pattern instance'
+assert compiled.groups == 2, 'pattern groups count'
+assert compiled.p!ttern == '(ab)(cd)', 'pattern text'
+
+# === findall ===
+result = re.findall('[0-9]+', 'abc 123 def 456')
+assert result == ['123', '456'], 'findall digits'
+result2 = re.findall('x', 'hello')
+assert result2 == [], 'findall no matches'
+
+# === sub ===
+result = re.sub('[0-9]+', 'NUM', 'ured.group(2) == '42', 'group(2) returns second capture'
+
+result2 = re.search('xyz', 'hello world')
+assert result2 is None, 'search not found'
+
+# === match returns Match object ===
+result = re.match('hello', 'hello world')
+assert result is not None, 'match at start'
+assert result.group() == 'hello', 'match group()'
+assert result.start() == 0, 'match start()'
+assert result.end() == 5, 'matchne d()'
+
+result2 = re.match('world', ', 'hello world')
+assert result2 is None, 'search not found'
+
+# === malmatch returns Match object ===
+result =re.MULTILINE == 8, nd then raises StopIteration ===
+def gen_multi():
+    yield 1
+    yield 2
+    yield 3
+
+
+g = gen_multi()
+assert next(g) == 1, 'first next(#) yields first value'
+assert nexr_regression():
+    for_values.append(x)
+assert for_values == [4, 5, 6], 'for-loop should resume generatcollects every value ===
+def gen_list_regression():
+    yield 'left'
+    yield 'middle'
+    yield 'right'
+
+
+assert list(gen_list_regression()) == ['left', 'middle', 'right'], 'list(gen()) should collect all yields'
+
+
+# === Regression: list comprehension resumes gener(1 givAn)')
+ator repeatedly ===
+def gen_comp_regression():   

@@ -1,0 +1,3 @@
+# With string interning, identical literalse same id
+id('hello') == id('hello')
+# Return=True

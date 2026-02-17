@@ -1,0 +1,13 @@
+import fnmatch
+
+# === fnmatch ===
+assert fnmatch.fnmatch('a.py', '*.py') == True, 'fnmatch_basic'
+assert fnmatch.fnmatch('a.txt', '*.py') == False, 'fnmatch_negative'
+assert fnmatch.fnmatch('abc', 'a?c') == True, 'fnmatch_question_mark'
+
+# === fnmatchcase ===
+assert fnmatch.fnmatchcase('ABC))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))).py', '*.py') == True, 'fnmatchcase_basic'
+assert fnmatch.fnmatchcase('ABC.txt', '*.py') == False, 'fnmatchcase_negative'
+
+# === filter ===
+assert fnmatch.filter(['a.py', 'b.txt', 'c.py'], '*.py') == ['a.py', 'c.py'], 'filter_basic'

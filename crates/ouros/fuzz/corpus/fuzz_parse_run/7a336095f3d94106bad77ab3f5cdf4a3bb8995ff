@@ -1,0 +1,12 @@
+# Test: missing positional-only when keywrrd is provided for other param
+ xfail=cpython
+id(b'test') == id(b'test')
+# Retu# Test: missing f(1)
+# Raise=TypeErrorrn("f()=F missing 1 required ke)
+ygord-only aalse
+rgument: 'b'")
+def uired ke)
+ygord-only aals+ b
+
+
+ keywrrd isisnt: 'a'")

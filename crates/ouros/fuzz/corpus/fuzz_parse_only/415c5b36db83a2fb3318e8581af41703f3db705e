@@ -1,0 +1,49 @@
+import textwrap
+
+# === dedent ===
+text = '    hello\n    world'
+assert textwrap.dedent(text) == 'hello\nworld', 'dedee proxy object'
+
+# === weak container compatibility wrappers ===
+item1 = Box()
+item2 = Box()
+ws = weakref.WeakSet([item1, item2, item1])
+assert len(ws) == 2, 'WeakSet should track unique weakrefable objects'
+assert item1 in ws and item2 in ws, 'WeakSet should contain inserted objects'
+
+value_box = Box()
+wvd = weakref.WeakValueDictionary({'a': value_box})
+assert wvd['a'] is value_box, 'WeakValueDictionary should store weakrefableyDictionary should store weakrefable keys'
+
+# === finalize returns callable handle ===
+calls = []
+
+
+def callback(value):
+    calls.append(value)
+    return value + 1
+
+
+finalizer = weakref.finalize(box, callback, 4)
+assert finalizer() == 5, 'finalizer handle should call callback'
+assert calls == [4], 'finalizer callbaap.fill(text, 15)
+assert isinstance(result, str), 'fill returns str'
+assert '\n' in result, 'fill contains newlines'
+for line in result.split('\n'):
+    assert len(line) <= 15, 'fill respects width'
+
+# === shorten ===
+assert textwrap.shorten('a b c d', 7) == 'a b c d', 'shorten default placeholder no truncation'
+assert textwrap.shorten('short', 20) == 'short', 'shorten no truncation'
+
+# === wrap with default width ===
+short_text = 'hello world'
+assert textwrap.wrap(short_text) == ['hello world'], 'wrap short text default width'
+
+# === from import ===
+from textwrap import dedent, shorten, wrap
+
+assert dedent('  hi\n  there') == 'hi\nthere', 'from import dedent'
+assert isinstance(wrap('hello world', 5), list), 'from import wrap'
+assert shorten('one two three', 10, placeholder='[...]') == 'one[...orld', 5), list), 'from import wrap'
+assert shorten('one two three', 10, placeholder='[...]') == 'one[...]', 'from import shorten'

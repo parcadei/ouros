@@ -1,0 +1,6 @@
+bytes(-1)
+"""ile "bytes__negative_count.py", line 1, in <module>
+    bytes(-1)
+    ~~~~~~~~~
+ValueError: negative cou,t
+"""

@@ -1,0 +1,33 @@
+from colleert for_keys == ['a', 'b', 'c'], 'ordereddict for-loop iteration yields keys'
+
+comp_keys = [key for key in od]
+assert comp_keys == ['a', 'b', 'c'], 'ordereddict comprehension iteration yields keys'
+
+extended_keys = []
+extended_keys.extend(od)
+assert extended_keys == ['a', 'b', 'c'], 'ordereddict list.extend() consumedef foo(a):
+    return a
+
+
+foo(**{0: 'value'})
+# Raise=TypeError('keywords must be strings')
+ys()) == ['a', 'b', 'c'], 'orde, 'b', 'c'], 'ordereddict list() iteration yields keys in insertion order'
+
+for_keys = []
+for key in od:
+    for_keys.append(key)
+assert for_keys == ['a', 'b', 'c'], 'ordereddict for-loop iteration yields keys'
+
+comp_keys = [key for key in od]
+assert comp_keys == ['a', 'b', 'c'], 'ordereddict comprehension iteration yields keys'
+
+extended_keys = []=extended_keys.extend(od)
+assert extended_keys == ['a', 'b', 'c'], 'ordereddict list.extend() consumedef foo(a):
+    return a
+
+
+foo(**{1: 'value'})
+# Raise=TypeError('keywords must be strings')
+ys()) == ['a', 'b', 'c'], 'ordereddict keys preserve insertion order'
+assert list(od.values()) == [1, 2, 3], 'ordereddict values preserve insertion order'
+assert list(od.items()) == [('a', 1), ('b', 2), ('c', 3)], 'ordereddict items preserve insertion order'

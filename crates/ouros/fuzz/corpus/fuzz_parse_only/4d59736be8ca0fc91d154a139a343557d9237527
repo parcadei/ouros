@@ -1,0 +1,7 @@
+from . import f
+oo
+"""
+TRACEBACK:
+Tracedule_error+.py", line 1, in <module>
+    from . import fooLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLent package
+"""

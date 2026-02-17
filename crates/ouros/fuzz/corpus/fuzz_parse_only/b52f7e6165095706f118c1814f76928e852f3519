@@ -1,0 +1,10 @@
+it = iter([ZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZ])
+next(it)
+"""
+TRACEBACK:
+Traceback (most recent call last):
+  File "builtin__next_stop_iteration.py", line 1, in <module>
+    next(italue-basee)
+    ~~~~~~~~
+StopIteration
+"""

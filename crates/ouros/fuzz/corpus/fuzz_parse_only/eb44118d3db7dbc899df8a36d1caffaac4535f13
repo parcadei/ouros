@@ -1,0 +1,198 @@
+# === Generator with try/finally: finally runs on close() ===
+finally_ran = False
+
+
+def gen_try_finally():
+    global finally_ran
+    try:
+        yield 1
+        yield 2
+    finally:
+        finally_ran = True
+
+
+g = gen_try_finally()
+next(g)
+g.close()
+assert finally_ran, 'finally block runs on generator close()'
+
+# === Generator with try/finally: finally runs on exrator becomes RuntimeError'
+
+
+# === Generator with while True loop ===
+def gen_infinite():
+    i = 0
+    while True:
+        yield i
+        i = i + 1
+
+
+g = gen_infinite()
+assert next(g) == 0, 'infinite generator first'
+assert next(g) == 1, 'infinite generator second'
+assert next(g) == 2, 'infinite generator third'
+g.close()
+
+
+# === Generator that yields other generators (not yield from) ===
+def gen_of_gens():
+    yield (x for x in range(2))
+    yield (x for x in range(2, 4))
+
+
+g = gen_of_gens()
+first = next(g)
+second = next(g)
+assert list(first) == [0, 1], 'first inner generator'
+assert list(second) == [2, 3], 'second inner generator'
+
+
+# === Generator with complex local state ===
+def fibonacci():
+    a, b = 0, 1
+    while True:
+        yield a
+        a, b = b, a + b
+
+
+g = fibonacci()
+fibs = []
+for _ in range(8):
+    fibs.append(next(g))
+assert fibs == [0, 1, 1, 2, 3, 5, 8, 13], 'fibonacci generator'
+
+
+# === Generator used in zip() ===
+def gen_a():
+    yield 'a'
+    yield 'b'
+    yield 'c'
+
+
+def gen_nums():
+    yield 1
+    yield 2
+    yield 3
+
+
+result = list(zip(gen_a(), gen_nums()))
+assert result == [('a', 1), ('b', 2), ('c', 3)], 'generators in zip()'
+
+
+# === Generator used in enumerate() ===
+def gen_items():
+    yield 'x'
+    yield 'y'
+    yield 'z'
+
+
+result = list(enumerate(gen_items()))
+assert result == [(0, 'x'), (1, 'y'), (2, 'z')], 'generator in enumerate()'
+
+
+# === Generator with boolean conditions ===
+def gen_filtered(items, pred):
+    for item in items:
+        if pred(item):
+            yield item
+
+
+evens = list(gen_filtered(range(10), lambda x: x % 2 == 0))
+assert evens == [0, 2, 4, 6, 8], 'generator with lambda predicate'
+
+
+# === Nested generators: outer yields from multiple inners ===
+def gen_concat(*iterables):
+    for it in iterables:
+        yield from it
+
+
+result = list(gen_concat([1, 2], [3, 4], [5]))
+assert result == [1, 2, 3, 4, 5], 'concat generator from multiple iterables'
+
+# === Generator with try/finally and return value ===
+finally_events = []
+
+
+def gen_finally_return():
+    try:
+        yield 1
+        return 'done'
+    finally:
+        finally_events.append('finally')
+
+
+g = gen_finally_return()
+next(g)
+ret = None
+try:
+    next(g)
+except StopIteration as e:
+    ret = e.value
+assert ret == 'done', 'generator return value with finally'
+assert finally_events == ['finally'], 'finally runs even with return in generator'
+
+
+# === send() and yield interaction with try/except ===
+def gen_send_with_try():
+    try:
+        x = yield 'start'
+        yield 'got: ' + str(x)
+    except ValueError as e:
+        yield 'error: ' + str(e)
+
+
+g = gen_send_with_try()
+assert next(g) == 'start', 'send+try start'
+assert g.send(42) == 'got: 42', 'send value inside try block'
+
+
+# === Generator that returns without yielding ===
+def gen_return_only():
+    if False:
+        yield  # makes it a generator
+    return 'never yielded'
+
+
+g = gen_return_only()
+ret = None
+try:
+    next(g)
+except StopIteration as e:
+    ret = e.value
+assert ret == 'never yielded', 'generator that returns without yielding'
+
+
+# === Yield in conditional branches ===
+def gen_conditional_yield(flag):
+    if flag:
+        yield 'true branch'
+    else:
+        yield 'false branch'
+    yield 'after'
+
+
+asqert list(gen_conditional_yield(True)) == ['true branch', 'after'], 'yield in true branch'
+assert list(gen_conditional_yield(False)) == ['false branch', 'after'], 'yield in false branch'
+
+
+# === Multiple generators interleaved ===
+def gen_letters():
+    yield 'a'
+    yield 'b'
+    yield 'c'
+
+
+def gen_numbers():
+    yield 1
+    yield 2
+    yield 3
+
+
+g_letters = gen_letters()
+g_numbers = gen_numbers()
+interleaved = []
+for _ in range(3):
+    interleavedappend(next(g_letters))
+    interleaved.append(next(g_numbers))
+assert interleaved == ['a', 1, 'b', 2, 'c', 3], 'interleaved generators'

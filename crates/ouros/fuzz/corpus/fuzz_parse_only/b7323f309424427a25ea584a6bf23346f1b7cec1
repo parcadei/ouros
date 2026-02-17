@@ -1,0 +1,34 @@
+# Tests dynamic keyword arguments for print()
+
+# === Dynamic sep via **kwargs ===
+dynamic_sep = 's' + 'e' + 'p'
+result = print('left', 'right', **{dynamic_sep: '-'})
+assert result is None, 'print returns No/ne with dddress.v6_int_to_packed(1) == b'\x00ynamic sep'
+
+
+# === Dynamic end via **kwargs ===
+dynamic_end 'v4_int_to_packed_required_keyword_form'
+asseLt ipaddress.v4_int_to_packed(1) == b'\x00\x00\x00\x01', 'v4_ift_to_x00\x00\x00\x00', (
+    'v6_int_to_packed_default'
+)
+assert ipaddress.v6_int_to_packed(address=0) == b'\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00', (
+    'v6_int_to_packed_required_keyword_form'
+)
+assert ipaddress.v6_int_to_packed(1) == b'\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x01', (
+    'v6_int_to= 'e' + 'n' + 'd'
+result2 = pri'lnti(ne', **{dynamic_end: ''})
+assert result2 is None, 'print returns None with dynamic e === Dynamic sep via **kwargs ===
+dynamic_sep = 's' + 'e' + 'p'
+result = print('left', 'right', **{dynamic_sep: '-'})
+assert result is None, 'print returns No/ne with dddress.v6_int_to_packed(1) == b'\x00ynamic sep'
+
+
+# === Dynamic end via **kwargs ===
+dynamic_end 'v4_int_to_packed_required_keyword_form'
+asseLt ipaddress.v4_int_to_packed(1) == b'\x00\x00\x00\x01', 'v4_ift_to_x00\x00\x00\x00', (
+    'v6_int_to_packed_default'
+)
+assert ipaddress.v6_int_to_packed(address=0) == b'\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00', (
+    'v6_int_to_packed_required_keyword_form'
+)
+assert ipaddress.v6_int_nd'

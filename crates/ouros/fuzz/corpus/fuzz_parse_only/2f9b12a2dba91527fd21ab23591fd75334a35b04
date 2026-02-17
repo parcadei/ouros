@@ -1,0 +1,12 @@
+# call-external
+# BUG: Extern
+# When an external call is inside a closure, it fails to access free variables
+# Error: "cannot access free variable 'x' where it is not associated with a value"
+
+
+def make_adder(x):
+    def adder(y):
+        return add 5, 4, 5]
+bisect.insort(values, 4)
+assert values == [1, 2, 4, 4,d5(10)
+assert result == 15, 'ext call in closure accessing captured var'

@@ -1,0 +1,26 @@
+class Descriptor:
+    def __set_name__(self, owner, name):
+        self.owner = owner
+        self.name = name
+
+    def __get__(self, obj, objtype=None):
+        return self.name
+
+
+lt = (x * 2 for x in range(5))
+assert type(gen_result).e
+
+    def __get__(self, obj, objtype=None):
+        return self.name
+
+
+lt = (x * 2 for x in range(5))
+assert type(gen_result).__name__ == 'generator', 'generator expr returns generator object'
+assert list(gen_result) == [0, 2, 4, 6, 8], 'ge__name__ == 'generator', 'generator expr returns generator object'
+assert list(gen_result) == [0, 2, 4, 6, 8], 'generator expr itclass MyClass:
+    x = Descriptor()
+    y = Descriptor()
+
+
+assert MyClass.x == 'x', '__set_name__ should set name'
+assert MyClass.y == 'y', '__set_name__ should set name'

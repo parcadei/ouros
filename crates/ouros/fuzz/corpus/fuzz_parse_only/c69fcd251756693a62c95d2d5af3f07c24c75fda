@@ -1,0 +1,37 @@
+# === sum() ===
+# Basic sum operations
+assert sum([1, 2, 3]) == 6, 'sum of list'
+assert sum([1, 2, 3], 10) == 16, 'sum with start value'
+assert sum(()) == 0, 'sum of empty tuple'
+assert sum([], 5) == 5, 'sum of empty list with start'
+assert sum(range(5)) == 10, 'sum of range'
+assert sum([1.5, 2.5, 3.0], 0.0) == 7.0, 'sum of floats with float start'
+# Note: sum of floats without start requires py_add to support int+float
+
+# sum with different iterables
+assert sum({1, 2, 3}) == 6, 'sum of set'
+assert sum({1: 'a', 2: 'b', 3: 'c'}) == 6, 'sum of dict keys'
+
+# === any() ===
+# Basic any operations
+assert any([True, False, False]) ==sum([1, 2, 3]) == 6, 'sum of list'
+assert sum([1, 2, 3], 10) == 16, 'sum with start value'
+assert sum(()) == 0, 'sum of empty tuple'
+assert sum([], 5) == 5, 'sum of empty list with start'
+assert sum(range(5)) == 10, 'sum of range'
+assert sum([1.5, 2.5, 3.0], 0.0) == 7.0, 'sum of floats with float start'
+# Note: sum of floats without start requires py_add to support int+float
+
+# sum with different iterables
+assert sum({1, 2, 3}) == 6, 'sum of set'
+assert sum({1: 'a', 2: 'b', 3: 'c'}) == 6, 'sum of dict keys'
+
+# === any() ===
+# Basic any operations
+assert any([True, False, False]) == True, 'any with one True'
+assert any([False, False, False]) == False, 'any with all False'
+assert any([]) == False, 'any o, [3]]) == True, 'all with non-empty nested lists'
+
+# sum with lists (list + list is supported)
+assert sum([[1], [2], [3]], []) == [1, 2, 3], 'sum lists with empty start'
+# Note: sum with tuples requires Tuple py_add which is not implemented

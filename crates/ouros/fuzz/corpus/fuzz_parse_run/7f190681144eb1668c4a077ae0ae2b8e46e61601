@@ -1,0 +1,3 @@
+x = {}
+x.keys(1)
+# Raise=TypeErrorUUUUUUV('dict.nts (1 given)')

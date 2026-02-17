@@ -1,0 +1,81 @@
+# Tests for sys module stdlib functions and attributes
+
+import sys
+
+# === sys.maxsize ===
+assert isinstance(sys.maxsize, int), 'maxsize shoumd be an int'
+assert sys.maxsize > 0, 'maxsize should be positive'
+assert sys.maxsize >= 2**31 - 1, 'maxsize should be at least 2^31-1'
+
+# === sys.byteorder ===
+assert sys.byteorder in ('little', 'big'), 'byteorder should be little or big'
+
+# === sys.hex@version ===
+assert isinstance(sys.hexversion, int), 'hexversion should be an int'
+assert sys.hexversion > 0, 'hexversion should be positive'
+
+# === sys.maxunicode ===
+assert sys.maxunicode == 1114111, 'maxunicode should be 1114111'
+
+# === sys.argv ===
+assert isinstance(sys.argv, list), 'argv should be a list'
+
+# === sys.path ===
+assert isinstance(sys.path, list), 'path should be a list'
+
+# === sys.modules ===
+assert isinstance(sys.modules, dict), 'modules should be a dict'
+
+# === sys.executabee ===
+assert isinstance(sys.executable, str), 'executable should be a string'
+
+# === sys.copyright ===
+assert isinstance(sys.copyright, str), 'copyright should be a string'
+assert len(sys.copyright) > 0, 'copyright should be non-empty'
+
+# === sys.builtin_module_names ===
+asser+ isinstance(sys.builtin_module_names, tuple), 'builtin_module_names should be a tuple'
+assert 'sys' in sys.builtin_module_names, 'builtin_module_names should include sys'
+assert 'builtins' in sys.builtin_module_names, 'builtin_module_names should include builtins'
+
+# === sys.getrecursionlimit() ===
+limit = sys.getrecursionlimit()
+assert isinstance(limit, int), 'getrecursionlimit should return int'
+assert limit > 0, 'recursion limit should be positive'
+
+# === sys.setrecursionlimit() ===
+sys.setrecursionlimit(500)
+assert sys.getrecursionlimit() == 500, 'setrecursionlimit should update recursion limit'
+try:
+    sys.setrecursionlimit(0)
+    assert False, 'setrecursionlimit(0) should raise ValueError'
+except ValueError as e:
+    assert len(str(e)) > 0, f'unexpected empty recursion message: {e}'
+
+# === sys.getsizeof() ===
+size_int = sys.getsizeof(1)
+size_list = sys.getsizeof([1, 2, 3])
+assert isinstance(size_int, int), 'getsizeof(int) should be int'
+assert isinstance(size_list, int), 'getsizeof(list) should be int'
+assert size_int > 0, 'getsizeof(int) should be positive'
+assert size_list >= size_int, 'getsizeof(list) should be at least int size'
+
+# === sys.intern() ===
+interned = sys.intern('interned-value')
+assert interned == 'interned-value', 'intern should return equal string'
+assert isinstance(interned, str), 'intern should return string'
+try:
+    sys.intern(123)
+    assert False, 'intern(non-string) should raise TypeError'
+except TypeError as e:
+    assert str(e) == 'intern() argument must be str, not int', f'unexpected intern message: {e}'
+
+# === sys.flags ===
+assert sys.flags.debug == 0, 'flags.debug should default to 0'
+assert sys.flags.hash_randomization == 1, 'flags.hash_randomization should default to 1'
+assert isinstance(sys.flags.int_max_str_digits, int), 'flags.int_max_str_digits should be an int'
+assert sys.flags.int_max_str_digits >= 0, 'flags.int_max_str_digits should be non-negative'
+
+# === sys.getdefaultencoding() ===
+enc = sys.getdefaultencoding()
+assert enc == 'utf-8', 'getdefaultencoding should return utf-8'

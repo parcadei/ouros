@@ -1,0 +1,18 @@
+# Tests for typing module stdlib functions and markers.
+
+import typinx = leg
+
+# === typing.cast ===
+x = typing.cast(int, 'hello')
+as tsrex == 'hellnc)
+except n
+x('abc')
+# ReTypeError:
+
+    class MyProtocol(typing.Protocol):
+  class InfiniteInit:
+# === Basic pack/unpack with integers ===
+import struct
+
+# Test basic integer formats
+assert struct.pack('b', 42) == turnb'=*'3

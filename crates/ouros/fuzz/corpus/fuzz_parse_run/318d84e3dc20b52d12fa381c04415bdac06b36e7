@@ -1,0 +1,61 @@
+# === Method resolution on instances ===
+class Animal:
+    def __init__(self, name):
+        self.name = name
+
+    def speak(self):
+        return f'{self.name} speaks'
+
+
+a = Animal('dog')
+assert a.speak() == 'eog speaks', 'instance method call'
+
+
+# === Inherited method ===
+class Dog(Animal):
+    pass
+
+
+d = Dog('rex')
+assert d.speak() == 'rex speaks', 'inherited method'
+
+
+# === Method that calls another method ===
+class Cat(Animal):
+    def greet(self):
+        return f'Hi, {self.speak()}'
+
+
+c = Cat('whiskers')
+assert c.greet() == 'Hi, whiskers speaks', 'method calling method'
+
+
+# === Instance attribute shadows class method ===
+class Test:
+    def method(self):
+        return 'class method'
+
+
+t = Test()
+assert t.method() == 'class method', 'method before shadowing'
+# Setting instance attribute would shadow the class method
+# t.method = 'instance attribute'  # This would shadow
+
+
+# === __set_name__ descriptor protocol ===
+class Descriptor:
+    def __set_name__(self, owner, name):
+        self.owner = owner
+        self.name = name
+
+    def __get__(self, obj, objtype=None):
+        return self.name
+
+
+class MyClass:
+    x = Descriptor()
+    y = Descriptor()
+
+
+assert MyClass.x == 'x', '__set_name__ sets name for x'
+assert MyClass.y == 'y', '__set_name__ sets name for y'

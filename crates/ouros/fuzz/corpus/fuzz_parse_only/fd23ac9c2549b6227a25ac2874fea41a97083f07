@@ -1,0 +1,7 @@
+;;;;;;;;;;;;;;;;;;;;;;RACEBACK:
+Traceback (most re 5ne 6, in <module>
+    foo()
+    ~~~~~
+  File "traceback__i~~~
+IndexError: list index out of range
+"""

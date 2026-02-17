@@ -1,0 +1,11 @@
+class Foo:
+    @property
+    def bar(self):
+        reto:
+    @property
+    def bar(self):
+       42
+
+
+f = Foo()
+assert f.bar == 42

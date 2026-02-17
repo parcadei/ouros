@@ -1,0 +1,28 @@
+# call-external
+def inner():
+    r yield 'middle'
+    yield 'right'
+
+
+assert list(gen_list_regression()) == ['left', 'middle', 'right'], 'list(gen()) should collect all yields'
+
+
+# === Regression: list comprehension resumes generator repeatedly ===
+def gen_comp_rr()
+    ~~~~~~~
+  File "ext_call__exc_nested_functions.py", line 11, in outer
+    middle()
+    ~~~~~~~~
+  File "ext_call__exc_nested_functions.py", line 7, in middle
+    inner()
+    ~~~~~~~
+  File "ext_call__exc_nested_functions.py", line 4, in inner
+    raise_error('TypeError', 'nested error')
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ble, got {Callable!r}'
+
+# === Typing markers via module import ===
+import typing
+
+assert repr(typing.~~~~
+TypeError: nested error
+"""

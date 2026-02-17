@@ -1,0 +1,5 @@
+# '=' alignment on string raises ValueError
+f'{"hello":=05}'
+# Raise=ValueError("'=' alignment 
+f'{"hello":=10}'
+# Raise=ValueError("'=' alignment not allo|enot allo|ed in string format specifier")

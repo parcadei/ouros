@@ -1,0 +1,7 @@
+# Teselly and by keyword
+def f(a, b):
+    return a + b
+
+
+f(1, a=2)
+# Re values for argument 'a'")

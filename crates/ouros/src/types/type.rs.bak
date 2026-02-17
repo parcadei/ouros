@@ -1,0 +1,727 @@
+use std::fmt;
+
+use num_bigint::BigInt;
+use strum::EnumString;
+
+use crate::{
+    args::ArgValues,
+    defer_drop,
+    exception_private::{ExcType, RunError, RunResult, SimpleException},
+    heap::{DropWithHeap, Heap, HeapData},
+    intern::Interns,
+    modules::dataclasses::decorate_class_with_dataclass,
+    resource::ResourceTracker,
+    types::{
+        Bytes, Dict, FrozenSet, List, LongInt, OuroIter, Path, PyTrait, Range, Set, Slice, Str, Tuple, str::StringRepr,
+    },
+    value::Value,
+};
+
+/// Represents the Python type of a value.
+///
+/// This enum is used both for type checking and as a callable constructor.
+/// When parsed from a string (e.g., "list", "dict"), it can be used to create
+/// new instances of that type.
+///
+/// Note: `Exception` variants is disabled for strum's `EnumString` (they can't be parsed from strings).
+#[derive(Debug, Clone, Copy, EnumString, PartialEq, Eq, Hash, serde::Serialize, serde::Deserialize)]
+#[strum(serialize_all = "lowercase")]
+#[expect(clippy::enum_variant_names)]
+pub enum Type {
+    Ellipsis,
+    Type,
+    NoneType,
+    Bool,
+    Int,
+    Float,
+    Range,
+    Slice,
+    Str,
+    Bytes,
+    List,
+    Tuple,
+    NamedTuple,
+    Dict,
+    #[strum(disabled)]
+    Counter,
+    #[strum(disabled)]
+    OrderedDict,
+    Set,
+    FrozenSet,
+    Dataclass,
+    #[strum(disabled)]
+    Exception(ExcType),
+    Function,
+    BuiltinFunction,
+    Cell,
+    #[strum(serialize = "iter")]
+    Iterator,
+    /// Coroutine type for async functions and external futures.
+    Coroutine,
+    /// Generator type for generator functions.
+    Generator,
+    Module,
+    /// Marker types like stdout/stderr - displays as "TextIOWrapper"
+    #[strum(serialize = "TextIOWrapper")]
+    TextIOWrapper,
+    /// typing module special forms (Any, Optional, Union, etc.) - displays as "typing._SpecialForm"
+    #[strum(serialize = "typing._SpecialForm")]
+    SpecialForm,
+    /// A filesystem path from `pathlib.Path` - displays as "PosixPath"
+    #[strum(serialize = "PosixPath")]
+    Path,
+    /// Pure path base class from `pathlib.PurePath`.
+    #[strum(serialize = "PurePath")]
+    PurePath,
+    /// Pure POSIX path class from `pathlib.PurePosixPath`.
+    #[strum(serialize = "PurePosixPath")]
+    PurePosixPath,
+    /// Pure Windows path class from `pathlib.PureWindowsPath`.
+    #[strum(serialize = "PureWindowsPath")]
+    PureWindowsPath,
+    /// A hash object from `hashlib` - displays as "_hashlib.HASH"
+    #[strum(serialize = "_hashlib.HASH")]
+    Hash,
+    /// A property descriptor - displays as "property"
+    #[strum(serialize = "property")]
+    Property,
+    /// A slot/member descriptor created from `__slots__`.
+    #[strum(disabled)]
+    MemberDescriptor,
+    /// A getset descriptor for `__dict__`/`__weakref__` slots.
+    #[strum(disabled)]
+    GetSetDescriptor,
+    /// A read-only view of a class namespace (`type.__dict__`).
+    #[strum(disabled)]
+    MappingProxy,
+    /// A `weakref.ref` object (displays as `weakref.ReferenceType`).
+    #[strum(disabled)]
+    WeakRef,
+    /// A `types.GenericAlias` produced by `__class_getitem__`.
+    #[strum(disabled)]
+    GenericAlias,
+    /// A bound method object created by attribute access on instances.
+    #[strum(disabled)]
+    Method,
+    /// A user-defined class instance - displays as the class name
+    #[strum(disabled)]
+    Instance,
+    /// The Python `object` base type - all classes implicitly inherit from object
+    #[strum(serialize = "object")]
+    Object,
+    /// A `re.Match` object from a successful regex search/match.
+    #[strum(disabled)]
+    ReMatch,
+    /// A `re.Pattern` object from `re.compile()`.
+    #[strum(disabled)]
+    RePattern,
+    /// A double-ended queue from `collections.deque`.
+    #[strum(disabled)]
+    Deque,
+    /// A defaultdict from `collections.defaultdict`.
+    #[strum(disabled)]
+    DefaultDict,
+    /// A timedelta object from `datetime.timedelta`.
+    #[strum(serialize = "timedelta")]
+    Timedelta,
+    /// A date object from `datetime.date`.
+    #[strum(serialize = "date")]
+    Date,
+    /// A datetime object from `datetime.datetime`.
+    ///
+    /// Disabled for `EnumString` because bare `datetime` must resolve to the `datetime` module,
+    /// not the `datetime.datetime` class. Use `datetime.datetime(...)` to construct datetime objects.
+    #[strum(disabled)]
+    Datetime,
+    /// A time object from `datetime.time`.
+    ///
+    /// Disabled for `EnumString` because bare `time` must resolve to the `time` module,
+    /// not the `datetime.time` class. Use `datetime.time(...)` to construct time objects.
+    #[strum(disabled)]
+    Time,
+    /// A timezone object from `datetime.timezone`.
+    #[strum(serialize = "timezone")]
+    Timezone,
+    /// A tzinfo object from `datetime.tzinfo` (abstract base class).
+    #[strum(serialize = "tzinfo")]
+    Tzinfo,
+    /// A decimal number from the `decimal` module.
+    #[strum(disabled)]
+    Decimal,
+    /// A rational number fraction from `fractions.Fraction`.
+    ///
+    /// Disabled for strum's `EnumString` because `Fraction` is a module-level type
+    /// (from `fractions`), not a Python builtin. The parser should not eagerly resolve
+    /// the name `Fraction` to this type — it must go through runtime namespace lookup
+    /// so that user-defined classes named `Fraction` can shadow it correctly.
+    #[strum(disabled)]
+    Fraction,
+    /// An asyncio Future object from `asyncio.Future`.
+    #[strum(serialize = "asyncio.Future")]
+    Future,
+    /// An asyncio Task object from `asyncio.Task`.
+    #[strum(serialize = "asyncio.Task")]
+    Task,
+    /// An asyncio Queue object from `asyncio.Queue`.
+    #[strum(serialize = "asyncio.Queue")]
+    Queue,
+    /// A compiled struct format from `struct.Struct`.
+    #[strum(disabled)]
+    Struct,
+}
+
+impl fmt::Display for Type {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match self {
+            Self::Ellipsis => f.write_str("ellipsis"),
+            Self::Type => f.write_str("type"),
+            Self::NoneType => f.write_str("NoneType"),
+            Self::Bool => f.write_str("bool"),
+            Self::Int => f.write_str("int"),
+            Self::Float => f.write_str("float"),
+            Self::Range => f.write_str("range"),
+            Self::Slice => f.write_str("slice"),
+            Self::Str => f.write_str("str"),
+            Self::Bytes => f.write_str("bytes"),
+            Self::List => f.write_str("list"),
+            Self::Tuple => f.write_str("tuple"),
+            Self::NamedTuple => f.write_str("namedtuple"),
+            Self::Dict => f.write_str("dict"),
+            Self::Counter => f.write_str("collections.Counter"),
+            Self::OrderedDict => f.write_str("collections.OrderedDict"),
+            Self::Set => f.write_str("set"),
+            Self::FrozenSet => f.write_str("frozenset"),
+            Self::Dataclass => f.write_str("dataclass"),
+            Self::Exception(exc_type) => write!(f, "{exc_type}"),
+            Self::Function => f.write_str("function"),
+            Self::BuiltinFunction => f.write_str("builtin_function_or_method"),
+            Self::Cell => f.write_str("cell"),
+            Self::Iterator => f.write_str("iterator"),
+            Self::Coroutine => f.write_str("coroutine"),
+            Self::Generator => f.write_str("generator"),
+            Self::Module => f.write_str("module"),
+            Self::TextIOWrapper => f.write_str("_io.TextIOWrapper"),
+            Self::SpecialForm => f.write_str("typing._SpecialForm"),
+            Self::Path => f.write_str("pathlib.PosixPath"),
+            Self::PurePath => f.write_str("pathlib.PurePath"),
+            Self::PurePosixPath => f.write_str("pathlib.PurePosixPath"),
+            Self::PureWindowsPath => f.write_str("pathlib.PureWindowsPath"),
+            Self::Hash => f.write_str("_hashlib.HASH"),
+            Self::Property => f.write_str("property"),
+            Self::MemberDescriptor => f.write_str("member_descriptor"),
+            Self::GetSetDescriptor => f.write_str("getset_descriptor"),
+            Self::MappingProxy => f.write_str("mappingproxy"),
+            Self::WeakRef => f.write_str("weakref.ReferenceType"),
+            Self::GenericAlias => f.write_str("types.GenericAlias"),
+            Self::Method => f.write_str("method"),
+            Self::Instance => f.write_str("instance"),
+            Self::Object => f.write_str("object"),
+            Self::ReMatch => f.write_str("re.Match"),
+            Self::RePattern => f.write_str("re.Pattern"),
+            Self::Struct => f.write_str("struct.Struct"),
+            Self::Deque => f.write_str("collections.deque"),
+            Self::DefaultDict => f.write_str("collections.defaultdict"),
+            Self::Timedelta => f.write_str("datetime.timedelta"),
+            Self::Date => f.write_str("datetime.date"),
+            Self::Datetime => f.write_str("datetime.datetime"),
+            Self::Time => f.write_str("datetime.time"),
+            Self::Timezone => f.write_str("datetime.timezone"),
+            Self::Tzinfo => f.write_str("datetime.tzinfo"),
+            Self::Decimal => f.write_str("decimal.Decimal"),
+            Self::Fraction => f.write_str("fractions.Fraction"),
+            Self::Future => f.write_str("asyncio.Future"),
+            Self::Task => f.write_str("asyncio.Task"),
+            Self::Queue => f.write_str("asyncio.Queue"),
+        }
+    }
+}
+
+impl Type {
+    /// Checks if a value of type `self` is an instance of `other`.
+    ///
+    /// This handles Python's subtype relationships:
+    /// - `bool` is a subtype of `int` (so `isinstance(True, int)` returns True)
+    #[must_use]
+    pub fn is_instance_of(self, other: Self) -> bool {
+        if self == other {
+            true
+        } else if other == Self::Object {
+            // Everything is an instance of object in Python
+            true
+        } else if self == Self::Bool && other == Self::Int {
+            // bool is a subtype of int in Python
+            true
+        } else if self == Self::DefaultDict && other == Self::Dict {
+            // defaultdict is a subtype of dict in Python
+            true
+        } else if (self == Self::Counter || self == Self::OrderedDict) && other == Self::Dict {
+            // Counter and OrderedDict are dict subclasses in Python
+            true
+        } else if self == Self::Path && (other == Self::PurePosixPath || other == Self::PurePath) {
+            // pathlib.Path is a concrete POSIX path and is also a PurePosixPath/PurePath
+            true
+        } else if (self == Self::PurePosixPath || self == Self::PureWindowsPath) && other == Self::PurePath {
+            // Both concrete pure flavors are instances of PurePath
+            true
+        } else {
+            false
+        }
+    }
+
+    /// Converts a callable type to a u8 for the `CallBuiltinType` opcode.
+    ///
+    /// Returns `Some(u8)` for types that can be called as constructors,
+    /// `None` for non-callable types.
+    #[must_use]
+    pub fn callable_to_u8(self) -> Option<u8> {
+        match self {
+            Self::Bool => Some(0),
+            Self::Int => Some(1),
+            Self::Float => Some(2),
+            Self::Str => Some(3),
+            Self::Bytes => Some(4),
+            Self::List => Some(5),
+            Self::Tuple => Some(6),
+            Self::Dict => Some(7),
+            Self::Set => Some(8),
+            Self::FrozenSet => Some(9),
+            Self::Range => Some(10),
+            Self::Slice => Some(11),
+            Self::Iterator => Some(12),
+            Self::Path => Some(13),
+            Self::Queue => Some(14),
+            _ => None,
+        }
+    }
+
+    /// Converts a u8 back to a callable `Type` for the `CallBuiltinType` opcode.
+    ///
+    /// Returns `Some(Type)` for valid callable type IDs, `None` otherwise.
+    #[must_use]
+    pub fn callable_from_u8(id: u8) -> Option<Self> {
+        match id {
+            0 => Some(Self::Bool),
+            1 => Some(Self::Int),
+            2 => Some(Self::Float),
+            3 => Some(Self::Str),
+            4 => Some(Self::Bytes),
+            5 => Some(Self::List),
+            6 => Some(Self::Tuple),
+            7 => Some(Self::Dict),
+            8 => Some(Self::Set),
+            9 => Some(Self::FrozenSet),
+            10 => Some(Self::Range),
+            11 => Some(Self::Slice),
+            12 => Some(Self::Iterator),
+            13 => Some(Self::Path),
+            14 => Some(Self::Queue),
+            _ => None,
+        }
+    }
+
+    /// Calls this type as a constructor (e.g., `list(x)`, `int(x)`).
+    ///
+    /// Dispatches to the appropriate type's init method for container types,
+    /// or handles primitive type conversions inline.
+    pub(crate) fn call(
+        self,
+        heap: &mut Heap<impl ResourceTracker>,
+        args: ArgValues,
+        interns: &Interns,
+    ) -> RunResult<Value> {
+        match self {
+            // Container types - delegate to init methods
+            Self::List => List::init(heap, args, interns),
+            Self::Tuple => Tuple::init(heap, args, interns),
+            Self::Dict => Dict::init(heap, args, interns),
+            Self::Set => Set::init(heap, args, interns),
+            Self::FrozenSet => FrozenSet::init(heap, args, interns),
+            Self::Str => Str::init(heap, args, interns),
+            Self::Bytes => Bytes::init(heap, args, interns),
+            Self::Range => Range::init(heap, args),
+            Self::Slice => Slice::init(heap, args),
+            Self::Iterator => OuroIter::init(heap, args, interns),
+            Self::Path => Path::init(heap, args, interns),
+            Self::PurePath => Path::init_pure_path(heap, args, interns),
+            Self::PurePosixPath => Path::init_pure_posix_path(heap, args, interns),
+            Self::PureWindowsPath => Path::init_pure_windows_path(heap, args, interns),
+            Self::Dataclass => {
+                let Some(cls) = args.get_zero_one_arg("dataclass", heap)? else {
+                    return Err(ExcType::type_error(
+                        "dataclass() missing 1 required positional argument: 'cls'",
+                    ));
+                };
+                decorate_class_with_dataclass(heap, interns, cls)
+            }
+            Self::Fraction => crate::modules::fractions_mod::call_type(heap, interns, args).map(|res| match res {
+                crate::types::AttrCallResult::Value(v) => v,
+                _ => unreachable!(),
+            }),
+
+            // Primitive types - inline implementation
+            Self::Int => call_int_constructor(heap, args, interns),
+            Self::Float => {
+                let Some(v) = args.get_zero_one_arg("float", heap)? else {
+                    return Ok(Value::Float(0.0));
+                };
+                defer_drop!(v, heap);
+                match v {
+                    Value::Float(f) => Ok(Value::Float(*f)),
+                    Value::Int(i) => Ok(Value::Float(*i as f64)),
+                    Value::Bool(b) => Ok(Value::Float(if *b { 1.0 } else { 0.0 })),
+                    Value::InternString(string_id) => {
+                        Ok(Value::Float(parse_f64_from_str(interns.get_str(*string_id))?))
+                    }
+                    Value::Ref(heap_id) => match heap.get(*heap_id) {
+                        HeapData::Str(s) => Ok(Value::Float(parse_f64_from_str(s.as_str())?)),
+                        _ => Err(ExcType::type_error_float_conversion(v.py_type(heap))),
+                    },
+                    _ => Err(ExcType::type_error_float_conversion(v.py_type(heap))),
+                }
+            }
+            Self::Bool => {
+                let Some(v) = args.get_zero_one_arg("bool", heap)? else {
+                    return Ok(Value::Bool(false));
+                };
+                defer_drop!(v, heap);
+                Ok(Value::Bool(v.py_bool(heap, interns)))
+            }
+
+            // Non-callable types - raise TypeError
+            _ => Err(ExcType::type_error_not_callable(self)),
+        }
+    }
+}
+
+/// Implements `int()` constructor argument handling, including optional `base`.
+///
+/// Supports:
+/// - `int()` -> `0`
+/// - `int(x)` for numbers and strings
+/// - `int(x, base)` / `int(x, base=...)` for string inputs
+fn call_int_constructor(heap: &mut Heap<impl ResourceTracker>, args: ArgValues, interns: &Interns) -> RunResult<Value> {
+    let (positional, kwargs) = args.into_parts();
+    let positional: Vec<Value> = positional.collect();
+
+    let mut kw_base: Option<Value> = None;
+    for (key, value) in kwargs {
+        let Some(key_name) = key.as_either_str(heap) else {
+            key.drop_with_heap(heap);
+            value.drop_with_heap(heap);
+            for pos in positional {
+                pos.drop_with_heap(heap);
+            }
+            kw_base.drop_with_heap(heap);
+            return Err(ExcType::type_error_kwargs_nonstring_key());
+        };
+        let key_name = key_name.as_str(interns).to_owned();
+        key.drop_with_heap(heap);
+
+        if key_name == "base" {
+            if kw_base.is_some() {
+                value.drop_with_heap(heap);
+                for pos in positional {
+                    pos.drop_with_heap(heap);
+                }
+                kw_base.drop_with_heap(heap);
+                return Err(ExcType::type_error_multiple_values("int", "base"));
+            }
+            kw_base = Some(value);
+        } else {
+            value.drop_with_heap(heap);
+            for pos in positional {
+                pos.drop_with_heap(heap);
+            }
+            kw_base.drop_with_heap(heap);
+            return Err(ExcType::type_error_unexpected_keyword("int", &key_name));
+        }
+    }
+
+    let positional_len = positional.len();
+    if positional_len > 2 {
+        for pos in positional {
+            pos.drop_with_heap(heap);
+        }
+        kw_base.drop_with_heap(heap);
+        return Err(ExcType::type_error_at_most("int", 2, positional_len));
+    }
+
+    let mut positional = positional.into_iter();
+    let value = positional.next();
+    let mut base = positional.next();
+
+    if let Some(kw_base) = kw_base {
+        if base.is_some() {
+            kw_base.drop_with_heap(heap);
+            base.drop_with_heap(heap);
+            value.drop_with_heap(heap);
+            return Err(ExcType::type_error_multiple_values("int", "base"));
+        }
+        base = Some(kw_base);
+    }
+
+    let Some(value) = value else {
+        let has_base = base.is_some();
+        base.drop_with_heap(heap);
+        return if has_base {
+            Err(type_error_int_missing_string_argument())
+        } else {
+            Ok(Value::Int(0))
+        };
+    };
+
+    let parsed_base = if let Some(base_value) = base {
+        let parsed_base = parse_int_base_arg(&base_value, heap);
+        base_value.drop_with_heap(heap);
+        match parsed_base {
+            Ok(base) => Some(base),
+            Err(err) => {
+                value.drop_with_heap(heap);
+                return Err(err);
+            }
+        }
+    } else {
+        None
+    };
+
+    if let Some(base) = parsed_base {
+        int_from_value_with_base(value, base, heap, interns)
+    } else {
+        int_from_value(value, heap, interns)
+    }
+}
+
+/// Parses the `base` argument from `int(x, base)` into an `i64`.
+///
+/// Accepts `int`, `bool`, and `LongInt` values (when they fit in `i64`).
+fn parse_int_base_arg(base: &Value, heap: &Heap<impl ResourceTracker>) -> RunResult<i64> {
+    match base {
+        Value::Int(i) => Ok(*i),
+        Value::Bool(b) => Ok(i64::from(*b)),
+        Value::Ref(heap_id) => {
+            if let HeapData::LongInt(li) = heap.get(*heap_id) {
+                li.to_i64().ok_or_else(ExcType::overflow_shift_count)
+            } else {
+                Err(ExcType::type_error_not_integer(base.py_type(heap)))
+            }
+        }
+        _ => Err(ExcType::type_error_not_integer(base.py_type(heap))),
+    }
+}
+
+/// Converts a value for `int(x)` with default base semantics.
+fn int_from_value(value: Value, heap: &mut Heap<impl ResourceTracker>, interns: &Interns) -> RunResult<Value> {
+    defer_drop!(value, heap);
+    match value {
+        Value::Int(i) => Ok(Value::Int(*i)),
+        Value::Float(f) => Ok(Value::Int(f64_to_i64_truncate(*f))),
+        Value::Bool(b) => Ok(Value::Int(i64::from(*b))),
+        Value::InternString(string_id) => parse_int_from_str(interns.get_str(*string_id), heap),
+        Value::Ref(heap_id) => {
+            // Clone data to release the borrow on heap before mutation.
+            match heap.get(*heap_id) {
+                HeapData::Str(s) => {
+                    let s = s.to_string();
+                    parse_int_from_str(&s, heap)
+                }
+                HeapData::LongInt(li) => li.clone().into_value(heap).map_err(Into::into),
+                _ => Err(ExcType::type_error_int_conversion(value.py_type(heap))),
+            }
+        }
+        _ => Err(ExcType::type_error_int_conversion(value.py_type(heap))),
+    }
+}
+
+/// Converts a value for `int(x, base)` where `base` is explicitly provided.
+///
+/// Per CPython semantics, explicit base conversion only accepts string inputs.
+fn int_from_value_with_base(
+    value: Value,
+    base: i64,
+    heap: &mut Heap<impl ResourceTracker>,
+    interns: &Interns,
+) -> RunResult<Value> {
+    defer_drop!(value, heap);
+    match value {
+        Value::InternString(string_id) => parse_int_from_str_with_base(interns.get_str(*string_id), base, heap),
+        Value::Ref(heap_id) => match heap.get(*heap_id) {
+            HeapData::Str(s) => {
+                let s = s.to_string();
+                parse_int_from_str_with_base(&s, base, heap)
+            }
+            _ => Err(type_error_int_non_string_with_explicit_base()),
+        },
+        _ => Err(type_error_int_non_string_with_explicit_base()),
+    }
+}
+
+/// Truncates f64 to i64 with clamping for out-of-range values.
+///
+/// Python's `int(float)` truncates toward zero. For values outside i64 range,
+/// we clamp to i64::MAX/MIN (Python would use arbitrary precision ints, which
+/// we don't support).
+fn f64_to_i64_truncate(value: f64) -> i64 {
+    // trunc() rounds toward zero, matching Python's int(float) behavior
+    let truncated = value.trunc();
+    if truncated >= i64::MAX as f64 {
+        i64::MAX
+    } else if truncated <= i64::MIN as f64 {
+        i64::MIN
+    } else {
+        // SAFETY for clippy: truncated is guaranteed to be in (i64::MIN, i64::MAX)
+        // after the bounds checks above, so truncation cannot overflow
+        #[expect(clippy::cast_possible_truncation, reason = "bounds checked above")]
+        let result = truncated as i64;
+        result
+    }
+}
+
+/// Parses a Python `float()` string argument into an `f64`.
+///
+/// This supports:
+/// - Leading/trailing whitespace (e.g. `"  1.5  "`)
+/// - The special values `inf`, `-inf`, `infinity`, and `nan` (case-insensitive)
+///
+/// Underscore digit separators are not currently supported.
+fn parse_f64_from_str(value: &str) -> RunResult<f64> {
+    let trimmed = value.trim();
+    if trimmed.is_empty() {
+        return Err(value_error_could_not_convert_string_to_float(value));
+    }
+
+    let lower = trimmed.to_ascii_lowercase();
+    let parsed = match lower.as_str() {
+        "inf" | "+inf" | "infinity" | "+infinity" => f64::INFINITY,
+        "-inf" | "-infinity" => f64::NEG_INFINITY,
+        "nan" | "+nan" => f64::NAN,
+        "-nan" => -f64::NAN,
+        _ => trimmed
+            .parse::<f64>()
+            .map_err(|_| value_error_could_not_convert_string_to_float(value))?,
+    };
+
+    Ok(parsed)
+}
+
+/// Creates the `ValueError` raised by `float()` when a string cannot be parsed.
+///
+/// Matches CPython's message format: `could not convert string to float: '...'`.
+fn value_error_could_not_convert_string_to_float(value: &str) -> RunError {
+    SimpleException::new_msg(
+        ExcType::ValueError,
+        format!("could not convert string to float: {}", StringRepr(value)),
+    )
+    .into()
+}
+
+/// Parses a Python `int()` string argument into an `Int` or `LongInt`.
+///
+/// Handles whitespace stripping and removing `_` separators. Returns `Value::Int` if the value
+/// fits in i64, otherwise allocates a `LongInt` on the heap. Returns `ValueError` on failure.
+fn parse_int_from_str(value: &str, heap: &mut Heap<impl ResourceTracker>) -> RunResult<Value> {
+    parse_int_from_str_with_base(value, 10, heap)
+}
+
+/// Parses a Python `int()` string argument with an explicit base.
+///
+/// Supports base values in `[2, 36]` plus `0` (autodetect prefixes). Underscores are
+/// accepted as digit separators using the same normalization strategy as the existing
+/// base-10 parser.
+fn parse_int_from_str_with_base(value: &str, base: i64, heap: &mut Heap<impl ResourceTracker>) -> RunResult<Value> {
+    if base != 0 && !(2..=36).contains(&base) {
+        return Err(value_error_int_base_range());
+    }
+    let trimmed = value.trim();
+    if trimmed.is_empty() {
+        return Err(value_error_invalid_literal_for_int_with_base(value, base));
+    }
+
+    let (is_negative, mut digits) = if let Some(rest) = trimmed.strip_prefix('-') {
+        (true, rest)
+    } else if let Some(rest) = trimmed.strip_prefix('+') {
+        (false, rest)
+    } else {
+        (false, trimmed)
+    };
+
+    let mut radix = if base == 0 {
+        10
+    } else {
+        u32::try_from(base).expect("base validated to be non-negative and <= 36")
+    };
+
+    if base == 0 {
+        if let Some(rest) = digits.strip_prefix("0x").or_else(|| digits.strip_prefix("0X")) {
+            radix = 16;
+            digits = rest;
+        } else if let Some(rest) = digits.strip_prefix("0o").or_else(|| digits.strip_prefix("0O")) {
+            radix = 8;
+            digits = rest;
+        } else if let Some(rest) = digits.strip_prefix("0b").or_else(|| digits.strip_prefix("0B")) {
+            radix = 2;
+            digits = rest;
+        }
+    } else if base == 16 {
+        if let Some(rest) = digits.strip_prefix("0x").or_else(|| digits.strip_prefix("0X")) {
+            digits = rest;
+        }
+    } else if base == 8 {
+        if let Some(rest) = digits.strip_prefix("0o").or_else(|| digits.strip_prefix("0O")) {
+            digits = rest;
+        }
+    } else if base == 2
+        && let Some(rest) = digits.strip_prefix("0b").or_else(|| digits.strip_prefix("0B"))
+    {
+        digits = rest;
+    }
+
+    // Match CPython behavior for base=0 where decimal-looking literals with a leading
+    // zero and non-zero digits are rejected (e.g. "010", "+010", "-010").
+    let normalized_for_leading_zero_check = digits.replace('_', "");
+    if base == 0
+        && radix == 10
+        && normalized_for_leading_zero_check.len() > 1
+        && normalized_for_leading_zero_check.starts_with('0')
+        && normalized_for_leading_zero_check.chars().any(|c| c != '0')
+    {
+        return Err(value_error_invalid_literal_for_int_with_base(value, base));
+    }
+
+    let normalized = digits.replace('_', "");
+    if normalized.is_empty() {
+        return Err(value_error_invalid_literal_for_int_with_base(value, base));
+    }
+
+    let Some(mut bigint) = BigInt::parse_bytes(normalized.as_bytes(), radix) else {
+        return Err(value_error_invalid_literal_for_int_with_base(value, base));
+    };
+    if is_negative {
+        bigint = -bigint;
+    }
+
+    Ok(LongInt::new(bigint).into_value(heap)?)
+}
+
+/// Creates the `ValueError` raised by `int()` for invalid string input at a specific base.
+fn value_error_invalid_literal_for_int_with_base(value: &str, base: i64) -> RunError {
+    SimpleException::new_msg(
+        ExcType::ValueError,
+        format!("invalid literal for int() with base {base}: {}", StringRepr(value)),
+    )
+    .into()
+}
+
+/// Creates the `ValueError` raised by `int()` when base is outside valid range.
+fn value_error_int_base_range() -> RunError {
+    SimpleException::new_msg(ExcType::ValueError, "int() base must be >= 2 and <= 36, or 0").into()
+}
+
+/// Creates the `TypeError` raised by `int()` when explicit base is used with non-strings.
+fn type_error_int_non_string_with_explicit_base() -> RunError {
+    SimpleException::new_msg(ExcType::TypeError, "int() can't convert non-string with explicit base").into()
+}
+
+/// Creates the `TypeError` raised by `int()` when `base` is provided without `x`.
+fn type_error_int_missing_string_argument() -> RunError {
+    SimpleException::new_msg(ExcType::TypeError, "int() missing string argument").into()
+}

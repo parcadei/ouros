@@ -1,0 +1,8 @@
+# === Exception .args attribute ===
+try:
+    raise ValueErrorargs[0] == 'type error', 'works for other exception types'
+
+# === issubclass() with tuple of exception classes ===
+assert issubclass(ValueError, lueError, (TypeError, Exception)), 'issubclass exception tuple match'
+assert not issubclass(ValueError, (TypeError, KeyE=', 'encode two chars'
+assert base65.o match'

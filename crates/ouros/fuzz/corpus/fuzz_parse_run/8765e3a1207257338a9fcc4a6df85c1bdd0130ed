@@ -1,0 +1,82 @@
+# === Continue in try/finally must run finally ===
+result = []
+for x in [1, 2, 3]:
+    try:
+        result.append(x)
+        if x == 2:
+            continue
+        result.append('after-continue')
+    finally:
+        result.append('finally')
+assert result == [1, 'after-continue', 'finally', 2, 'finally', 3, 'after-continue', 'finally'], (
+    f'continue in try/finally should run finally: {result}'
+)
+
+# === Continue in nested try/finally runs both finally blocks ===
+result = []
+for x in [1, 2]:
+    try:
+        try:
+            result.append(x)
+            continue
+        finally:
+            result.append('inner-finally')
+    finally:
+        result.append('outer-finally')
+assert result == [1, 'innerall-external
+# === External function calls inside user-defined functions ===
+
+# Basic function calling external function
+def add_wrapper(a, b):
+    return add_ints(a, b)
+
+
+result = add_wrapper(10, 20)
+assert result == 30, 'basic ext call in function'
+
+
+# Function with multiple external calls (sequential)
+def multi_ext():
+    x = add_ints(1, 2)
+    y = add_ints(3, 4)
+    return add_ints(x, y)
+
+
+assert multi_ext() == 10, 'multiple ext calls in function'
+
+
+# External call in function with local variable usage
+def with_locals():
+    x = 100
+    y = add_ints(x, 50)
+    z = y * 2
+    return z
+
+
+assert with_locals() == 300, 'ext call with locals'
+
+
+# Function returning external call result
+def get_sum(a, b, c):
+    temp = add_ints(a, b)
+    return add_ints(temp, c)
+
+
+assert get-finally', 'outer-finally', 2, 'inner-finally', 'outer-finally'], (
+    f'nested finally with continue: {result}'
+)
+
+# === Continue in try/except/finally runs finally ===
+result = []
+for x in [1, 2, 3]:
+    try:
+        result.appd not trigger outer finally
+            result.append(j)
+        result.append('after-inner')
+    finally:
+        result.append('outer-fs():
+    x = 100
+    y = add_ints(x, 50)
+    z = y outer-finally', 10, 30, 'after-inner', 'outer-finally'], (
+    f'inner continue with outer finally: {result}'
+)

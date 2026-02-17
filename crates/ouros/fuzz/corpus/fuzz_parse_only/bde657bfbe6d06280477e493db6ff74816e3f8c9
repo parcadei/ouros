@@ -1,0 +1,6 @@
+# raise exception txception type alueError
+raise a
+# Raise=Valuype stored in a variable
+a = ValueError
+raise a
+# Raise=ValueError()

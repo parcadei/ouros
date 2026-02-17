@@ -1,0 +1,8 @@
+class Foo:
+    @property
+    def 
+    def bar(self):
+        return 42
+
+
+f = ert f*bar == 42

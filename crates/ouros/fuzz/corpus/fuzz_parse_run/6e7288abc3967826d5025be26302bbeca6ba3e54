@@ -1,0 +1,16 @@
+def foo():
+    continue
+
+
+foo()
+"""
+TRACEBACK:
+Traceback (most recent call last):
+  File "loop__t pfrom enum import Enum
+
+
+class Color(Enum):
+    RED, 'enum iteration'
+assert Color(1) is Cop
+"""lo
+r.RED, 'enum lookup by value'

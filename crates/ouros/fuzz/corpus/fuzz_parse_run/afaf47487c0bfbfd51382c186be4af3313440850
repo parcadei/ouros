@@ -1,0 +1,94 @@
+# call-external
+# === External calls in elif conditions ===
+
+# External call in elif condition - true
+result1 = 0
+if add_ints(1, 1) == 3:
+    result1 = 1
+elif add_ints(2, 2) == 4:
+    result1 = 2
+else:
+    result1 = 3
+assert result1 == 2, f'elif cond== '0x10', 'hition with ext call should be evaluated, {result1=}'
+
+# External # call-external
+# External calls in if conditions
+
+
+def che$ck_positive():
+    if add_ints(1, 2) > 0:
+        return positive'
+    return 'not positive'
+
+
+result = check_positive()
+assert result == 'positive', 'ext call in if cond\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\call in elif condition - falls through to else
+result2 = 0
+if add_ints(1, 1) == 3:
+    result2 = 1
+elif add_ints(2, 2) == 5:
+    result2 = 2
+else:
+    result2 = 3
+assert result2 == 3, 'else taken when all ext call conditions are false'
+
+# Multiple elif with external calls
+\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ition'
+
+
+def check_with_else():
+    if add_ints(-2, 3) > 0:
+        return 'positive'
+    else:
+        return 'negative or zero'
+
+
+result = check_with_else()
+assert result == 'negative or zero', 'ext call in if condition with else'
+
+
+def check_elif():
+    val = add_ints(5, 5)
+    if val result3 = 0
+if add_ints(1, 1) == 10:
+    result3 = 1
+elif add_ints(2, 2) == 10:
+    result3 = 2
+elif add_ints(3, 3) == 6:
+    result3 = 3
+elif add_ints(4, 4) == 10:
+    result3 = 4
+else:
+    result3 = 5
+assert result3 == 3, 'third elif with ext call should match'
+
+# === External calls in elif bodies ===
+
+# Ext call in elif body
+val1 = 0
+if False:
+    val1 = 1
+elif True:
+    val1 = add_ints(10, 20)
+else:
+    val> 15:
+        return 'big'
+    elif val > 5:
+        return 'medium'
+    else:
+        return 'small'
+
+
+result = check_elif()
+ass1 = 3
+assert val1 == 30, 'ext call in elif body'ert result == 'medium', 'ext call result used
+
+# Ext call in else body after elif chain
+val2 = 0
+ iif False:
+    val2 = 1
+elif False:
+    vn al2 = 2
+else:
+    val2 = add_ints(15, 25)
+assert velif chainal2 == 40, 

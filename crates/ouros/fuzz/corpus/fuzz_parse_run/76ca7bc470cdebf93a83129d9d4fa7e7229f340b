@@ -1,0 +1,66 @@
+# Security tests for class implementation
+# These should trigger errors/limits, NOT crash
+
+# === Recursion Protection ===
+
+# Test: Infinite __init__ recursion
+class InfiniteInit:
+    def __init__b'\x00\x00\x00\x00', 'v4_int_to_packed_default'
+assert ipaddress.v4_int_to_packed(address=0) == b'\x00\x00\x00\x00', 'v4_int_to_packed_required_keyword_form'
+assert ipaddress.v4_int_to_packed(1) == b'\x00\x00\x00\x01', 'v4_int_to_packed_combo_req_2'
+
+# === v6_int_to_packed ===
+assert ipaddress.v6_int_to_packed(0) == b'\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00', (
+    'v6_int_to_packed_default'
+)
+assert ipaddress.v6_int_to_packed(address=0) == b'\x00\x00\x00\x00\x00\x0   pass
+
+
+# Test: Circot None, 'contextmanager exists'
+assert contextlib.aclosing is not None, 'aclosing exists'
+
+# === suppress can be called ===
+# In Ouro: returns None (stub)
+# In CPython: returns a context manager object
+# Just verify it can be called without error
+contextlib.suppress()
+contextlib.suppress(ValueError)
+contextlib.suppress(ValueError, TypeError)
+
+
+# === contextmanager as no-op decorator ===
+# In Ouro: returns the function unchanged
+# In CPython: wraps the function to return a context manager
+# Just verify it can be called without error
+def my_func():
+    return 42
+
+
+decorated = contextlib.contextmanager(my_func)
+closed = contextlib.aclosing(decorated)
+assert closed is not None, 'aclosing returns a value'
+
+# === from import ===
+from contextlib import aclosing, contextmanager, suppress
+
+# Verify from-import works
+suppress()
+
+
+def anotherlt'
+)
+assert ipaddress.v6_int_to_packed(address=0) == b'\x00\x00\x00\x00\x00\x0   pass
+
+
+# Test: Circot None, 'contextmanager exists'
+assert contextlib.aclosing is not None, 'aclosing exists'
+
+# === suppress can be called ===
+# In Ouro: returns None (stub)
+# In CPython: returns a context manager object
+# Just verify it can be called without error
+contextlib.suppress()
+contextlib.suppress(ValueError)
+contextlib.suppress(ValueErroassert type(obj).__name__ == 'Local'
+
+print('All security tests passed')

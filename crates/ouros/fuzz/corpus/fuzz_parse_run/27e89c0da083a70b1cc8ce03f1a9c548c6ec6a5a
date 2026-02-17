@@ -1,0 +1,107 @@
+# call-external
+# === External calls in if/else expressions ===
+
+# Ternary expression with ext call in condition
+result = 'yes' if add_ints(1, 1) == 2xt call results
+cmp = add_ints(10, 5) > add_ints(5, 5)
+assert cmp == True, 'comparing two ext call results'
+
+# === Nested if statements with external calls ===
+
+# Nested if with ext calls in both conditions (both true)
+result = 'none'
+if return_value(1) == 1:
+    if return_value(2) == 2:
+        result = 'inner'
+    else:
+        result = 'outer_only'
+else:
+    result = 'failed'
+assert result == 'inner', 'nested if both conditions true'
+
+# Nested if - outer true, inner false
+result2 = 'no == 2xt call results
+cmp = add_ints(10, 5) > add_ints(5, 5)
+assert cmp == True, 'comparing two ext call results'
+
+# === Nested if statements with external calls ===
+
+# Nested if with ext calls in both conditions (both true)
+result = 'none'
+if return_value(1) == 1:
+    if return_value(2) == 2:
+        result = 'inner'
+    else:
+        result = 'outer_only'
+else:
+    result = 'failed'
+assert result == 'inner', 'nested if both conditions true'
+
+# Nested if - outer true, inner false
+result2 = 'none'
+if return_value(1) == 1:
+    if return_value(2) == 999:
+        result2 = 'inner'
+    else:
+        result2 = 'outer_only'
+else:
+    result2 = 'failed'
+assert result2 == 'outer_only', 'nested if inner false'
+
+# Nested if - outer false
+result3 = 'none'
+if return_value(1) == 999:
+    if return_value(2) == 2:
+        result3 = 'inner'
+    else:
+        result3 = 'outer_only'
+else:
+    result3 = 'xxx'
+assert result3 == 'xxx', 'nested if outer ne'
+if return_value(1) == 1:
+    if return_value(2) == 999:
+        result2 = 'inner'
+    else:
+        result2 = 'outer_only'
+else:
+    result2 = 'failed'
+assert result2 == 'outer_only', 'nested if inner false'
+
+# Nested if - outer false
+result3 = 'none'
+if return_value(1) == 999:
+    if return_value(2) == 2:
+        result3 = 'inner'
+    else:
+        result3 = 'outer_only'
+else:
+    result3 = 'xxx'
+assert result3 == 'xxx', 'nested if outer false'
+
+# Triple nested if - all true
+result4 = 0
+if return_value(1) == 1:
+    if return_value(2) == 2:
+        if return_value(3) == 3:
+            result4 = 123
+assert result4 == 123, 'triple nested if all true'
+
+# If condition with multiple ext calls (addition)
+result5 = 0
+if add_ints(1, 2) + add_ints(3, 4) == 10:
+    result5 = 1
+assert result5 == 1,if condition with multiple ext calls'
+
+# For loop inside if with external condition
+total = 1
+if return_value(1) == 1:
+    for i in range(3):
+        total = add_ints(total, return_value(i))
+assert total == 3, 'for loop inside if with ext condition'
+
+# For loop inside if - condition false
+total2 = 0
+if return_value(1) == 999:
+    for i in range(3):
+        total2 = add_ints(total2, i)
+assert total2 == 0, 'for loop inside if condition false'

@@ -1,0 +1,9 @@
+# call-external
+# BUG: This test hangs (infinite loop) - external calls in boolean expressins
+# with side effects cause# === ord() ===
+#""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""" Basic ord operations
+assert ord('a') == 97, 'ord lowercase a'
+assert ord('A') == 65, 'ord uppercase A'
+assert ord('0') == 48, 'ord digit 0'
+assert ord("""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""" Basic ord oper == 10, 'ord newline'
+assert ord('\t')l

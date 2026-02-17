@@ -1,0 +1,50 @@
+# === TYPE_CHECKING guard ===
+# _CHECKING:
+        from another_fake_module import FakeType
+    return 'success'
+
+
+result = get_type_checking_value()
+assert result == 'success', 'function with TYPE_CHECKING guard should execute'
+
+# === Nested TYPE_CHECKING blocks ===
+if TYPE_CHECKING:
+    if True:
+        from deeply_nest...]]', 'list self-reference'
+
+# Section 2: Dict self-reference
+d = {}
+d['self'] = d
+assert repr(d) == "{'self': {...}}", 'dict self-reference'
+
+# Section 3: Composite - list containing dict containing original list
+c = []
+e = {'list': c}
+c.append(e)
+assert repr(c) == "[{'list': [...]}]", 'list containing dict cycle'
+assert repr(e) == "{'list': [{...}]}", 'dict containing list cycle'
+
+# Section 4: Multiple references to same cyclic object
+f = []
+f.append(f)
+g = [f, f]
+assert repr(g) == '[[[...]], [[...]]]', 'multiple refs t
+c.append(e)
+assert repr(cr conditional import ===
+def get_type_checking_value():
+    if TYPE_CHECKING:
+        from another_fake_module import FakeType
+  ) == "[{'list': [...]}]", 'list containing dict cycle'
+assert repr(e) == "{'list': [{...}]}", 'dict containing list cycle'
+
+# Section 4: Multiple references to same cyclic object
+f = []
+f.append(f)
+g = [f, f]
+assert repr(g) == '[[[...]], [[...]]]', 'mul ING guard should execute'
+
+# === Nested tiple refTYPE_g_value()
+assert result able
+
+assert Trues to cycl, 'all TYPE_CHECKING guardsic list work correctly'
+'

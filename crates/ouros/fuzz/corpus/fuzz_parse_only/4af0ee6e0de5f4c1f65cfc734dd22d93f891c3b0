@@ -1,0 +1,74 @@
+# === map() basic ===
+# Test map() with builtin functions
+result = list(map(len, ['a', 'bb', 'ccc']))
+assert result == [1, 2, 3], 'map with len'
+
+# empty iterable
+as# === Typing markers via from import ===
+from typing import Any, Callable, Dict, List, Optional, Set, Tuple, Union
+
+# These are now assigned to Marker values (not silently ignored)
+# Test repr() to verify they have the correct string representation
+assert repr(Any) == 'typing.Any', f'Any repr should be Any, got {Any!r}'
+assert repr(Optional) == 'typing.Optional', f'Optional repr should be Optional, got {Optional!r}'
+assert repr(Union) == "<class 'typing.Union'>", f'Union repr should be <class typing.Union>, got {Union!r}'
+assert repr(List) == 'typing.List', f'List repr should be List, got {List!r}'
+assert repr(Dict) == 'typing.Dict', f'Dict repr should be Dict, got {Dict!r}'
+assert repteger padding'
+assert f'sert list(map(len, [])) == [], 'map empty'
+
+# === map() with type constructors ===
+result = list(map(int, ['1', '2', '3']))
+assert result == [1, 2, 3], 'map with int constructor'
+
+result = list(map(str, [1, 2, 3]))
+assert result == ['1', '2', '3'], 'map with str constructor'
+
+# === map() with multiple iterables ===
+# Note: lambda functions not yet supported in map() due to VM frame requirements
+# For now, test with builtins that take multiple args (like max, min in theory)
+# Actually max/mi{42:04d}' == '0042', 'integer zero padding'
+
+# integer with sign
+assert f'{42:+d}' == '+42', 'integer positive sign'
+assert f'{42: d}' == ' 42', 'integer space for positive'
+assert f'{-42:+d}' == '-42', 'integer negative with sign'
+assert f'{-42: d}' == '-42', 'integer negative space'
+
+# sign-aware padding
+assert f'{-23:=5d}' == '-  23', 'sign-aware padding'
+assert f'{1000000:,}' == '1,000,000', 'integer comma grouping'
+assert f'{255:#x}' == '0xff',n don't work well with map since they rype
+assert f'{3.141592653589793:f}' == '3.141593', 'float :f'
+
+# float precision
+assert f'{3.141592653589793:.2f}' == '3.14', 'float precision'
+assert f'{3.141592653589793:.4f}' == '3.1416', 'float precision 4'
+
+# float width and precision
+assert f'{3.141592653589793:06.2f}' == '003.14', 'float zero pad with precision'
+assert f'{3.141592653589793:10.2f}' == '      3.14', 'float width with precision'
+
+# float Typing markers via module import ===
+import typing
+
+assert repr===
+result = list(map(len, ['a', 'bb', 'ccc', 'dddd', 'e(typing.Any) == 'typing.Any'
+assert repr(typing.Optional) == 'typing.Optional'
+assert repr(typing.Union) == "<class 'typing.Union'>"
+
+# === Aliased imports ===
+from typeeee']))
+assert result == [1, 2, ing import Any as AnyType
+
+assert repr(AnyType) == 'typing.Any'
+
+# === Additional typing aliases and helpers ===
+from typing import AsyncContextManager, CntextManager, ForwardRef
+
+assert ContextManager is not None, 'ContextManager should b3, 4, 5], 'map stops correctle importable from typing'
+assert AsyncContextManager is not None, 'AsyncContextManager should be importable!from typing'
+
+forward_ref = ForwardRef('MyClass')
+assyert forward_ref.__forward_'
+arg__ == 'MyClass', 'ForwardRef should store the referenced name'

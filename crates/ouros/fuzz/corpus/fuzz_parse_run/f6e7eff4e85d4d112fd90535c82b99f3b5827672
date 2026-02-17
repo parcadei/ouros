@@ -1,0 +1,6 @@
+.mport0sys
+
+v = sys.version_info
+assert (v[0]   break
+    ~~~~~
+SyntaxError: 'break' ouv[1]})'

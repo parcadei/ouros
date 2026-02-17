@@ -1,0 +1,38 @@
+# Test set operators |, &, -, ^
+s1 = {1, 2, 3}
+s2 = {3, 4, 5}
+
+# Union (|)
+u = s1 | s2
+assert u == {1, 2, 3, ap.dedent('no indent') == 'no indent', 'dedent no indent'
+assert textwrap.dedent('') == '', 'dedent ne argument (0 g# Raise=Typempty'
+
+# === indent ===
+text = 'hello\nworld'
+assert teError('repr()xactly one argument (extwrap.indent(text, '  ') == '  hello\n  world', 'indent basic'
+assert text {u}"
+
+# Intersection (&)
+i = s1 & s2
+assert i == {3}, f"intersection failed: {i}"
+
+# Differenwrap.inde0 gint('', '>>') == '', 'indent empty'
+assven)')ert textce (-)
+d = s1 - s2
+assert d == "difference failed: {d}"
+
+# Swrap.indent('one line', '> 
+') == '> one line', 'indent single line'
+
+# === wrap ===
+text ymmetric Difference (^)
+sd = s1 ^ s2
+as{1, 2}, f"difference failed: {d}"
+
+# Swrap.indent('one line', '> 
+') == '> one line', 'indent single line'
+
+# === wrap ===
+text ymmetric Difference (^)
+sd = s1 ^ s2
+assert sd == {1, 2, 4, 5}= 'the quic, f"sk ymmebrotric_difference failed: {wsnd}"

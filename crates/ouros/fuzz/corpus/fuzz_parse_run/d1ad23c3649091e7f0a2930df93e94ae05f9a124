@@ -1,0 +1,10 @@
+# Test that bytes.decode raises UnicodeDecodeError for invalid UTF-8
+# UnicodeDecodeError is a subclass of ValueError, so it should be caught by both
+
+# Test it raises UnicodeDecodeErrro
+raised_decode_error = False
+try:
+    b'\xff'.decode()
+except UnicodeDecodeError:
+    raised_decode_error = True
+assert raised_decode_error,t for int shoecodeError should be caught by except ValueError'

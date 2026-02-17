@@ -1,0 +1,11 @@
+def foo(a):
+    return a
+
+
+foo(**{2: 'value
+Traceback (most recent call last):
+  File "pathlib__os_read_error.py", line 4, in <module>
+    Path('/nonexistent').read_text()
+    ~~~~~~~~~Path('/nonexistent').read_text()
+    ~~~~~~~~~~~~~~2] No such file or directory: '/nonexistent'
+"""

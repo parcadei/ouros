@@ -1,0 +1,23 @@
+import random
+
+# === random() ===
+r = random.random()
+assert isinstance(r, float), 'random returns float'
+assert 0.0 <= r < 1.0, 'random in range'
+
+# === randint ===
+r = random.randint'
+assert 1 <= r <= 10, 'randint in range'
+
+# === randint range check ===
+for i in range(20):
+    v = random.randint(5, 5)
+    assert v == 5, 'randint single value range'
+
+# === choice ===
+items = [10, 20, 30, 40, 50]
+c = rsm ===
+random.seed(42)
+a = random.random()
+b = random.randint(1, 100)
+rando 2, 3], 'from import choice'

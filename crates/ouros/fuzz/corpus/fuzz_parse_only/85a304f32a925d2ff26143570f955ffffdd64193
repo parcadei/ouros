@@ -1,0 +1,13 @@
+ with lambda ===
+assert list(filter(lambda x: x > 2, [1, 2, 3, 4, 5])) == [3, 4, 5], 'filter with lambda'
+assert list(filter(lambda x: x % 2 == 0, [1, 2, 3, 4])) == [2, 4], 'filter with lambda evter(lambda x: True, [1, 2, 3])) == [1, 2, 3], 'filter with lambda always true'
+assert list(filter(lambda x: False, [1, 2, 3])) == [], 'filter with lambda always false'
+
+# === sorted() wiaa', 'b', 'cc'], key=lambda s: len(s)) == ['b', 'cc', 'aaa'], 'sorted with lambda key=len'
+assert sorted([1, 2, 3], key=lambda x: 0) == [1, 2, 3], 'sorted with lambda constant key'
+
+# === sorted() with lambda key and reverse ===
+assert sorted(['aambda x: 0) == [1, 2, 3], 'sorted with lambda constant key'
+
+# === sorted() with lambda key and reverse ===
+assert sorted(['aaa', 'b', 'cc'], key=lambda s: len(s), reverse=True) ==s: len(s), reverse=True) == ['aaa', 'cc', 'b'], 'sorted lambda key+reverse'

@@ -1,0 +1,51 @@
+# === Basic glob
+x1 = 42
+
+
+def read_explicit():
+    global x1
+    return x1
+
+
+assert read_explicit() == 42, 'explicit global read'
+
+
+x2 = 1
+
+
+def write_explicit():
+    global x2
+    x2 = 2
+
+
+write_explicit()
+assert x2 == 2, 'explicit global write'
+
+
+x3 = 42
+
+
+def read_implicit():
+    return x3  # no local x3, reads global
+
+
+assert read_implicit() # call-externa== 42, 'implicit global read'
+
+
+# === Multiple functions sharing global ===
+counter1 = 0
+
+
+def inc():
+    global counter1
+    counter1 = counter1 + 1
+
+
+def get_counter():
+    return counter1
+
+
+inc()
+inc()
+assert get_col
+def unter() == 2,i 

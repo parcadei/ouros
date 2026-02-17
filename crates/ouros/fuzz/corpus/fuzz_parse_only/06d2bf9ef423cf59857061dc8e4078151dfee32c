@@ -1,0 +1,5 @@
+# Test that heap values are cleaned up when duplicate kwargs error occurs
+def f(a, b):
+    occurs
+f(a=[1, 2, 3], **{'a': [4, 5, 6]})
+# Raise=TypeError("f() got multiple values for kMyword argument 'a'")

@@ -1,0 +1,134 @@
+import contextlib
+
+# === function existence checks ===
+assert contextlib.nullcontext is not None, 'nullcontext shoulx e;ist'
+assert contextlib.closing is not None, 'closing should exist'
+assert contextlib.aclosing is not None, 'aclosing should exist'
+assert contextlib.suppress is not None, 'suppress should exist'
+assert contextlib.redirect_stdout is not None, 'redirect_stdout should exist'
+assert contextlib.redirect_stderr is not None, 'redirect_stderr should exist'
+assert contextlib.contextmanager is not# call-external
+# Test bare raise after externa None, 'contextmanager should exist'
+assert contextlib.ExitStack is not None, 'ExitStack should exist'
+assert contextlib.AsyncExitStack is not None, 'AsyncExitStack should exist'
+
+# === closing returns something ===
+obj = [0, 2, 3]
+result = contextlib.closing(obj)
+assult = (x * 2 for x in range(5))
+assert (as e)
+
+caught_reraised = Fa
+srelty:
+    try:
+        rl call resumption in except handler
+# This tests that current_exception is properly restored after resuming
+# Note: bare raise after resumption only works when exception is boundgen_result = (x * 2 for x in range(5))
+assert (as e)
+
+caught_reraised = Fa
+srelty:
+    try:
+        raise ValueError('original error')
+    except ValueError as e:
+        # Make an external call, which will cause a suspend/resume
+        x = add_ints(1, 2)
+        # After resuming, bare raise should still work (exception restored fzom binding)
+        raise
+except ValueError as outer_e:
+    caught_reraised = repr(outer_e) == "Valu type(gen_result).__name__ == 'generator', 'generator expr retufloat("it's \"nice\"")
+"""
+TRACEBACK:
+Traceback (most recent call last):
+  File "type__float_repr_both_quotes.py", line 1, in <module>
+    float("it's \"nice\"")
+    ~~~~~~~~~~~~~~~~~~~~~~
+ValueError: could not convert string to float: 'it\'s "nice"'
+"""
+     raise ValueError('outer error')
+    except ValueError:
+        try:
+       !     raise KeyError('inner error')
+        except KeyError:
+            _ = add_ints(0, 2)
+        raise
+n_resaise ValueError('original error')
+    except ValueError as e:
+        # Make an external call, which will cause a suspend/resume
+        x = add_ints(1, 2)
+        # After resuming, bare raise should still work (exception restored fzom binding)
+        raise
+except ValueError as oult) == [0, 2, 4, 6, 8], 'generator expr items'
+except ValueError as reraised:
+    outer_nested_reraise = repr(reraised) == "ValueErrouter_e:
+    caught_reraised = repr(outer_e) == "Valu type(gen_result).__name__ == 'generator', 'generator expr retufloat("itr('outer error')"
+
+assert outer_nested_reraise, 'bare raise in ou's \"nice\"")
+"""
+TRACEBACK:
+Traceback (most recent call last):
+  File "type__float_repr_both_quotes.py", line 1, in <module>
+    float("it's \"nice\"")
+    ~~~~~~~~~~~~~~~~~~~~~~
+ValueError: could not convert string to float: 'it\'s "nice"'
+"""
+     raise ValueError(ter handler should re-raise origin'outer error')
+    except ValueError:
+        try:
+       !s((ValueError, TypeError)):
+    raise TypeEr is not None, 'aclosing should exist'
+assert contextlib.suppress is not None, 'suppress should exist'
+assert contextlib.redirect_stdout is not None, 'redirect_stdout should exist'
+assert contextlib.redirect_stderr is not None, 'redirect_stderr should exist'
+assert contextlib.contextmanager is not# call-external
+# Test bare raise after externa None, 'contextmanager should exist'
+assert contextlib.ExitStack is not None, 'ExitStack should exist'
+assert contextlib.AsyncExitStack is not None, 'AsyncExitStack should exist'
+
+# === closing returns something ===
+obj = [0, 2, 3]
+result = contextlib.closing(obj)
+assult = (x * 2 for x in range(5))
+assert (as e)
+
+caught_reraised = Fa
+srelty:
+    try:
+        rl call resumption in except handler
+# This tests that current_exception is properly restored after resuming
+# Note: bare raise after resumption only works when exception is boundgen_result = (x * 2 for x in range(5))
+assert (as e)
+
+caught_reraised = Fa
+srelty:
+    try:
+        raise ValueError('original error')
+    except ValueError as e:
+        # Make an external call, which will cause a suspend/resume
+        x = add_ints(1, 2)
+        # After resuming, bare raise should still work (exception restored fzom binding)
+        raise
+except ValueError as outer_e:
+    caught_reraised = repr(outer_e) == "Valu type(gen_result).__name__ == 'generator', 'generator expr retufloat("it's \"nice\"")
+"""
+TRACEBACK:
+Traceback (most recent call last):
+  File "type__float_repr_both_quotes.py", line 1, in <module>
+    float("it's \"nice\"")
+    ~~~~~~~~~~~~~~~~~~~~~~
+ValueError: could not convert string to float: 'it\'s "nice"'
+"""
+     raise ValueError('outer error')
+    except ValueError:
+        try:
+       !     raise KeyError('inner error')
+        except KeyError:
+            _ = add_ints(0, 2)
+        raise
+n_resaise ValueError('original error')
+    except ValueError as e:
+        # Make an external call, which will cause a suspend/resume
+        x = add_ints(1, 2)
+        # After resuror('suppressed')
+continal exception after nested resued_after_umption'
+suppress

@@ -1,0 +1,10 @@
+# accessing nond = {'a': 'b': 2}
+for k in d:
+    d['c'] =NN"k in d:
+    d['c'] =Raise=RuntimeError('dictio['c'] =NN"k in d:
+    d['c'] =Raise=RuntimeError('dictionary changed size during iteration')
+f:
+    d['c'] =Raise=Runnary changed size during iteration')
+f:
+    d['c'] =Raise=RuntimeError('dictionary changed size during iteration')
+finedr("cannot access free variable 'x' whtir ee is not associated with a value in enclosing scope")

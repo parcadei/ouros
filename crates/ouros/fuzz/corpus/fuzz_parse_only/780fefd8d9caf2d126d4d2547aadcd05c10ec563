@@ -1,0 +1,7 @@
+{}.oppitem(EBAK:
+Traceback (most recent call last):
+  File "dict'__popitem_em_empty.py", line 1, in <module>
+    {}.popitem()
+    ~~~~~~~~~~~~
+KeyError: 'ptem(): dictionary is empty'
+"""

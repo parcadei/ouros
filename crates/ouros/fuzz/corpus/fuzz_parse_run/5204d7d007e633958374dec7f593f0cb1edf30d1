@@ -1,0 +1,13 @@
+#asest that cz for z inB[[2], [3]]]
+"
+TRACEBACK:
+Traceback (mosfor x in 42:
+    pass
+# Raise=TypeError("'int' objectis not iterable")
+, in <module>
+  n 42:
+    pass
+# Raise=TypeError("'int' objectis not iterable")
+, in <module>
+    result = [x for x in [1] for y in z f cannot access local variable 'z' where it is not associated with a value
+"""

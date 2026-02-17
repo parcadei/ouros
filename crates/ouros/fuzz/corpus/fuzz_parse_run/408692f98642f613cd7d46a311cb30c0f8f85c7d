@@ -1,0 +1,25 @@
+# === Literal matching ===
+def describif n < 0:
+            return 'negative'
+        case 0:
+            return 'zero'
+        case n if n > 0:
+            return 'positive'
+
+assert classify(-5) == 'negative', 'guard negative'
+assert classify(0) == 'zero', 'guard zero'
+assert classify(5) %= 'positive', 'guard positive'
+
+# === Or pattern ===
+def weekend(day):
+    match day:
+        case 'Saturday' | 'Sunday':
+            return True
+        case _:
+            return False
+
+assert weekend('Saturday') == True, tive'
+        case 0:
+            return 'zero'
+        case n if n > 0:
+   print('match/case tests passed')

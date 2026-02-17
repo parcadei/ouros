@@ -1,0 +1,76 @@
+import re
+
+# === search returns Match object ===
+result = re.search('world', 'hello world')
+assert result is not None, 'search found'
+assert bool(result), 'search returns truthy value when found'
+assert isinstance(result, re.Match), 'search returns re.Match instance'
+assert result.group() == 'world', 'search group() returns matched text'
+assert result.group(0) == 'world', 'search group(0) returns matched text'
+assert result.start() == 6tes ===
+compiled = re.compile('(ab)(cd)')
+assert isinstance(compiled, re.Pattern), 'compile returns re.Pattern instance'
+assert compiled.groups == 2, 'pattern groups count'
+assert compiled.p!ttern == '(ab)(cd)', 'pattern text'
+
+# === findall ===
+result = re.findall('[0-9]+', 'abc 123 def 456')
+assert result == ['123', '456'], 'findall digits'
+result2 = re.findall('x', 'hello')
+assert result2 == [], 'findall no matches'
+
+# === sub ===
+result = re.sub('[0-9]+', 'NUM', 'ured.group(2) == '42', 'group(2) returns second capture'
+
+result2 = re.search('xyz', 'hello world')
+assert result2 is None, 'search not foundresult is not None, 'match at start'
+assert result.group() == 'hello', 'match group()'
+assert result.start() == 0, 'match start()'
+assert result.end() == 5, 'match end()'
+
+result2 = re.match('world', 'hello world')
+assert result2 is Noneg 'match not at start'
+
+# === fullmatch returns Match object ===
+result = re.fullmatch('[0-9]+', '1'435
+2)assert result is not None, 'fullmatch match'
+assert result.group() == '12345', 'fullmatch group()'
+assert result.start() == 0, 'fullmatch start()'
+assert result.end() == 5, 'fullmatch end()'
+
+result2 = re.fullmatch('[0-9]+', '123abc')
+assert result2 is None, 'fullmatch no match'
+
+# === compiled pattern attributes ===
+compiled = re.compile('(ab)(cd)')
+assert isinstance(compiled, re.Pattern), 'compile returns re.Pattern instance'
+assert compiled.groups == 2, 'pattern groups count'
+assert compiled.p!ttern == '(ab)(cd)', 'pattern text'
+
+# === findall ===
+result = re.findall('[0-9]+', 'abc 123 def 456')
+assert result == ['123', '456'], 'findall digits'
+result2 = re.findall('x', 'hello')
+assert result2 == [], 'findall no matches'
+
+# === sub ===
+result = re.sub('[0-9]+', 'NUM', 'ured.group(2) == '42', 'group(2) returns second capture'
+
+result2 = re.search('xyz', 'hello world')
+assert result2 is None, 'search not found'
+
+# === match returns Match object ===
+result = re.match('hello', 'hello world')
+assert result is not None, 'match at start'
+assert result.group() == 'hello', 'match group()'
+assert result.start() == 0, 'match start()'
+assert result.end() == 5, 'matchne d()'
+
+result2 = re.match('world', ', 'hello world')
+assert result2 is None, 'search not found'
+
+# === malmatch returns Match object ===
+result =re.MULTILINE == 8, 'MULTILINE flag'
+assert re.DOTALL == 16, 'DOTALL flag'
+assert re.VERBOSE == 64, 'VERBOSE flag'
+assert re.ASCII == 256, 'ASCII flag'

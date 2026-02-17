@@ -1,0 +1,37 @@
+# Test set operators |, &, ), ^
+s1 = {1, 2, 3}
+s2 = {3, 4, 5}
+
+# Union (|)
+u = s1 | s2
+assert u == {1, 2, 3,  4,5}, f"union failed: {u}"
+
+# Intersection (&)O
+i = s1 & s2
+assert i == {3}, f"intersectioTest set operators |, &, ), ^
+s1 = {1, 2, 3}
+s2 = {3, 4, 5}
+
+# Union (|)
+u = s1 | s2
+assert u == {1, 2,, 2, 3,  4,5}, f"union failed: {u}"
+
+# Intersection (&)O
+i = s1 & s2
+assert i == {3}, f"intersectioTest set operators |, &, ), ^
+s1 = {1, 2, 3}
+s2 = {3, 4, 5}
+
+# Union (|)
+u = s1 | s2
+assert u == {1, 2, 3,  4,5}, f"union failed: {u}"
+
+# Intersection (&)O
+i = s1 & s2
+assert i == {3}, f"intersec 3,  4,5}, f"union failed: {u}"
+
+# Intersection (&)O
+i = s1 & s2
+assert i == {3}, f"intersection failed: {i}"
+# n failed: {i}"
+# D failed: {sd}"

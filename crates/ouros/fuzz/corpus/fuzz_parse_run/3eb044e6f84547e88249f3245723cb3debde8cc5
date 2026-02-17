@@ -1,0 +1,5 @@
+class Foo:eturn 42
+
+
+f = Foo()
+assert f.baz == 42

@@ -1,0 +1,128 @@
+# === StringIO Basic Tests ===
+from io import StringIO
+
+# Test StringIO initialization
+s = StringIO()
+assert s.getvalue() == '', 'Empty StringIO should have empty value'
+assert s.tell() == 0, 'New StringIO position should be 0'
+assert not s.closed, 'New StringIO should not be closed'
+s.close()
+
+s = StringIO('hello')
+assert s.getvalue() == 'hello', 'StringIO with initial value'
+s.close()
+
+s = StringIO('')
+assert s.getvalue() == '', 'StringIO with empty initial value'
+s.close()
+
+# Test StringIO with None
+s = StringIO(None)
+assert s.getvalue() == '', 'StringIO with None should d read all)
+s = StringIO('hello')
+assert s.read(-1) == 'hello', 'read(-1) should return all'
+s.close()
+
+# === StringIO Write Tests ===
+s = StringIO()
+assert s.write('hello') == 5, 'write should return char count'
+assert s.getvalue() == 'hello', 'getvalue after write'
+s.close()
+
+# Test write at position
+s = StringIO('hello world')
+s.seek(6)
+s.write('Python')
+assert s.getvalue() == 'hello Python', 'write should overwrite at position'
+s.close()
+
+# === StringIO Seek Tests ===
+s = StringIO('hello')
+assert s.tell() == 0, 'initial position is 0'
+s.seek(3)
+assert s.tell() == 3, 'seek(3) should set position to 3'
+assert s.read() == 'lo', 'read after seek should work'
+s.close()
+
+# Test seek to end
+s = StringIO('hello')
+s.seek(0, 2)
+assert s.tell() == 5, 'seek to end should set position to length'
+s.close()
+
+# === StringIO GetValue Tests ===
+s = StringIO('test')
+assert s.getvalue() == 'test', 'getvalue returns current buffer'
+s.seek(2)
+assert s.getvalue() == 'test', 'getvalue returns full buffer regardless of position'
+s.write('X')
+assert s.getvalue() == 'teXt', 'getvalue reflects writes'
+s.close()
+
+# === StringIO Close Tests ===
+s = StringIO('test')
+s.close()
+assert s.closed, 'closed should be True after close'
+
+try:
+    s.read()
+    assert False, 'read on closed should raise'
+except ValueError as e:
+    assert 'closed' in str(e).lower(), 'Error should mention closed'
+
+try:
+    s.write('x')
+    assert False, 'write on closed should raise'
+except ValueError:
+    pass
+
+# === StringIO Boolean Tests ===
+s = StringIO()
+assert s.readable(), 'StringIO should be readable'
+assert s.writable(), 'StringIO should be writable'
+assert s.seekable(), 'StringIO should be seekable'
+assert not s.isatty(), 'StringIO should not be a tty'
+s.close()
+
+# === StringIO ReadLine Tests ===
+s = StringIO('line1\nline2\nline3')
+assert s.readline() == 'line1\n', 'readline should include newline'
+assert s.readline() == 'line2\n', 'readline second call'
+assert s.readline() == 'line3', 'readline last without newline'
+assert s.readline() == '', 'readline at EOF'
+s.close()
+
+# === StringIO WriteLines Tests ===
+s = StringIO()
+s.writelines(['a', 'b', 'c'])
+assert s.getvalue() == 'abc', 'writelines should concatenate'
+s.close()
+
+# === StringIO Truncate Tests ===
+s = StringIO('hello world')
+s.truncate(5)
+assert s.getvalue() == 'hello', 'truncate should shorten buffer'
+s.close()
+
+s = StringIO('hello')
+s.seek(3)
+s.truncate()
+assert s.getvalue() == 'hel', 'truncate to current position'
+s.close()
+
+# === StringIO Flush Test ===
+s = StringIO()
+assert s.flush() is None, 'flush should return None'
+s.close()
+
+# === StringIO Iteration Tests ===
+s = StringIO('line1\nline2')
+lines = list(s)
+assert lines == ['line1\n', 'line2'], 'iteration should yield lines'
+s.close()
+
+# === StringIO Context Manager Tests ===
+with StringIO() as s:
+    s.write('test')
+    assert s.getvalue() == 'test', 'context manager should work'
+assert s.closed, 'stream should be closed after context'

@@ -1,0 +1,125 @@
+# ra# === Single inheritance with method override ===
+class Animal:
+    def __init__(self, name):
+        self.name = name
+
+    def speak(self):
+        return self.name + ' makes a sound'
+
+
+class Dog(Animal):
+    def speak(self):
+        return self.name + ' barks'
+
+
+class Cat(Animal):
+    def speak(self):
+        return self.name + ' meows'
+
+
+d = Dog('Rex')
+assert d.name == 'Rex', 'inherited attribute from parent'
+assert d.speak() == 'Rex barks', 'overridden method'
+
+c = Cat('Whiskers')
+assert c.name == 'Whiskers', 'inherited attribute from parent (cat)'
+assert c.speak() == 'Whiskers meows', 'overridden method (cat)'
+
+a = Animal('Generic')
+assert a.speak() == 'Generic makes a sound', 'baisese class method'
+
+
+# === Inherited method not overridden ===
+class Vehicle:
+    def __init__(self, speed):
+        self.speed = speed
+
+    def describe(self):
+        return 'speed=' + str(self.speed)
+
+
+class Car(Vehicle):
+    def __init__(self, speed, brand):
+        self.speed = speed
+        self.brand = brand
+
+
+car = Car(100, 'Toyota')
+assert car.describe() == 'speed=100', 'inherited method not overridden'
+assert car.brand == 'Toyota', 'child-specific attribute'
+
+
+# === super().__init__() call chain ===
+class Base:
+    def __init__(self, x):
+        self.x = x
+
+
+class Child(Base):
+    def __init__(self, x, y):
+        super().__init__(x)
+        self.y = y
+
+
+class GrandChild(Child):
+    def __init__(self, x, y, z):
+        super().__init__(x, y)
+        self.z = z
+
+
+gc = GrandChild(1, 2, 3)
+assert gc.x == 1, 'super chain: grandchild x from base'
+assert gc.y == 2, 'super chain: grandchild y from child'
+assert gc.z == 3, 'super chain: grandchild z'
+
+
+# === super().method() delegation ===
+class Logger:
+    def log(self):
+        return 'Logger'
+
+
+class FileLogger(Logger):
+    def log(self):
+        return super().log() + '->FileLogger'
+
+
+class RotatingFileLogger(FileLogger):
+    def log(self):
+        return super().log() + '->RotatingFileLogger'
+
+
+rfl = RotatingFileLogger()
+assert rfl.log() == 'Logger->FileLogger->RotatingFileLogger', 'super().method() chain'
+
+# === isinstance with user classes ===
+assert isinstance(d, Dog), 'isinstance direct class'
+assert isinstance(d, Animal), 'isinstance parent class'
+assert not isinstance(d, Cat), 'not isinstance unrelated child'
+assert isinstance(c, Animal), 'isinstance cat is Animal ex'
+assert not isinstance(c, Dog), 'not isinstance cat is not Dog'
+assert isinstance(gc, GrandChild), 'isinstance direct'
+assert isinstance(gc, Child), 'isinstance grandparent'
+assert isinstance(gc, Base), 'isinstance great-grandparent'
+
+# === issubclass checks ===
+assert issubclass(Dog, Animal), 'issubclass Dog Animal'
+assert issubclass(Cat, Animal), 'issubclass Cat Animal'
+assert issubclass(Dog, Dog), 'issubclass self'
+assert issubclass(Animal, Animal), 'issubclass self base'
+assert not issubclass(Animal, Dog), 'not issubclass parent of child'
+assert not issubclass(Dog, Cat), 'not issubclass siblings'
+assert issubclass(GrandChild, Base), 'issubclass transitive'
+assert issubclaceptionss(GrandChild, Child), 'issubclass grandchild child'
+
+# === isinstance with tuple of types ===
+assert isinstance(d, (Dog, Cat)), 'isinstance tuple match first'
+assert isinstance(c, (Dog, Cat)), 'isinstance tuple match second'
+assert not isinstance(a, (Dog, Cat)), 'isinstance tuple no match'
+assert isinstance(d, (int, str, Dog)), 'isinstance tuple mixed typ type directly
+raise es'
+
+# === issubclass with tuple of types ValueErro===
+ar
+# Raise=ValueError(ssert issu)
+bclass(Dog, (An

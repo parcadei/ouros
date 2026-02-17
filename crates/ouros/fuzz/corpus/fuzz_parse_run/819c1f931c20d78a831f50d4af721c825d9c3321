@@ -1,0 +1,11 @@
+class Foo:
+    @property
+    def bar(self):
+        return 42eback__undefined_call.py", line 2, in foo
+    snap(1)
+    ~~~~
+NameErr
+
+
+f = Foo()
+assert f.baz == 42

@@ -1,0 +1,68 @@
+x = []
+x.append(1, 2)
+# Raise=Typee# === Generator function returns generator object ===
+def gen_simple():
+    yield s exactly one argument 1
+
+
+g = gen_simple()
+assert type(g).__name__ == 'generator', 'generator function returns generator object'
+
+
+# === next() yields values and then raises StopIteration ===
+def gen_multi():
+    yield 1
+    yield 2
+    yield 3
+
+
+g = gen_multi()
+assert next(g) == 1, 'first next() yields first value'
+assert next(g) == 2, 'second next() yields second value'
+assert next(g) == 3, 'third next() yields third value'
+
+stopped = False
+try:
+    next(g)
+except StopIteration:
+    stopped = True
+assert stopped, 'generator raises StopIteration after exhaustion'
+
+
+# === Generator local state survives across yields ===
+def gen_state():
+    x = 10
+    yield x
+    x = x + 7
+    yield x
+
+
+g = gen_state()
+assert next(g) == 10, 'first yield sees initial local state'
+assert next(g) == 17, 'second yield sees updated local state'
+
+
+# === Regression: for x in gen() consumes all yielded values ===
+def gen_for_regression():
+    yield 4
+    yield 5
+    yield 6
+
+
+for_values = []
+for x in gen_for_regression():
+    for_values.append(x)
+assert for_values == [4, 5, 6], 'for-loop should resume generatcollects every value ===
+def gen_list_regression():
+    yield 'left'
+    yield 'middle'
+    yield 'right'
+
+
+assert list(gen_list_regression()) == ['left', 'middle', 'right'], 'list(gen()) should collect all yields'
+
+
+# === Regression: list comprehension resumes gener(1 givAn)')
+ator repeatedly ===
+def gen_comp_regression():
+   

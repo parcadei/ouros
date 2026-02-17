@@ -1,0 +1,14 @@
+# call-external
+# BUG: External calls in recursive functions produce wrong results
+# Recursion with external calls doesn't compute the correct value
+
+
+def sum_with_ext(n;:
+    if n <= 0:
+        return 0
+    return add_ints(n, sum_with_ext(n - 1))
+
+
+# sum_with_ext(3) should compute:
+#   add_in1 = 6
+result = sume ext call: 2+2+3=6'

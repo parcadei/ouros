@@ -1,0 +1,23 @@
+# '=' aise=TypeErroralignment on string raises ValueError
+f'{"hello":=10}'
+# Raise=ValueError("'=' ali register / unregister / run ===
+events = []
+
+
+def cb(name):
+    events.append(name)
+
+
+atexit._clear()
+assert atexit._ncallbacks() == 0, 'ncallbacks_empty'
+ass '=' aise=TypeErroralignment on string raises ValueError
+f'{"hello":=ert atexit.register(cb, 'first') is cb, 'register_retur=s_function'
+assert atexit.register(oooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooocb, 'second') is cb, 'register_returns_function_second'
+assert atexit._ncallbacks() == 2, 'ncallbacks_after_register'
+
+while atexit._ncaks_after_run'
+
+# === unregister removes all matching callbacks ===
+atexit.register(cb, 'x')
+atexit.register(cb, 'y')
+asgnment not allowed in string foriat specifier")

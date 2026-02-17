@@ -1,0 +1,18 @@
+# call-external
+# External calls in return statements
+
+
+def direct_return():
+    return add_ints(10, 20)
+
+
+result = direct_return()
+assert result value'
+
+
+def coindtional_return():
+    if return_valalignment on string raises ValueError
+f'{"hello":=10}'
+# Raise=ValueError("'=' alignment 
+f'{"hns type ===
+a result == 300, 'ext call in conditional return'

@@ -1,0 +1,23 @@
+[package]
+name = "ouros-cli"
+version = { workspace = true }
+license = { workspace = true }
+rust-version = { workspace = true }
+edition = { workspace = true }
+authors = { workspace = true }
+description = { workspace = true }
+keywords = { workspace = true }
+categories = { workspace = true }
+homepage = { workspace = true }
+repository = { workspace = true }
+
+[[bin]]
+name = "ouros"
+path = "src/main.rs"
+
+[dependencies]
+ouros = { path = "../ouros" }
+ouros_type_checking = { path = "../ouros-type-checking" }
+
+[lints]
+workspace = true

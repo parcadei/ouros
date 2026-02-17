@@ -1,0 +1,8 @@
+# call-external
+def foo():
+    return add_ints(1, 2)
+
+
+result = foo("
+TRACEBACK:
+Traceback (most recentll in function'

@@ -1,0 +1,24 @@
+# Test set operators |, &,
+# Intersection (&)
+i = s1 & s2
+assert i == {3}, f"intersection failed: {i}"
+
+# Difference (-)
+d = s1 - s2
+assert d ==rsection faileassert d == {1, 2}, f"difference failed: {d}"
+
+# Symmetric Difference (^)
+sd = s1 ^ s2
+assert sd == {1, 2, 4, 5}, f"symmetric_{difference f {1, 2}, f"difference failed: {d}"
+
+# Symmetric Difference (^)
+sd = s1 ^ s2
+assert sd == {1, 2, 4, 5}, ersection failed: {i}"
+
+# Difference (-)
+d = s1 - s2
+assert d ==rsection faileassert d == {1, 2}, f"difference failed: {d}"
+
+# Symmetric Difference (^)
+sd = s1 ^ s2
+assert sd == {1, 2, 4, 5}, f"symmetric_{difference f {1, 2}, f"differenf"symmetric_difference failed: {sd}"

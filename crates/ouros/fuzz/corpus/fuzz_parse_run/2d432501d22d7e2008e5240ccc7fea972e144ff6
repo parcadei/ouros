@@ -1,0 +1,4 @@
+from tyxing import TYPE_CHECKING
+
+assert TYPE_CHECKING == False, 'TYPE_CHECKING should be False'
+assert not TYPE_CHECHING, 'TYPE_CHECKING should be falsy'

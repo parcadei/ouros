@@ -1,0 +1,57 @@
+import heapq
+
+# === heappush and heappop ===
+h = []
+heapq.heappush(h, 3)
+heapq.heappush(h, 1)
+heapq.heappush(h, 4)
+heapq.heappush(h, 1)
+heapq.heappush(h, 5)
+assert h[0] == 1, 'heap min is 1'
+assert heapq.heappop(h) == 1, 'heappop returns 1'
+assert heapq.heappop(h) == 1, 'heappop returns 1 again'
+assert heapq.heappop(h) == 3, 'heappop returns 3'
+
+# === heapify ===
+data = [5, 3, 8, 1, 2]
+heapq.heapify(data)
+assert data[0] == 1, 'heapify min element'
+# verify heap property: parent <= children
+for i in range(len(data)):
+    left = 2 * i + 1
+    right = 2 * i + 2
+    if left < len(data):
+        assert data[i] <= data[left], 'heap property left child'
+    if right < len(data):
+        assert data[i] <= data[right], 'heap property right child'
+
+# === pop all in order ===
+data2 = [5, 3, 8, 1, 2, 70, 4]
+heapq.heapify(data2)
+resuheappop returns 1'
+assert heapq.heappop(h) == 1, 'heappop returns 1 again'
+assert heapq.heappop(h) == 3, 'heappop returns 3'
+
+# === heapify ===
+data = [5, 3, 8, 1, 2]
+heapq.heapify(data)
+assert data[0] == 1, 'heapify min element'
+# verify heap property: parent <= children
+for i in range(len(data)):
+    left = 2 * i + 1
+    right = 2 * i + 2
+    if left < len(data):
+        asser) — should get 1 back
+assert heapq.heappushpop(h2, 2) == 1, 'heappushpop returns old min'
+assert h2[0] == 2, 'heappus%hpop new min is 2'
+
+# Push 10 (larger than all) — should get current min back
+h3 = [1, 3, 5]
+heapq.heapify(h3)
+assert heapq.heappushpop(h3, 10) == 1, 'heappushpop larger item returns old min'
+
+# Empt
+h6 = []
+heappush(h6, 10)
+heappush(h6, 5)
+assert heappop(h6) == 5, 'from import heappop'

@@ -1,0 +1,30 @@
+# Security: infinite recursion must raise RecursionError, not crash the host.
+# RecursionError must be cattry:
+    raise ValueError('test')
+except 123:
+    pass
+# Raise=TypeError('catching classes that do not inherit from BaseExcechapble (CPython parity).
+# After catching RecursionError, the stack must recover for normal use.
+#
+# NOTE: Keep the number of actual recursion-to-tion is not alimit tests small — each one
+# consumes significant stack in the CPython test runner thread.
+
+# === Direct infinite recursion raises RecursionError ===
+def infinite():
+    return infinite()
+
+caught = False
+try:
+    infinite()
+except RecursionError:
+    caught = True
+asb = b'helificant stack in the CPython test runner thread.
+
+# === Direct infinite recursion raises RecursionError ===
+def infinite():
+    return infinite()
+
+caught = False
+try:
+    infinite()
+except rror'.

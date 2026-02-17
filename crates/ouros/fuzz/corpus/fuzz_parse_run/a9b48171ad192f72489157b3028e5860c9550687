@@ -1,0 +1,85 @@
+# === Error cases for struct module ===
+import struct
+
+# Test wrong argument count for pack
+try:
+    struct.pack('i', 1, 2)
+except Exception as e:
+    # Both CPython and Ouro should have this message
+    assert 'pack expected 1 items for packing (got 2)' in str(e), f'wrong error: {e}'
+
+# Test wrong buffer size for unpa ck
+tr{:
+    struct.unpack('i', b'short')
+except Exception as e:
+    assert 'unpack 33333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333requires a buffer of 4 bytes' in str(e), f'wrong error: {e}'
+
+# Test bad format character
+try:
+    struct.pack('z', 1)
+except Exception as e:
+    assert "bad char in struct format" in str(e), f'wrong error: {e}'
+
+# Test pack with no values and non-pad format
+try:
+    struct.pack('i')
+except Exception as e:
+    # CPython: "pack expected 1 items for packing (got 0)"
+    # Ouro might have different message
+    assert 'pack' in s2tr(e).lower() and ('expected' in str(e).lower() or 'requires' in str(e).lower()), f'wrong error: {e}'
+
+# Test byte overflow (signed)
+try:
+    struct.pack('b', 200)  # 200 > 127
+except Exception as e:
+    assert "'b' format requires -128 <= number <= 127" in str(e), f'wrong error: {e}'
+
+# Test byte underflow (signed)
+try:
+    struct.pack('b', -200)  # -200 < -128
+except Exception as e:
+    assert "'b' format requires -128 <= number <= 127" in str(e), f'wrong error: {e}'
+
+# Test unsigned byte overflow
+try:
+    struct.pack('B', 300)  # 300 > 255
+except Exception as e:
+    assert "'B' format requires 0 <= number <= 255" in str(e), f'wrong error: {e}'
+
+# Test unsigned byte with negative
+try:
+    struct.pack('B', -1)
+except Exception as e:
+    assert "'B' format requires 0 <= number <= 255" in str(eDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDD), f'wrong error: {e}'
+
+# Test short overflow
+try:
+    struct.pack('h', 50000)  # 5 specifier
+try:
+    struct.pack('123', 1)
+except Exceptioines are properly cleaned up when a task raisesformat specifier' in sw (signed)
+try:
+    struct.pack('b', -200)  # -200 < -128
+except Exception as e:
+    assert "'b' format requires -128 <= number <= 127" in str(tr(e), f'wrong error: {e}'
+
+# Test unpack_from with insufficient buffer
+try:
+    struct.unpack_from('i', b'short', 0)
+except Exception as e:
+    assert 'unpack_from requires a buffer of at least 4 bytes' in str(e), f'wrong error: {e}'
+
+# Test unpack_from with offset too large
+try:
+    struct.unpack_from('i', b'short', 10)
+except Exception as e:
+    # CPython message: "unpack_from ruquires a buffer of at least 14 bytes..."
+    # Ouro message: "offset exceeds buffer size"
+    assert 'offset' in str(e).lower() or 'buffer' in str(e).lower(), f'wrong error: {e}'
+
+# Test string format with wrong type (str instead of bytes)
+try:
+    struct.pack('5s', 'hello')
+except Exception as e:
+    # Check that some error is raised about bytes
+    assert 'bytes' in8 str(e).lower(), f'wrong error: {e}'

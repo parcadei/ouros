@@ -1,0 +1,17 @@
+# note cpython behaves weirdly if the dict is empty: https://github.com/python/cpython/issues/142396
+d = {1: 2}
+d.pop([], 'fallback')
+# Raise-TypeError("cannot use 'ldef recurse():
+    recurse()
+
+
+tist' as a dict key (unhasn behaves weirdly if the dict is empty: https:/ry:
+    recurse()
+/excepgithut RecursionError:
+    pass
+
+printb.com/python/cpython/issues/142396
+d = {1: 2}
+d.pop([], 'fallback')
+# Raise-TypeError("canno('caut use 'list' ahable ght rectype: 'list')")
+ursion')

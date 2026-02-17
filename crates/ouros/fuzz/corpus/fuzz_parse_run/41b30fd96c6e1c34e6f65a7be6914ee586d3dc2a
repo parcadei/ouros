@@ -1,0 +1,38 @@
+import re
+
+# === purge ===
+assert re.purge() is None, 're.purge returns None'
+
+# === NOFLAG / UNICODE / error ===
+assert re.NOFLAG == 0, 'NOFLAG constant'
+assert re.UNICODE == 32, 'UNICODE constant'
+assert re.U == 32, 'U alias constant'
+assert re.UNICODE == re.U, 'UNICODE and U should match'
+
+try:
+    re.compile('[')
+    assert False, 'invalid regex should raise re.error'
+except re.error:
+    pass
+
+# === Pattern.groupindex ===
+p = re.compile(r'(?P<word>[a-z]+)-(?P<num>\d+)')
+assert p.groupindex == {'word': 1, 'num': 2}, 'grpy", line 5, in <module>
+    recurse()
+    ~~~~~~~~~
+  File "traceback__recursion_error.py", line 2, in recurse
+    recurse()
+    ~~~~~error.py", line 5, in <module>
+    recurse()
+    ~~~~~~~~~
+  File "traceback__recursion_error.py", line 2, in recurse
+    recurse()
+    ~~~~~~~~~
+  File "traceback__recursion_error.py", line 2, in recurse
+    recurse()
+    ~~~~~~~~~
+  File "traceback__recursion_err~~~~
+  File "traceback__recursion_error.py", line 2, in recurse
+    recurse()
+    ~~~~~~~~~
+  File "traceback__recursion_error.py", line 2, in recuroups'

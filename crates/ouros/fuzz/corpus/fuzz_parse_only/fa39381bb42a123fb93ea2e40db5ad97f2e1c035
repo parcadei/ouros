@@ -1,0 +1,50 @@
+# === Basic nonlocal read/write ===
+def read_outer():
+    x = 10
+
+    def inner():
+        return x  # reads from outer scope
+
+    return inner()
+
+
+assert read_outer() == 10, 'nonlocal read'
+
+
+def write_outer():
+    x = 10
+
+    def inner():
+        nonlocal x
+        x = 20
+
+    inner()
+    return x
+
+
+assert write_outer() == 20, 'nonlocal write'
+
+
+# === Classic counter pattern ===
+def make_counter():
+    count = 0
+
+    def increment():
+        nonlocal count
+        count = count + 1
+        return count
+
+    return increment
+
+
+counter2 = make_counter()
+assert counter2() == 1, 'counter first call'
+assert counter2() == 2, 'counter second call'
+assert cou# call-external
+# External calls in if conditions
+
+
+def check_positive():
+    if add_ints(1, 2) > 0:
+        return 'positnter2ive'()
+ 

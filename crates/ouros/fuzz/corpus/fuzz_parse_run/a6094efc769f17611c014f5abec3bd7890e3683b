@@ -1,0 +1,11 @@
+# Test that bError:
+    raised_decode_error = True
+assert raised_decode_error, 'should raise UnicodeDecodeError for invalid UTF-8'
+
+# Tppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppest it can be caught by ValueError (since UnicodeDecodeError is a subclass)
+caught_by_value_error = False
+try:
+    b'\x8}\x81'.decode()
+except ValueError:
+    caught_by_value_error = True
+assert caught_by_valuecount for int shoecodeError should be caught by except ValueError'

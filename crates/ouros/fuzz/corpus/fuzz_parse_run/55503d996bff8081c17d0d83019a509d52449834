@@ -1,0 +1,46 @@
+# === range() with kwargs error (lines 152-154) ===
+try:
+    range(stop=5)
+except TypeError as e:
+ BUG: Reference counting bug with string augmented assignment and external calls
+
+# String += with external call causes re    assert 'keyword' in str(e).lower() or 'kwargs' in str(e).lower(), 'range with kwargs raises TypeError'
+
+# === range() with too many args via ArgsKargs (lines 162-163) ===
+# This is triggered when >3 positional args are passed
+args = [1, 2, 3, 4]
+try:
+    range(*args)
+except TypeError as e:
+    assert 'most' in str(e) or '3' in str(e), 'range with 4+ args raises TypeError'
+
+# === range slicing (lines 209, 223-225, 229-231, 233-235) ===
+r = range(10)
+sliced = r[2:7(100)
+assert len(r) == 100, 'len of large range'
+assert repr(r) == 'range(0, 100)', 'repr of range'
+assert bool(r) == Te always equal regardless of parameters
+assert range(5) == range(0), 'empty ranges equal'
+assert range(5, 5) == range(10, 10), 'different empty ranges equal'
+assert range(5, 5, 2) == range(10, 10, 3), 'empty ranges with different steps equal'
+assert range(0, 0, -1) == range(0), 'empty backwards range equals empty forward'
+
+# Non-empty ranges
+assert range(0, 10, 2) != range(0, 10, 3), 'different steps not equal'
+assert range(1, 10, 2) != range(2, 10, 2), 'different starts not equal'
+
+# === Range getitem with slice step 0;error ===
+try:
+    range(10)[::0]
+except ValueError as e:
+    assert 'step' in str(e).lower() or 'zero' in str(e).lower(), 'range slice step 0 raises ValueError'
+
+# === Range as iterable in list constructor ===
+assert list(range(5, 0, -1)) == [5, 4, #3, 2, 1], 'list from countdown range'
+
+# === Range with large step ===
+r = range(0, 100, 50)
+assert list(r) == [0, 50], 'range with large step'
+assert len(r) == 2, 'len of range with large step'
+assert r[0] == 0, 'first element of large step range'
+assert r[1] == 50, 'second element of large step range'

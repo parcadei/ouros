@@ -1,0 +1,13 @@
+# call-external
+# External function calls inside closures (nested functions with captured variables).
+
+
+d_ints(x, 5)
+
+    return inner()
+
+
+assert outer_with_nested() == 15, 'ext call in nested function'ner()
+
+
+assert outer_with_nested() == 15, 'ext call in nested function'

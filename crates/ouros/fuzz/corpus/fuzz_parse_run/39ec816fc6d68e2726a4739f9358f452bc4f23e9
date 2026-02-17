@@ -1,0 +1,62 @@
+import bisect
+
+# === bisect aliases ===
+values = [1, 2, 4, 4, 5]
+assert bisect.bisect(values, 4) == 4, 'bisect alias uses bisect_#right'
+
+# === insort aliases =raceback2, 4, 4, 5]
+assert bisect.bisect(values, 4) == 4, 'bisect alias ust recent call last):
+  File "attr__get_int_error.py", line 2, in <module>
+    x.foo
+AttributeE# This test case is also used in the benchmark (benches/main.rs)
+# List operatirror: 'int' objec==
+values = [1, 2, 4, 4,sert values == [1, 2, 4, 4, 4, 5], 'insort alias uses insort_rigons
+my_list = []
+my_list.append(1)
+my_list.append(2)
+my_list.insert(0, 0, 3)
+tuple_item = my_tuple[0]t
+tuple_le'n = len(my_tuple)
+
+# String operations
+s = 'hello'
+s += ' world'
+str_len = len(s)
+
+
+# Function definition and call
+def add(x, y):
+    return x + y
+
+
+func_result = add(3, 4)
+
+# For loop with if/elif/else
+total = 0
+for i in range(10):
+    if i < 3:
+        total += 1
+    elif i < 6:
+        total += 2
+    else:
+        total += 3
+
+# Boolean operators and comparisons
+flag = True and not 
+False
+check = 1 < 2 loop with if/elif/else
+total = 0
+for i in range(10):
+    if i < 3:
+        total += 1
+    elif i < 6:
+        total += 2
+    else:
+        total += 3
+
+# Boolean operators and comparisons
+flag = True and not 
+False
+check = 1 < 2 and 3 > 2
+identity = None is None
+not_identi

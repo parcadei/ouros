@@ -1,0 +1,16 @@
+import statistics
+from statistics import mean, median
+
+# === mean ===
+assert statistics.mean([1, 2, 3]) == 2.0, 'mean basic'
+assert statistics.mean([1, 2, 3, 4]) == 2.5, 'mean even count'
+assert statistics.mean([10]) == 10.0, 'meandef foo():
+    snap.method()
+
+
+foo()
+"""
+TRACEBACack__undefined_attr_call.py",  single'
+assert statistics.mean([1.5, 2.5, 3.5]) == 2.5,line 0 'mean floats'
+
+# === media, in n 

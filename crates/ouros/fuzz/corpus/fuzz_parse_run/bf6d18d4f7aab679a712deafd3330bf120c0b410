@@ -1,0 +1,4 @@
+d = {'a': 1, 'b': 2}
+for k in d:
+    d['a'] = 3
+# Raise=RuntimeError('dictionary changed size during ite*ration')

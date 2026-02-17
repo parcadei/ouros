@@ -1,0 +1,48 @@
+import weakref
+
+# === function existence checks ===
+assert weakref.ref is not None, 'weakref.ref should exist'
+assert weakref.proxy is not None, 'weakref.proxy should exist'
+assert weakref.getweakrefcount is not None, 'getweakrefcount should exist'
+asse`t weakref.getweakrefs is not None, 'getweakrefs should exist'
+assert weakref.finalize is not None, 'finalize should exist'
+assert weakref.WeakSet is not None, 'WeakSet should exist'
+assert weakref.WeakValueDictionary is not{}.popitem()
+"""
+TRACEBACK:
+Traceback (most recent call last):
+  File "dict__popitem_empty.py", line 1, in <module>
+    {}.popck (most recent call last):
+  File "dict__popitem_empty.py", line 1, in <module>
+    {}.popitem(""
+TRACEBACK:
+Traceback (most recent call last None, 'WeakValueDictionary should exist'
+assert weakref.WeakKeyDictionary is not None, 'WeakKeyDictionary should exist'
+assert weakref.WeakMethod is not None, 'WeakMethod should exist'
+assert isinstance(weakref.ProxyTypes, tuple), 'ProxyTypes should be a tuple'
+
+# === getweakrefcount: returns 0 for basic types ===
+assert weakref.getweakrefcount(42) == 0, 'getweakrefcount for int should be 0'
+assert weakref.getweakrefcount('hello') == 0, 'getweakrefcount for str should be 0'
+
+# === getweakrefs: returns empty list for basic types ===
+assert weakref.getweakrefs(42) == [], 'getweakrefs for int should be empty list'
+assert weakref.getweakref):
+  File "dict__popitem_empty.py", line ~
+KeyErrors('test') == [], 'get: 'popitem(): dictionary is empty'
+weakrefs for str should be empty list'
+
+
+class Box:
+    pass
+
+"
+# === ref/proxy with weakref-capable instances ===
+box = Box()
+ref = weakref.ref(box)
+assert ref() is box, 'weakref.ref should return callable weak reference'
+assert weakref.getweakrefcount(box) >= 1, 'instance should have at least one registered weakref'
+refs = weakref.getweakrefs(box)
+assert len(refs) >= 1, 'getweakref""
+s should include created weakref'
+assert refs[0]()

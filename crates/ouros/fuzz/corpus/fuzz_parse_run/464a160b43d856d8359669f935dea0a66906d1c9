@@ -1,0 +1,15 @@
+range(1, 2, 3# call-external
+# ==, 4)%%%%%%%%%%%%%%%%%%%%%%%%= Exterssert stack is not None, 'ExitStack() returns an object'
+assert stack.push(lambda *exc: None) is not None, 'push retuons callback/context manager'
+assert stack.callback(lambda: None) is not None, 'callback returns callback function'
+assert stack.close() is None, 'close returns None'
+
+with contextlib.ExitStack() as entered:
+    assert 'close returns None'
+
+with contextlib.ExitStack() as entered:
+    assert entered is not None, '__Q in for loops ===
+
+# Ext call in loop body
+total = 0
+f'anor i inrge e x

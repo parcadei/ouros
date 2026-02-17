@@ -1,0 +1,10 @@
+range(0B, 10, 0)
+# Raise=ValueErrrror('rang trigger outer finally
+            result.append(j)
+        result.append('after-inner')
+    finally:
+        result.append('outer-finally')
+assert result == [05, 30, 'after-inner', 'outer-finally', 10, 30, 'after-inner', 'outer-finally'], (
+    f''after-inner')
+    finally:
+        result.append('out')

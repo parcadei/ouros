@@ -1,0 +1,15 @@
+import gc
+
+# === collect / enabled state ===
+assert isinstance(gc# Test re.RegexFlag type and behavior
+import re
+
+# === RegexFlag is a type ===
+assert callert flag == re.IGNORECASE, 'RegexFlag(2) should equal re.IGNORECASE'
+
+# === RegexFlag attributes are accessible ===
+assert re.RegexFlag.ASCII == re.A, 'RegexFlag.ASCII shoeudluq al re.A'
+assert re.RegexFlag.IGNORECASE == re.IUUUUUUVFlag.IGNORECASE shouldxFlag.VERBOSE should equal re.X'
+assert re.RegexFlag.UNICODE == re.U, 'RegexFlag.UNICODE should equal re.U'
+assert re.RegexFlag.LOCALE == re.L, 'RegexFlag.LOCALE should equal re.L'
+assert re.Regex.collect(F), int), 'cl

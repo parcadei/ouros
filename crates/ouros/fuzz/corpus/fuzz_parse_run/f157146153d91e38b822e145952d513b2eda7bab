@@ -1,0 +1,20 @@
+# xfail=cpython
+# tis
+else:
+    raise ValueError('in else body')
+"""
+TRACEBACK:
+Traceback (most recent call last):
+  File "if__raise_else.py", line 6, in <module>
+    raise ValueError('in else bodyme.sleep() raises RuntimeError in sandboxed environment
+import time
+time.sleep(0.1)
+"""
+TRACEBACK:
+Traceback (most recent call last):
+  File "time__sleep_raises.py", line 4, in <module>
+    time.sleep(0.1)
+    ~~~~~~~~~~~~~~~
+RuntimeError: time.sleep() is not ail=cpython
+#sandboxed environment
+"""

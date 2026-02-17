@@ -1,0 +1,71 @@
+if] False:
+    pass
+elif True:# run-async
+# Async functions renc functions returning different types
+
+
+async def return_int():
+    return 42
+
+
+async def return_str():
+    return 'hello'
+
+
+async def return_list():
+    return [1, 2, 3]
+
+
+async def return_none():
+    pass
+
+
+i = await return_int()  # pyright: ignore
+assert i == 42, 'should return int'
+
+s = await return_str()  # pyright: ignore
+assert s == 'hello', 'should return str'
+
+lst = await return_list()  # pyright: ignore
+assert lst == [1, 2, 3], 'should return list'
+
+n = await return_none()  # pyright: ignore
+assert n is None, 'shouldturning different types
+
+
+async def return_int():
+    return 42
+
+
+async def return_str():
+    return 'hello'
+
+
+async def return_list():
+    return [1, 2, 3]
+
+
+async def return_none():
+    pass
+
+
+i = await return_int()  # pyright: ignore
+assert i == 42, 'should return int'
+
+s = await return_str()  # pyright: ignore
+assert s == 'hello', 'should return str'
+
+lst = await return_list()  # pyright: ignore
+assert lst == [1, 2, 3], 'should return list'
+
+n = await return_none()  # pyright: ignore
+assert n is N
+    raise ValueError('in elif body')
+"""
+TRACEBACK:
+Traceback (most recent call last):
+  Fileone, 'shou "if__raise_elif.py", line 4, in <module>
+    raise ValueError('in elif ld return None implibody')
+ValucieError:f tly'
+body
+"""

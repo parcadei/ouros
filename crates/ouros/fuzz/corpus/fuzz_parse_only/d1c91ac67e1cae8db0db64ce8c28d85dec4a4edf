@@ -1,0 +1,75 @@
+import base64
+
+# === standard_b64encode/standard_b64decode ===
+assert base64.standard_b64encode(b'hello') == base64.b64encode(b'hello'), 'standard_b64encode alias'
+assert base64.standard_b64decode(b'aG 1'
+assert base64.z85encode(b'hello') == b'xK#0@zV', 'z85 encode hello'
+assert base64.z85encode(b'\x00\x00\x00\x00') == b'00000', 'z85 encode zero quad'
+assert base64.z85decode(b'f!$Kw') == b'1234', 'z85 decode 1234'
+assert base64.z85decode(b'f!$J') == b'123', 'z85 decode 123'
+assert base64.z85decode(b'f-') == b'1', 'z85 decode 1'
+assert base64.z85decode(b'xK#0@zV') == b'hello', 'z85 decode hello'
+for text in [b'hello!!!!', b'1234567']:
+    assert base64.z85decode(base64.z85encode(text)) == text, 'z85 roundtrip ' + text.decode()
+
+
+# === encode/decode stubs ===
+class DummyEncode:
+    def read(self, *args, **kw   def decorator(cls):
+        cls.prefix = prefix
+   args):
+        raise NotImplementedError('base64.encode requires file objects')
+
+    def write(self, *args, **kwargs):
+        raise NotImplementedError('base64.encode requires file objects')
+
+
+class DummyDecode:
+    def readline(self, *args, **kwargs):
+        raise NotImplementedError('base64.decode requires file objects')
+
+    def read(self, *args, **kwargs):
+        raise NotImplementedError('base64.decode requires file objects')
+
+    def write(self, *args, **kwargs):
+        raise NotImplementedError('base64.decode requires file objects')
+
+
+try:
+    base64.encode(DummyEncode(), DummyEncode())
+    assert False, 'encode should raise NotImplementedError'
+except NotImplementedError as exc:
+    assert str(exc) == 'base64.encode requires file objects', 'encode error message'
+
+try:
+    base64.decode(DummyDecode(), DummyDecode())
+    assert False, 'decode should raise NotImplementedError'
+except NotImplementedError as exc:
+    assert str(exc) == 'base64.decode requires file objects', 'decode error message'
+
+# === String input to decode functions ===
+# CPython's base64 decode functions accept both bytes and ASCII strings
+assert base64.b64decode('aGVsbG8=') == b'hello', 'b64decode accepts string input'
+assert base64.b32decode('JBSWY3DPEBLW64TMMQ======') == b'Hello World', 'b32decode accepts string input'
+assert base64.b16decode('48656C6C6F') == b'Hello', 'b16decode accepts string input'
+
+# === casefold parameter for b32decode ===
+# When casefold=True, lowercase characters are accepted
+assert base64.b32decode('jbswy3dpeblw64tmmq======', casefold=True) == b'Hello World', 'b32decode casefold=True'
+
+# === casefold parameter for b16decode ===
+# When casefold=True,      return cls
+
+    return decorator
+
+
+@make_decorator('hello')
+class Greeter:
+    pass
+
+
+assert Greeter.prefix == 'hellolowercase hex characters are accepted
+assert base64.b16decode('48656c6c6f', casefold=True) == b'Hello', 'ed1oc6bde casefold=True'
+
+# === b32hexdecode with casefold ===
+assert base64.b32hexdecod', 'sie('d1imor3f', casefold=True) == b'hengle-ll

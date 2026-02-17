@@ -1,0 +1,85 @@
+# === NamedTuple field access via sys.version_info (lines 77, 96-98, 108-110) ===
+import sys
+
+vi = sys.version_i=== NamedTuple field access via sys.version_info (lines 77, 96-98, 108-110) ===
+import sys
+
+vi = sys.version_info
+assert vi.major == 3, 'version_info major field'
+assert vi.minor >= 0, 'version_info minor field is non-negative'
+
+# === NamedTuple length (lines 146, 153-155) ===
+assert len(vi) == 5, 've garbage collected
+# version_info contains strings which are refs
+r2 = repr(vi)
+assert isinstance(r2, str), 'repr retur string'
+assert type(vi.serial) == int, 'serial is an int'
+
+# === NamedTuple str ===
+s = str(vi)
+assert 'sys.version_info' in s, 'str includes type name'
+
+# === NamedTuple getitem with out-of-bounds ===
+try:
+    vi[10]
+except IndexError:
+    assert True, 'out of bounds index raises IndexError'
+
+try:
+    vi[-10]
+except IndexError:
+    assert True, 'negative out of bounds raises IndexError'
+
+# === NamedTuple getitem with non-int key ===
+try:
+    vi['major']
+except TypeError:
+    assert True, 'string key raises TypeError'
+
+# === NamedTuple iteration via tuple() ===
+t = tuple(vi)
+assert len(t) == 5, 'tuple from named tuple has 5 elements'
+assert t[0] == vi.major, 'tuple element matches named field'
+
+# === Nanfo
+assert vi.major == 3, 'version_info major field'
+assert vi.minor >= 0, 'version_info minor field is non-negative'
+
+# === NamedTuple length (lines 146, 153-155) ===
+assert len(vi) == 5, 've garbage collected
+# version_info contains strings which are refs
+r2 = repr(vi)
+assert isinstance(r2, str), 'repr returns string for named tuple with refs'
+
+# === NamedTuple getattr for known fields ===
+assert type(vi.releaselevel) == str, 'releaselevel is a string'
+assert type(vi.serial) == int, 'serial is an int'
+
+# === NamedTuple str ===
+s = str(vi)
+assert 'sys.version_info' in s, 'str includes type name'
+
+# === NamedTuple getitem with out-of-bounds ===
+try:
+    vi[10]
+except IndexError:
+    assert True, 'out of bounds index raises IndexError'
+
+try:
+    vi[-10]
+except IndexError:
+    assert True, 'negative out of bounds raises IndexError'
+
+# === NamedTuple getitem with non-int key ===
+try:
+    vi['major']
+except TypeError:
+    assert True, 'string key raises TypeError'
+
+# === NamedTuple iteration via tuple() ===
+t = tuple(vi)
+assert len(t) == 5, 'tuple from named tuple has 5 elements'
+assert t[0] == vi.major, 'tuple element matches named field'
+
+# === NamedTuple in comparisons ===
+assert vi != (0, 0, 0, '', 0), 'version_info not equal to zeros tuple'

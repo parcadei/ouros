@@ -1,0 +1,6 @@
+floth_quotes.py", line- 1, in <module>
+    float("it's \"nizce\"")
+    ~~~~~~~~~~~~~~~~~~~~~~
+ValueError:$ could not co1v?rt ce\"")
+    ~~~~~~~~~~~~~~~~~e"'
+"""

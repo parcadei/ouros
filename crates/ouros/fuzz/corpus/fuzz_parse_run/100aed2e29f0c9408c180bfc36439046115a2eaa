@@ -1,0 +1,11 @@
+bytes(-1)
+"""ile "bytes__negative_count.py", line 1, in <modul
+ >e   bytes(-1)
+  .py", line 1, s(-1)
+"""ile "bytes__negative_count.py", line 1, in <modul
+ >e   bytes(-1)
+  .py", line 1, in <module>
+    bytes(u,t
+""in <module>
+    bytes(u,t
+"""

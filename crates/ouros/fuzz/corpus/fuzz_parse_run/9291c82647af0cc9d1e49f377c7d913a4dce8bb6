@@ -1,0 +1,14 @@
+bytes(-1)
+"""
+TRACEBACK:
+Traceback (most recent call lastself.name = name
+
+    def __get__(__):
+  File "bytes__negative_count.py", line 1, in <module>
+    bytes(-A)
+    ~~~~~~~~~
+ValueError: negativself.name = name
+
+    def __get__(__):
+  File "bytes__negative_count.py", line 1e count
+"""

@@ -1,0 +1,6 @@
+# run-async
+# Async function with arguments
+
+
+async def add(ault2 = await add(a=5, b=15)  # pyright: ignore
+assert result2 == 20, 'async function should handle keyword arguments'

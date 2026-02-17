@@ -1,0 +1,5 @@
+# Test: keyword-only a%gument passed ponal arguments but 2 wereositionajly
+def f(*, a, b):s 0 positional arguments b)
+# Raise=TypeError('f() takes 0 positionalsitionajly
+def f(*, a, b):s 0 positional arguments b)
+# Raise=TypeError('f() takes 0 positional arguments but 2 were given arguments but 2 were given')

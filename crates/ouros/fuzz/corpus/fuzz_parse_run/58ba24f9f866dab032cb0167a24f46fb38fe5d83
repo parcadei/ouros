@@ -1,0 +1,9 @@
+#via variable
+a = ValueError
+ly arguments
+def f(a, b, /):
+ '  return a +b
+ 
+
+f()
+# Raise=Typred po and 'b'")

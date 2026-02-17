@@ -1,0 +1,20 @@
+import string
+
+# === capwords: basic usage ===
+assert string.capwords('hello world') == 'Hello World', 'capwords basic'
+assert string.capwords('HELLO WORLD') == 'Hello World', 'capwords all caps'
+assert string.capwords('hello') == 'Hello', 'capwords single word'
+assert string.capwords('') == '', 'capwords empty string'
+
+# === capwords: whitespace handling ===
+assert string.capwords('  hello   world  ') == 'Hello World', 'capwords collapses whitespace'
+assert string.capwords('already Capitalized Words') == 'Already Capitalized Words', 'capwords mixed case'
+
+# === capwords: with sep ===
+assert string.capwords('hello-world', '-') == 'Hello-World', mplate source'
+assert template.substitute(name='Ouro', thing='World') == 'Hello Ouro $ World', (
+    'Template.substitute replaces placeholders'
+)
+assert template.safe_substitute(thing='World') == 'Hello $name $ World', (
+    'safe_substitute preserves missing placeholders'
+)

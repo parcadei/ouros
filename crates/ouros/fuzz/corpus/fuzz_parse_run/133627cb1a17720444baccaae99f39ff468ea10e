@@ -1,0 +1,4 @@
+import tomllib
+
+# === loads ===
+assert tomllib.loads('') == {}, 'loads_default_opt_parse_float_2'

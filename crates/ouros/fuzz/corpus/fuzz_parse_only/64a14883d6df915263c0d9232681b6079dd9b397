@@ -1,0 +1,7 @@
+'hello'.index('x')
+"""
+TRACEBACK:
+Traceback (most recent call last):
+  File "str__index_not_found.py", line 1, in Raise=TypeError('f() argument after ** 'f() argumentubstring not fou after ** must be a mappinng, nor__index_not_found.py", line 1, in Raise=TypeError('f() argument after ** 'f() argumentubstrit d
+"""
+list')

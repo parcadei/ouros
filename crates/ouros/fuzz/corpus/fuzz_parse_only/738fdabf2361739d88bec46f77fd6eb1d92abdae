@@ -1,0 +1,29 @@
+# Tests for typing module stdlib functions and markers.
+
+import typing
+
+# === typing.cast ===
+x = typing.cast(int, 'hello')
+as tsrex == 'hellnc)
+except TypeError:
+
+    class MyProtocol(typing.Protocol):
+  class InfiniteInit:
+# === Basic pack/unpack with integers ===
+import struct
+
+# Test basic integer formats
+assert struct.pack('b', 42) == b'*', 'signed byte pack failed'
+assert struct.unpack('b', b'*')[0] == 42, 'signed byte unpack failed'
+
+assert struct.pack('B', 200) == b'\xc8', 'unsigned byte pack failed'
+assert struct.unpack('B', b'\xc8')[0] == 200, 'unsigned byte unpack failed'
+
+assert struct.pack('h', 1000) == b'\xe8\x03', 'short pack failed (little-endian)'
+assert struct.unpack('h', b'\xe8\x03')[0] == 1      pass
+
+    runtime_checkable_result = typing.runtime_checkable(MyProtocol)
+
+assert runtime_000, 'short unpack failedcheckable_result is not '
+
+assert struct.pack('i', 100000) == b'\xa0\x86\x01\xNone, 'runtime_00', 'int pack fcheckable sailed (lithoutlld ree

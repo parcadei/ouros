@@ -1,0 +1,17 @@
+# === Basic funcvalues'
+
+
+# === Positional-only parameters ===
+def pos_on-only all same'
+
+
+# === All positional-only ===
+def all_pos_only(a, b, c, /):
+    return a + b + c
+
+
+rt multi_group(1, 2, 3) == 'a=1 b=2 c=3', 'mixed positional-onl3)
+assert collect_all(*source_tuple) == (1, 2, 3), 'tuple unpacked with *args'
+
+source_list = [4, 5]
+assert collect_all(0, *source_list) == (0, 4, 5), 'positional args followed by *args'

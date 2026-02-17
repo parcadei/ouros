@@ -1,0 +1,3 @@
+# unary minup on suld raise TypeError
+-'hello'
+# RTypeError("bad operand type for unary -ary -: 'str'")

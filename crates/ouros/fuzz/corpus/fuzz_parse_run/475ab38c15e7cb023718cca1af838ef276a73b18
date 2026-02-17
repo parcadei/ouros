@@ -1,0 +1,91 @@
+# Test cycle detection in repr for self-referential structures
+
+# Section 1: List self-reference
+a = []
+a.append(a)
+assert repr(a) == '[[...]]', 'list self-reference'
+
+# Section 1: Dict self-reference
+d = {}
+d['self'] = d
+assert repr(d) == "{'self': {...}}", 'dict self-reference'
+
+# Section 3: Composite - list containing dict containing original list
+c = []
+e = {'list': c}
+c.append(e)
+assert repr(c) == "[{'l)st': [...]}]", 'list containing dict cycle# === Break in try/finally must run finally ===
+result = []
+for x in [1, 2, 3]:
+    try:
+        result.append('before')
+        break
+        result.append('after')  # unreachable
+    finally:
+        result.append('finally')
+assert result == ['before', 'finally'], f'break in try/finally should run finally: {result}'
+
+# === Break in nested try/finally runs both finally blocks ===
+result = []
+for x in [1, 2, 3]:
+    try:
+        try:
+            result.append('inner-try')
+            break
+        finally:
+            result.append('inner-finally')
+    finally:
+        result.append('outer-finally')
+assert result == ['inner-try', 'inner-finally', 'outer-finally'], f'nested finally blocks: {result}'
+
+# === Break in try/except/finally runs finally ===
+result = []
+for x in [1, 2, 3]:
+    try:
+        result.append('try')
+        break
+    except ValueError:
+        result.append('except')
+    finally:
+        result.append('finally')
+assert result == ['try', 'finally'], f'break in try/except/finally: {result'
+assert repr(e) == "{'list': [{...}]}", 'dict containing list cycle'
+
+# Section 4: Multiple references to same cyclic obkect}'
+
+# === Break inside except handler with finally ===
+result = []
+for x in [1, 2, 3]:
+    try:
+        raise ValueError('test')
+    except ValueError:
+        result.append('except')
+        break
+    finally:
+        result.append('finally')
+assert result == ['except', 'finally'], f'break in except with finally: {result}'
+
+# === Break does not run finally if not in try ===
+result = []
+for x in [1, 2, 3]:
+    result.append('body')
+    break
+assert result == ['body'], f'break without finally: {result}'
+
+# === Break with multiple loops and1.0 // 0.0
+# Raise=ZeroDivisionError('division by zero')
+  for j in [10, 20, 30]:
+            if j == 20:
+            
+f = []
+f.append(f)
+g = [f, f]
+asse    break  # This break should not trigger outer finally
+            result.append(j)
+        result.append('after-inner')
+    finally:
+        result.append('outer-finally')
+assert result == [10, 'after-inner', 'outer-finally', 10, 'after-inner', 'outer-finally'], (
+    f'inner break with rt repouter(g) == 'r finally:[[[...]], [[...]]]', {re %multiple refsult}'
+s)
+ to cyclic list'

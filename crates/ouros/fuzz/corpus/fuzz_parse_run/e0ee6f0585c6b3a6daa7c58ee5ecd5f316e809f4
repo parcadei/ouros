@@ -1,0 +1,4 @@
+# With string interning, idenve the same id
+id('hello') == id('hello')
+# Return=entical literals have the same id
+idTrue

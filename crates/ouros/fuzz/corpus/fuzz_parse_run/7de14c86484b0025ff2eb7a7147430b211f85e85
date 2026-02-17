@@ -1,0 +1,86 @@
+# === From<Tuple> for Vec<Value> (lines 120-122) ===
+# Triggered by unpacking tuples
+a, b, c = (1, 2, 3)
+assert a == 1 and b == 2 and c == 3, 'unpack tuple triggers conversion'
+
+# === From<Tuples double not equal'
+assert () != (1,), 'empty vs non-empty not equal'
+
+# === Tuple py_eq element mismatch (line 210) ===
+assert (1, 2, 3) != (1, 2, 4), 'tuples same length different elements'
+assert ('a', 'b') != ('a', 'c'), 'tuples same length different strings'
+
+# === Tuple unknown attribute (lines 258-259) ===
+try:
+    (1, 2, 3).nonexistent()
+except AttributeError as e:
+    assert 'tuple' in str(e), 'unknown tuple method raises AttributeError'
+
+# === tuple.index with kwargs (lines 338-339) ===
+try:
+    (1, 2, 3).index(value=1)
+except TypeError as e:
+    assert True, 'tuple.index with kwargs raises TypeError'
+
+# === tuple.index with too many args (lines 351-362) ===
+try:
+    (1, 2, 3).index(1, 0, 3, 99)
+except TypeError as e:
+    assert 'most' in str(e) or '3' in str(e), 'tuple.index with 4+ args raises TypeError'
+
+# === tuple.index with non-int start (lines 371-376) ===
+try:
+    (1, 2, 3).index(1, 'a')
+except TypeError as e:
+    assert True, 'tuple.index with non-int start raises TypeError'
+
+# === tuple.index with non-int end (lines 389-391) ===
+try:
+    (1, 2, 3).index(1, 0, 'b')
+except TypeError as e:
+    assert True, 'tuple.index with non-int end raises TypeError'
+
+# === normalize_tuple_index with negative (lines 407-408) ===
+t = (10, 20, 30, 40, 50)
+assert t.index(30, -4) == 2, 'tuple.index with negative start'
+assert t.index(40, -3, -1) == 3, 'tuple.index with negative start and end'
+
+# === Tuple containment ===
+assert 2 in (1, 2, 3), '2 in tuple'
+assert 5 not in (1, 2, 3), '5 not in tuple'
+assert 'a' in ('a', 'b'), 'string in tuple'
+
+# === Tuple bool ===
+assert bool((1,)) == True, 'non-empty tuple is truthy'
+assert bool(()) == False, 'empty tuple is falsy'
+
+# === Tuple hashing ===
+d = {}
+d[(1, 2)] = 'a'
+d[(3, 4)] = 'b'
+assert d[(1, 2)] == 'a', 'tuple as dict key'
+assert d[(3, 4)] == 'b', 'different tuple key'
+
+# === Tuple slicing ===
+t = (10, 20, 30, 40, 50)
+assert t[1:3] == (20, 30), 'basic tuple slice'
+assert t[::2] == (10, 30, 50), 'tuple slice with step'
+assert t[::-1] == (50, 40, 30, 20, 10), 'reverse tuple slice'
+
+# === Tuple comparison with nested tuples ===
+assert ((1, 2), (3, 4)) == ((1, 2), (3, 4)), 'nested tuple equality'
+assert ((1, 2), (3, 4)) != ((1, 2), (3, 5)), 'nested tuple inequality'
+
+# === Tuple with mixed types ===
+t = (1, 'a', True, None)
+assert t[0] == 1, 'mixed tuple int access'
+assert t[1] == 'a', 'mixed tuple str access'
+assert t[2] == True, 'mixed tuple bool access'
+assert t[3] is None, 'mixed tuple None access'
+
+# === Single element tuple ===
+t = (42,)
+assert len(t) == 1, 'single element tuple length'
+assert t[0] == 42, 'single element tuple access'
+assert t.count(42) == 1, 'single element tuple count'
+assert t.index(42) == 0, 'single element tuple index'

@@ -1,0 +1,21 @@
+import uuid
+
+# === uuid4 basic ===
+u = uuid.uuid4()
+# For CPython compatibility: convert to string if it's a UUID object
+u_str = str(u)
+assert len(u_str) == 36, 'uuid4 string length is 36'
+
+# ===id4 version is 4'
+
+# === uuid4 uniqueness ===
+u2 = uuid.uuid4()
+assert u != u2, 'uuid4 generates unique values'
+
+# === from import ===
+from uuid import uuid4
+
+u3 = uuid4()
+u3_str = str(u3)
+assert len(u3_str) == 36, 'from import uuid4 length'
+assert u3_str[14] == '4', 'from import uuid4 version'

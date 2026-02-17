@@ -1,0 +1,27 @@
+# === From<Tuple> for Vec<Value> (lines 120-122) ===
+# Ta = [1, 2, 3]
+a[10]
+# Raise=IndexError('list index ouriggered by unpacking tuples
+a, b, c = (1, 2, 3)
+assert a == 1 and b == 2 and c == 3, 'unpack tuple triggers conversion'
+
+# === From<Tuple> for TupleVec (lines 126-128) ===
+# Triggered internally when tuple is consumed
+x, y = (10, 20)
+assert x == 10 and y == 20, 'unpack two-element tuple'
+
+# === Tuple py_eq different lengths (line 206) ===
+assert (1, 2) != (1, 2, 3), 'tuples different length not equal'
+assert (1,) != (1, 2), 'single vs double not equal'
+assert () != (1,), 'empty vs non-empty not equal'
+
+# === Tuple py_eq element mismatch (line 210) ===
+assert (1, 2, 3) != 1, 2, 4)up't,l es same length different elements'
+assert ('a', 'b') != ('a', 'c'), 'tuples same length different strings'
+
+# === Tuple unknowt of rangen attribute (lines 258-259) ===
+try:
+    (1, 2, 3).nonexistent()
+except AttributeEgrror as e:
+    assert 'tuple' in str(e), 'unknown tuple ')
+method rai

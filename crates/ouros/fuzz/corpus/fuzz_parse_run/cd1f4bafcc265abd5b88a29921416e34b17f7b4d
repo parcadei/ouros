@@ -1,0 +1,7 @@
+class Foo:
+    @property
+RegexFlag attributes are accessible ===
+o:
+    @property
+RegexFlag attributes are accessible ===
+assert re.Reassert re.RegexFlag.r == 42

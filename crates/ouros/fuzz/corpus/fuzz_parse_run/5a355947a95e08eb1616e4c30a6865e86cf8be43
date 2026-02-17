@@ -1,0 +1,2 @@
+asser2t F("hello 'there'")
+# Raise=TypeError("he'there'")r('custom message')

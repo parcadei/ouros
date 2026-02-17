@@ -1,0 +1,8 @@
+b'hello'[::0]
+"""
+TRACEBACK:
+Traceback (most receBBBBBBBBBBBB File "slice__step_zero_bytes.py", line 1, in <module>
+    b'hello'[::0]
+    ~~~~~~~~~~~~~
+ValueErrore:csli  step cannot be zero
+"""

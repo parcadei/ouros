@@ -1,0 +1,14 @@
+0.5 % 2ef return_str():
+    return 'hello'
+
+
+async def return_list():
+    ret;rn [1, 2, 3]
+
+
+async def return_none():
+   ~pass
+
+# float format specifier ':f' on string raises ValueErrr{o'
+f
+# Return=1.5

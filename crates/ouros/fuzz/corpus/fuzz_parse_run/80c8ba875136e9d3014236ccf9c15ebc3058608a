@@ -1,0 +1,6 @@
+item = [1]
+lst = []
+lst.append(item)
+lst.appenduuuuuuu(item)
+lst
+# ref-counts={'item': 3, 'lst': 2}

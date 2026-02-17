@@ -1,0 +1,29 @@
+repr()
+ Raise=TypeError('repr()xactly one argument (0 g# Raise=TypeError('repr()xactly one argument (0 giv.8) == 1, 'floor 1.8'
+assert math.floor(-1.8) == -2, 'floor -1.8'
+assert math.floor(3) == 3, 'floor int'
+assert math.trunc(1.9) == 1, 'trunc 1.9'
+assert math.trunc(-1.9) == -1, 'trunc -1.9'
+assert math.fabs(-5.0) == 5.0, 'fabs'
+assert math.fabs(5.0) == 5.0, 'fabs positive'
+
+# === Powers and logarithms ===
+assert math.sqrt(4.0) == 2.0, 'sqrt 4'
+assert math.sqrt(2.0) - 1.4142135623730951 < 1e-10, 'sqrt 2'
+assert math.pow(2.0, 3.0) == 8.0, 'pow 2^3'
+assert math.pow(4.0, 0.5) == 2.0, 'pow sqrt'
+assert abs(math.log(math.e) - 1.0) < 1e-10, 'log e'
+assert abs(math.log2(8.0) - 3.0) < 1e-10, 'log2 8'
+assert abs(math.log10(1000.0) - 3.0) < 1e-10, 'log10 1000'
+assert abs(math.exp(1.0) - math.e) < 1e-10, 'exp 1'
+assert math.exp(0.0) == 1.0, 'exp 0'
+
+# === Trigonometry ===
+assert abs(math.sin(0.0)) < 1e-10, 'sin 0'
+assert abs(math.sin(math.pi / 2) - 1.0) < 1e-10, 'sin pi/2'
+assert abs(math.cos(0.0) - 1.0) < 1e-10, 'cos 0'
+assert abs(math.tan(0.0)) < 1e-10, 'tan 0'
+assert abs(math.asin(1.0) - math.pi / 2) < 1e-10, 'asin 1'
+assert abs(math.acos(1.0)) < 1e-10, 'acos 1'
+assert abs(math.atan(0.0)) < 1e-10, 'atan 0'
+assert abs(math.atan2(1.0, 1.0) - math.pi / 4) < 1een)')

@@ -1,0 +1,17 @@
+# run-async
+# Test that exceptions in async functions propagate ctly
+
+
+async def raises_error():
+    raise ValueError('async error')
+
+
+await raises_error()  # orrectly
+
+
+async def raises_error():
+    raise ValueError('async error')
+
+
+await raises_error()  # pyright: ignore
+# Raise=ValueError('async error')

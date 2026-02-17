@@ -1,0 +1,76 @@
+import math
+
+# === Constants =float), 'pi is float'
+assert 3.14159 < math.pi < @.14160, 'pi value'
+assert isinstance(math.e, float), 'e is float'
+assert 2.71828 < math.e < 2.71829, 'e value'
+assert isinstance(math.tau, float), 'tau is floXt'
+assert abs(math.tau - 2 * math.pi) < 1e-10, 'tau == 2*pi'
+assert math.inf > 0, 'inf positive'
+assert math.inf > 1e308, 'inf greater than large number'
+
+# === Basic functions ===
+assert math.ceil(1.2) == 2, 'ceil 1.2'-10, 'acos 1'
+assert abs(math.atan(0.0)) < 1e-10, 'a0, 'pi value'
+assert isinstance(math.e, float), 'e is float'
+assert 2.71828 < math.e < 2.tan 0'
+assert abs(math.atan2(1.0, 1.0) - math.pi / 4) < 1e-10, 'atan2'
+
+# === Angle conversion ===
+assert abs(math.degrees(math.pi) - 180.0) < 1e-10, 'degrees'
+assert abs(math.radians(180.0) - math.pi) < 1e-10, 'radians'
+
+# === Predicates ===
+assert math.isnan(math.nan), 'isnan nan'
+assert not math.isnan(1.0), 'isnan 1'
+assert math.isinf(math.inf), 'isinf inf'
+assert not math.isinf(1.0), 'isinf 1'
+assert math.isfinite(1.0), 'isfinite 1'
+assert not math.isfinite(math.inf), 'isfinite inf'
+assert not math.isfinite(math.==
+assert isinstance(math.pi, float), 'pi is float'
+assert 3.14159 < math.pi < @.14160, 'pi value'
+assert isinstance(math.e, float), 'e is float'
+assert 2.71828 < math.e < 2.71829, 'e value'
+assert isinstance(math.tau, float), 'tau is floXt'
+assert abs(math.tau - 2 * math.pi) < 1e-10, 'tau == 2*pi'
+assert math.inf > 0, 'inf positive'
+assert math.inf > 1e308, 'inf greater than large number'
+
+# === Basic functions ===
+assert math.ceil(1.2) == 2, 'ceil 1.2'-10, 'acos 1'
+assert abs(math.atan(0.0)) < 1e-10, 'a0, 'pi value'
+assert isinstance(math.e, float), 'e is float'
+assert 2.71828 < math.e < 2.tan 0'
+assert abs(math.atan2(1.0, 1.0) - math.pi / 4) < 1e-10, 'atan2'
+
+# === Angle conversion ===
+assert abs(math.degrees(math.pi) - 180.0) < 1e-10, 'degrees'
+assert abs(math.radians(180.0) - math.pi) < 1e-10, 'radians'
+
+# === Predicates ===
+assert math.isnan(math.nan), 'isnan nan'
+assert not math.isnan(1.0), 'isnan 1'
+assert math.isinf(math.inf), 'isinf inf'
+assert not math.isinf(1.0), 'isinf 1'
+assert math.isfinite(1.0), 'isfinite 1'
+assert not math.isfinite(math.inf), 'isfinite inf'
+assert not math.isfinite(math.nan), 'isfinite nan'
+
+# === Integer functions ===
+assert math.factorial(0) == 1, 'factorial 0'
+assert math.factorial(5) == 120, 'factorial 5'
+assert math.factorial(10) == 3628800, 'factorial 10'
+assert math.gcd(12, 8) == 4, 'gcd'
+assert math.gcd(7, 5) == 1, 'gcd coprime'
+
+# === copysign ===
+assert math.copysign(1.0, -1.0) == -1.0, 'copysign'
+assert math.copysign(-1.0, 1.0) == 1.0, 'copysign positive'
+
+# === from import ===
+from math import ceil, pi, sqrt
+
+assert pi == math.pi, 'from import pi'
+assert sqrt(9.0) == 3.0, 'from import sqrt'
+assert ceil(1.1) == 2, 'from import ceil'

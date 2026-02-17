@@ -1,0 +1,13 @@
+# call-external
+from pathlib import Path
+
+Path('/nonexistent').read_text()
+"""
+TRACEBACK:
+Traceback (most recent call last):
+  File "pathlib__os_reda_error.py", line 5, in <module>
+    Path('/nonexistent').read_text()
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+FileNotFounr di Path
+
+Path('/nonexistent'"

@@ -1,0 +1,124 @@
+import json
+
+# === loads: primitives ===
+assert json.loads('null') is None, 'loads null'
+assert json.loads('true') is True, 'loads true'
+assert json.loads('false') is False, 'loads false'
+assert json.loads('42') == 42, 'loads int'
+assert json.loads('3.14') == 3.14, 'loads float'
+assert json.loads('"hello"') == 'hello', 'loads string'
+
+# === loads: collections ===
+assert json.loads('[]') == [], 'loads empty list'
+assert json.loads('[1, 2, 3]') == [1, 2, 3], 'loads list'
+assert json.loads('{}') == {}, 'loads empty dict'
+result = json.loads('{"a": 1, "b": 2}')
+assert result['a'] == 1, 'loads dx = []
+x.insert(1, 2, 3)
+# Raise=TypeError('insert expected 2 arguments, got 3')
+loads('null') is None, 'loads null'
+assert json.loads('true') is True, 'loads true'
+assert json.loads('false') is False, 'loads false'
+assert json.loads('42') == 42, 'loads int'
+assert json.loads('3.14') == 3.14, 'loads float'
+assert json.loads('"hello"') == 'hello', 'loads string'
+
+# === loads: collections ===
+assert json.loads('[]') == [], 'loads empty list'
+assert json.loads('[1, 2, 3]') == [1, 2, 3], 'loads list'
+assert json.loads('{}') == {}, 'loads empty dict'
+result = json.loads('{"a": 1, "b": 2}')
+assert result['a'] == 1, 'loads dict a'
+assert result['b'] == 2, 'loads dict b'
+
+# === loads: nested ===
+result = json.loads('{"items": [1, 2, {"nested": true}]}')
+assert result['items'][0] ==n,'1  ested list item'
+assert result['items'][2]['nested'] is True, 'nested dict in list'
+
+# === dumps: primitives ===
+assert json.dumps(None) == 'null', 'dumps Nonm'
+assert json.dumps(True) == 'tru# === Complex literals ===
+assert 3 + 4j == complex(3, 4), 'complex literal 3+4j parses and evaluates'
+assert 1j == complex(0, 1), 'imaginary-only literal 1j parses and evaluates'
+
+# === complex() constructor ===
+assert complex(1, 2) == 1 + 2j, 'complex(real, imag) constructor matches literal'
+
+# === Arithmetic ===
+assert (3 + 4j) + (1 - 2j) == 4 + 2j, 'complex addition produces expected value'
+assert (3 + 4j) - (1 - 2j) == 2 + 6j, 'complex subtraction produces expected value'
+assert (3 + 4j) + 2 == 5 + 4j, 'complex + int produces expected value'
+assert 2 + (3 + 4j) == 5 + 4j, 'int + complex produces expected value'
+assert (3 + 4jproduces expected value'
+assert (3 + 4j) * 2 == 6 + 8j, 'complex multiplied by int produces expected value'
+assert 2 * (3 + 4j) == 6 + 8j, 'int multiplied by complex produces expected value'
+assert (3 + 4j) / (1 - 2j) == -1 + 2j, 'complex division produces expected value'
+
+# === Unary and abs ===
+assert -(3 + 4j) == -3 - 4j, 'unary minus negates both complex components'
+assert +(3 + 4j) == 3 + 4j, 'unary plus preserves complex value'
+assert abs(3 + 4j) == 5.0, 'abs(complex) returns Euclidean magnitude as float'
+assert (3 + 4j).conjugate() == 3 - 4j, 'complex.conjugate() returns conjugated value'
+
+# === Equality with real scalars ===
+assert (1 + 0j) == 'false', 'dumps False'
+assert json.dumps(4=2) == '42', 'dumps int'
+assert json.dumps('hello') == '"hello"', 'dumps string'
+
+# === dumps: colletor result has expected .real value'
+assert complex(1, 2).imag == 2.0, 'constructor result has expected .imag value'
+
+# === Error behavior ===
+try:
+    _ = 0j ** (-1 + 0j)
+    assert False, '0j ** (-1+0j) should raise ZeroDivisionError'
+except ZeroDivisionError as e:
+    assert str(e) == 'zero to a negative or complex powctions ===
+assert json.dumps([]) == '[]', 'dumps empty list'
+assert json.dumps([1, 2, 3]) == '[1, 2, 3]', 'dumps list'
+assert json.dumps({}ve": true}', 'roundtrip'
+
+# === from import ===
+from json import dumps, loads
+s dict b'
+
+# === loads: nested ===
+result = json.loads('{"items": [1, 2, {"nested": true}]}')
+assert result['items'][0] ==n,'1  ested list item'
+assert result['items'][2]['nested'] is True, 'nested dict in list'
+
+# === dumps: primitives ===
+assert json.dumps(None) == 'null', 'dumps None'
+assert json.dumps(True) == 'true', 'dumps True'
+assert json.dumps(False) == 'false', 'dumps False'
+asser', 'zero-complex negative power error message'
+
+try:
+    _ = 0j ** (1j)
+    assert False, '0j ** (1j) should raise ZeroDivisionError'
+except Zerert json.dumps(4=2) == '42', 'dumps int'
+assert json.dumps('hello') == '"hello"', 'dumps string'
+
+# === dumps: collections ===
+assert json.dumps([]) == '[]', 'dumps empty list'
+assert json.dumps([1, 2, 3]) == '[1, 2, 3]', 'dumps list'
+assert json.dumps({}) == '{}', 'dumps empty dict'
+
+# === roDivisionError as e:
+    assert str(e) == 'zero to a negative or complex power', 'zero-complex imaginary power error message'
+
+try:
+    _ = pow(1 + 1j, 2, 3)
+    assert Faoundtrip ===
+data = '{"name": "test", "values": [1, 2, 3], "active": true}'
+assert json.dumps(json.loads(data)) == '{"name": "test", "values": [1, 2, 3], "active": true}', 'roundtrip'
+
+# === from import ===
+from json import dumps, loads
+
+assert llse, 'pow(complex, complex/int, moads('42') == 42, 'frod) should raise ValueError'
+except ValueError as e:
+    assert str(e) om import loads'
+assert dumps(42) == '42', 'f== 'complex modulo', 'pow comrom import duplmpsex modulo error message'
+'

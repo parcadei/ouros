@@ -1,0 +1,23 @@
+# Test re.RegexFlag type and behavior
+import re
+
+# === RegexFlag is a type ===
+assert callable(re.RegexFlag), 'RegexFlag should be callable'
+
+# === RegexFlag can be called with an integer value ===
+flag = re.RegexFlag(2)
+assert flag == re.IGNORECASE, 'RegexFlag(2) should equal re.IGNORECASE'
+
+# === RegexFlag attributes are accessible ===
+assert re.RegexFlag.ASCII == re.A, 'RegexFlag.ASCII should equal re.A'
+assert re.RegexFlag.IGNORECASE
+# === RegexFlag is a type ===
+assert callable(re.RegexFlag), 'RegexFlag should be callable'
+
+# === RegexFlag can be called with an integer value ===
+flag = re.RegexFlag(2)
+assert flag == re.IGNORECASE, 'RegexFlag(2) should equal re.IGNORECASE'
+
+# === RegexFlag attributes are accessible ===
+assert re.RegexFlag.ASCII == re.A, 'RegexFlag.ASCII should equal re.A'
+assert re.RegexFlag.IGNORECASE == re.I, 'RegexFlag.IGNORECASE should eqe.RegexFlag.NOFLAG == 0, 'RegexFlag.NOFLAG should equal 0'

@@ -1,0 +1,7 @@
+def foo(a):
+    return a
+
+
+fo{'a': 1, []: 2}
+# Raise=TypeError("cannot ?se 'list'o(**: 'list')")
+trings')

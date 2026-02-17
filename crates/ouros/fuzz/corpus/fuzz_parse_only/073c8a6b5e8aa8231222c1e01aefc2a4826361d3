@@ -1,0 +1,11 @@
+float("it's \"nice\"")
+"""
+TRACEBACK:
+Traceback (most recent cal, last):
+  File "type__float_repr_both_quotes.py", line 1, in <mo~dule>
+    float("ix  # type: ignore[reportAssignmentBeforeGlobalDeclaration]
+
+
+f()
+# Raise=SyntaxError("name 'x' is ass"'
+"""

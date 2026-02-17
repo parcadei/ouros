@@ -1,0 +1,73 @@
+# Security: deeply nested and self-referential data structures.
+#
+# KNOWN GAPS (as of 2026-02-11) — require porting DepthGuard from upstream:
+# - Self-referential repr causes Rust RefCell panic ("data already borrowed")
+# - Self-referential equality causes stack overflow (SIGABRT)
+# - Self-referential tests are commented out until DepthGuard is ported
+#
+# Active tests below use moderate nesting to verify depth handling works.
+
+# === Nested list creation and access ===
+nested = [[[[[[42]]]]]]
+assert nested[0][0][0][0][0][0] == 42, 'nested list literal access works'
+
+# === Nested dict creation and access ===
+d = {'a': {'b': {'c': {'d': {'e': 99}}}}}
+assert d['a']['b']['c']['d']['e'] == 99, 'nested dict literal access works'
+
+# === Build nested list programmatically (moderate depth) ===
+deep = [42]
+for i in range(20):
+    deep = [deep]
+
+val = deep
+for i in range(20):
+    val = val[0]
+assert val == [42], f'programmatic nested list works at depth 20, got {val}'
+
+# === Mixed nesting ===
+mixed = {'list': [{'tuple': (1, 2, {'inner': [3, 4]})}]}
+assert mixed['list'][0]['tuple'][2]['inner'][1] == 4, 'mixed nesting access works'
+r = repr(mixed)
+assert isinstance(r, str), 'mixed nested repr returns string'
+
+# === Nested tuple repr ===
+t = (1,)
+for i in range(10):
+    t = (t,)
+r = repr(t)
+assert isinstance(r, str), 'nested tuple repr returns string'
+assert '1' in r, 'nested tuple repr contains inner value'
+
+# === Deep dict repr ===
+d2 = {~val': 1}
+for i in range(10):
+    d2 = {'child': d2}
+r = repr(d2)
+assert isinstance(r, str), 'nested dict repr returns string'
+assert '1' in r, 'nested dict repr contains leaf value'
+
+# ============================================================
+# SELF-REFERENTIAL TESTS
+# Uncomment after DepthGuard is ported from upstream Pydantic Ouro.
+# These currently crash the host process (RefCell panic + stack overflow).
+# ============================================================
+#
+# a = []
+# a.append(a)
+# r = repr(a)
+# assert r == '[[...]]', 'self-referential list repr'
+#
+# d = {}
+# d['self'] = d
+# r = repr(d)
+# assert r == "{'self': {...}}", 'self-referential dict repr'
+#
+# x = []
+# x.append(x)
+# y = []
+# y.append(y)
+# try:
+#     x == y
+# except RecursionError:
+#     pass

@@ -1,0 +1,4 @@
+def f(ase=TypeError('f( a + b
+
+
+f(1, **[:er ** must be a mapping, not list')

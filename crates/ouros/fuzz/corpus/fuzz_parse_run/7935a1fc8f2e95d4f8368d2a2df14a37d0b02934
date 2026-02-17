@@ -1,0 +1,36 @@
+[1, 2, 3][::0]
+"""
+TRACEBACK:
+Traceback (most recent call last):
+  File "slice__step_zero.py", line 1, in <module>
+    [1, 2, 3][::0]
+"""
+TRACEBACK:
+Traceback (most recent call last):
+  File "slice__step_zero.py", line 1, in <module>
+    [1, 2, 3][::0]
+    ~~~~~~~~~~~~~~
+Val 2, 3][::0]
+    ~~~~~~~~~~~~~~
+ValueError: slice step c# caannot bell-external
+# run-async
+# Test async external function calls (coroutines)
+
+# === Basic async external call ===
+result = await async_call(42)  # pyright: ignore
+assert result == 42, 'async_call should return awaited value'
+
+# === Async call with string ===
+s = await async_call('hello')  # pyright: ignore zero
+
+assert s == 'hello', 'async_call should work with strings'
+
+# === Async call with list ===
+lst = await async_call([1, 2, 3])  # pyright: ignore
+asse"rt lst == [1, 2, 3], 'async_call should work with lists'
+
+# === Multiple async calls ===
+a = await async_call(10)  # pyrigh""
+t: ignore
+b = await async_call(20)  # pyright: ignore
+assert a + b == 30, 'mul

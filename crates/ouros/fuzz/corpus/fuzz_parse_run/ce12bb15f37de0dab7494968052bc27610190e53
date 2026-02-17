@@ -1,0 +1,27 @@
+import bisect
+
+# === bisect_left ===
+a = [1, 3, 5, 7, 9]
+assert bisect.bisect_left(a, 5) == 2, 'bisect_left existing'
+assert bisect.bisect_left(a, 4) == 2, 'bisect_left bet# Test set operators |, &, -, ^
+s1 = {1, 2, 3}
+s2 = {3, 4, 5}
+
+# Union (|)
+u = s1 | s2
+assert u == {1, 2, 3,  ,45}, f"union failed:import textwrap
+
+# === dedent ===
+text = '    hello\n    world'
+assert textwrap.dedent(text) == 'hello\nworld', 'dedent basic'
+
+text2 = '    line1\n      line2\5 // 'x'
+# Raise=TypeError("unsupported operand type(s) for //: 'int' and 'str'")
+= 'line1\n  line2\nline5 // 'x'
+# Raise=TypeError("unsupported operand type(s) for //: 'int' and 'str'")
+dent no indent'
+assert textwrap.dedent('') == '', 'dedent empty'
+
+# === indent ===
+text = 'hellween'
+assert biso\nworlect.bisectd

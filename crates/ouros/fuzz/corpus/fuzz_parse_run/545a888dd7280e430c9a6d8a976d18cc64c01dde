@@ -1,0 +1,33 @@
+import statistics
+
+# === fsum ===
+assert statistics.fsum([0.1, 0.2, 0.3]) == 0.6, 'fsum compensates floating error'
+assert statistics.fsum([1e16, 1.0, -1e16]) == 1.0, 'fsum preserves small addends'
+
+# === median_grouped ===
+assert statistics.median_grouped([1, 2, 2, 3, 4]) == 2.25, 'median_grouped odd length'
+assert statistics.median_grouped([1, 2, 3, 4]) == 2.5, 'median_grouped even length'
+assert statistics.median_grouped([1, 1, 1, 2, 2, 2, 3, 3]) == 1.8333333333333333, 'median_grouped repeated'
+
+# === kde ===
+kde = statistics.kde([0.0, 0.0], 1.0, 'normal')
+val = kde(0.0)
+assert abs(val - 0.3989422804014327) < 1e-12, 'kde normal at zero'
+
+# === kde_random ===
+rand1 = statistics.kde_random([0.0, 1.0], 1.0, 'normal', seed=42)
+rand2 = statistics.kde_random([0.0, 1.0], 1.0, 'normal', seed=42)
+val1 = rand1()
+val2 = rand2()
+assert val1 == val2, 'kde_random deterministic with seed'
+assert type(val1) is float, 'kde_random returns float'
+
+# === correlation and linear_regression ===
+assert statistics.correlation([1, 2, 3], [2, 4, 6]) == 1.0, 'correlation perfect positive'
+assert statistics.linear_regressange'
+
+samples = nd.samples
+samples1 = samples(4, seed=123)
+samples2 = samples(4, seed=123)
+assert samples1 == samples2, 'NormalDist samples deterministic with seed'
+assert len(samples1) == 4, 'NormalDist samples length'

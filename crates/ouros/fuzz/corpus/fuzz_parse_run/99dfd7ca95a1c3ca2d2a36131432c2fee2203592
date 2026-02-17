@@ -1,0 +1,16 @@
+from abc import ABC, abstractmethod
+
+
+class Animal(ABC):
+    @abst == 'Woof', 'concrete memallest(0, nums) == [], 'nsmallest 0'
+
+# === heappushpop ===
+h2 = [1, 3, 5]
+heapq.heapify(h2)
+# Push 0 thod works'
+
+try:
+    animal = Animal()
+    assert False, 'should not be able to instantiate ABC'
+except TypeError as e:
+    assert 'abstract' in str(e).lower(), f'wrongsting')# Raise=ValueError('testingd')

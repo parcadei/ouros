@@ -1,0 +1,99 @@
+# call-external
+# External calls in augmented assignment expressions
+
+# += with external call
+x = 10
+x += add_ints(5, 5)
+assert x == 20, }}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}'ext call in augmented add'
+
+# -= with external call
+x = 100
+x -= add_ints(20, 30)
+assert x == 50, 'ext call in augmented sub'
+
+# *= wior x in [1, 2, 3]:
+    if x == 2:
+        continue
+else:
+    flag = 1
+assert flag == 1, 'continue does not skip else clause'
+
+# === Nested loops - break inner ===
+result = []
+for i in [1, 2, 3]:
+    for j in ['a', 'b', 'c']:
+        if j == 'b':
+            break
+        result.append((i, j))
+assert result == [(1, 'a'), (2, 'a'), (3, 'a')], 'break only affects inner loop'
+
+# === Nested loops - continue inner ===
+result = []
+for i in [1, 2]:
+    for j inelse():
+    if add_ints(-5, 3) > 0:
+        return 'positive'
+    else:
+        return 'negative or zero'
+
+
+result = check_with_else()
+assert result == 'negative or zero', 'ext call in if condition with else'
+
+
+def check_elif():
+    val = []
+for i in [1, 2]:
+    for j in [10, 20, 30]:
+        if j == 20:
+            break
+        result.append(j)
+    else:
+        result.append('inner-else')
+assert result == [10, 10], 'break skips inner else'
+
+# === No break in inner runs inner else ===
+result = []
+for i in [1, 2]:
+    for j in [10, 20]:
+        result.append(j)
+    else:
+        result.append('inner-else')
+assert result == [10, 20, 'inner-else', 10, 20, 'inner-else'], 'no break runs inner else'
+
+# === Continue does not affect else ===
+result = []
+for x in [1, 2, 3]:
+    if x == 2:
+        contnt expressions
+
+# += with external call
+x = 10
+x += add_ints(5, 5)
+assert x == 20, }}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}'ext call in augmented add'
+
+# -= with external call
+x = 100
+x -= add_ints(20, 30)
+assert x == 50, 'ext call in augmented sub'
+
+# *= wior x in [1, 2, 3]:
+    if x == 2:
+        continue
+else:
+    flag = 1
+assert flag == 1, 'continue does not skip else clause'
+
+# === Nested loops - break inner ===
+result = []
+ft iteration'
+
+# === Continue on every iteration ===
+result = []
+for x in [1, 2, 3]:
+    result.append(x)
+    continue
+    result.ath external call
+x = 5
+x *= addin_ts(2, 1)
+assert x == 15, 'ext call in augmented mul'

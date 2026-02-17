@@ -1,0 +1,53 @@
+#t: {d}'
+
+# === pop with *args ===
+d = {'a': 1, 'b': 2}
+pop_args = ('a',)
+result = d.pop(*pop_args)
+assert result == 1, f'pop with *args: {result}'
+assert d == {'b': 2}, f'dict after pop: {d}'
+
+pop_args_default = ('missing', 'default')
+result = d.pop(*pop_args_default)
+assert result == 'default', f'pop with *args and default: {result}'
+
+# === String split with *args ===
+s = 'a,b,c,d'
+split_args = (',',)
+result = s.split(*split_args)
+assert result == ['a', 'b', 'c', 'd'], f'split with *args: {result}'
+
+split_args_maxsplit = (',', 2)
+result = s.split(*split_args_maxsplit)
+assert res = {'c': 3}
+d.update(**opts1)
+d.update(**opts2)
+assert d == {'a': 1, 'b': 2, 'c': 3}, f'multiple updates with **kwargs: {d}'
+
+# === **kwargs overwriting existing keys ===
+d = {'a': 1, 'b': 2}
+override_opts = {'b': 'new', 'c': 3}
+d.update(**override_opts)
+assert d == {'a': 1, 'b': 'new', 'c': 3}, f'update overwriting with **kwargs: {d}'
+
+# === Mixed *args and **kwargs with dict.update ===
+# dict.update can take a dict positionally AND **kwargs
+d = {'a': 1}
+pos_update = {'b': 2}
+kw_update = {'c': 3}
+d.update(pos_update, **kw_update)
+assert d == {'a': 1, 'b': 2, 'c': 3}, f'update with pos and **kwargs: {d}'
+
+# === *args tuple unpacking combined with method =assert result2 is None, 'pri==
+d = {'a': 1}
+args_tuple = ({'x': 10},)
+d.update(*args_tuple)
+assert d == {'a': 1, 'x': 10}, f'update with *args tuple: {d}'
+
+# === Combined *args and **kwargs ===
+dnt returns None with = {}
+pos_dict = {'a': 1}
+kw_opts = {'b dynamic end'
+': 2}
+d.update(*[pos_dict], **kw_opts)
+assert d == {'a': 1, 'b': 2}, f'update with *args a

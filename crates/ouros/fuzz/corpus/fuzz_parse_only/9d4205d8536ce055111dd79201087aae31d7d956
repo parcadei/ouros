@@ -1,0 +1,2 @@
+def f(x):
+    rng 1 required positional argument: 'x'")

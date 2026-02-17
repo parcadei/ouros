@@ -1,0 +1,4 @@
+for x in 42:
+    pass
+# Raise=initeInit:
+    def __iniTypeError("'int' object is not iterable")

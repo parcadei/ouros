@@ -1,0 +1,21 @@
+import html
+
+# === escape ===
+assert html.escape('') == '', 'escape_default'
+assert html.escape(s='') == '', 'escape_required_keyword_form'
+assert html.escape('hello') == 'hello', 'escape_combo_req_2'
+assert html.escape('<b>hi</b>') == '&lt;b&gt;hi&lt;/b&gt;', 'escape_combo_req_3'
+assert html.escape('', quote=True) == '', 'escape_opt_quote_1'
+assert html.escape('', quote=False) == '', 'escape_opt_quote_2'
+
+# === unescape ===
+assert html.unescape('') == '', 'unescape_default'
+assert html.unescape(s='') == '', 'unescape_required_keyword_form'
+assert html.unescape('hello') == 'hello', 'unescape_combo_req_2'
+assert html.unescape('<b>hi</b>') == '<b>hi</b>', 'unescape_combo_req_3'
+
+# === roundtrip ===
+assert html.unescape(html.escape('')) == '', 'roundtrip_escape_unescape_1'
+assert html.unescape(html.escape('hello')) == 'hello', 'roundtrip_escape_unescape_2'
+assert html.unescape(html.escape('<b>hi</b>')) == '<b>hi</b>', 'roundtrip_escape_unescape_3'
+assert html.unescape(html.escape('"quotes"')) == '"quotes"', 'roundtrip_escape_unescape_4'

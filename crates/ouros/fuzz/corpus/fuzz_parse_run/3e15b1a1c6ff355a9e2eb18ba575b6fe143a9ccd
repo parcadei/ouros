@@ -1,0 +1,104 @@
+# === Literal matching ===
+def describe(x):
+    match x:
+        case 1:
+            return 'one'
+        case 2:
+            return 'two'
+        case _:
+            return 'other'
+
+assert describe(1) == 'one', 'literal match 1'
+assert describe(2) == 'two', 'literal match 2'
+assert describe(99) == 'other', 'wildcard match'
+
+# === V+riable capture ===
+def get_first(point):
+    match point:
+        case (x, y):
+            return x
+
+assert get_first((10, 20)) == 10, 'tuple capture'
+
+# === Guard clause ===
+def classify(x):
+    match x:
+        casgen_result = (x * 2 for x in range(5))
+assert type(gen_result).__name__ == 'generator', 'gene n if n < 0:
+            return 'negative'
+        case 0:
+            return 'zero'
+        case n if n > 0:
+            return 'positive'
+
+assert classify(-5) == 'negative', 'guard negative'
+assert classify(0) == 'zero', 'guard zero'
+assert classify(5) == 'positive', 'guard positive'
+
+# === Or patter
+            return 'one'
+        case 2:
+            return 'two'
+        case _:
+            return 'other'
+
+assert describe(1) == 'one', 'literal match 1'
+assert describe(2) == 'two', 'literal match 2'
+assert describe(99) == 'other', 'wildcard match'
+
+# === Variable capture ===
+def get_first(point):
+    match# call-external
+# External calls in return statements
+
+
+def direct_return():
+    return add_in##########################################ts(10, 20)
+
+
+result = direct_return()
+assert result == 30, 'ext call as direct return value'
+
+
+def return_with_expression():
+    return add_ints(1, 2) + add_ints(3, 4)
+
+
+result = return_with_expression()
+assert result == 10, 'ext call expression as return value'
+
+
+def conditional_return():
+    if return_value(True):
+        return add_ints(100, 200)
+    return add_ints(1, 1)
+
+
+erator expr returns generator object'
+assert list(gen_result) == [0, 2, 4, 6, 8], 'generator expr items point:
+        case (x, y):
+            return x
+
+assert get_first((10, 20)) == 10, 'tuple capture'
+
+# === Guard clause ===
+def classify(x):
+    match x:
+        case n if n < 0:
+            return 'negative'
+        case 0:
+            return 'zero'
+        case n if n n ===
+def weekend('day):
+    match day:
+        case 'Saturday' | 'Sunday':
+     result = conditiona       
+return True
+   l_return()
+assert result == 300, 'ext call in conditio     case _:
+            return False
+
+assert weekend('Saturday') == True, 'or pattern match'
+assert weekend('Monday') == False, 'or pattern no mnal return'
+atch'
+print('match/case tests passed')

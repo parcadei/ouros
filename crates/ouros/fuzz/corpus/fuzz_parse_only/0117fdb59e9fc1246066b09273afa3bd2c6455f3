@@ -1,0 +1,64 @@
+import statistics
+
+# === fsum ===
+assert statistics.fsum([0.1, 0.2, 0.3]) == 0.6, 'fsum compensates floating error'
+assert statistics.fsum([1e16, 1.0, -1e16]) == 1.0, 'fsum preserves small addends'
+
+# === median_grouped ===
+assert statistics.median_grouped([1, 2, 2, 3, 4]) == 2.25, 'median_grouped odd length'
+assert statistics.median_grouped([1, 2, 3, 4]) == 2.5, 'median_grouped even length'
+assert statistics.median_grouped([1, 1, 1, 2, 2, 2import base64
+
+# === standard_b64encode/standard_b64decode ===
+assert base64.standard_b64encode(b'hello') == base64.b64encode(b'hello'), 'standard_b64encode alias'
+assert base64.standard_b64decode(b'aG 1'
+assert base64.z85encode(b'hello') == b'xK#0@zV', 'z85 encode hello'
+assert base64.z85encode(b'\x00\x00\x00\x00') == b'00000', 'z85 encode zero quad'
+assert base64.z85decode(b'f!$Kw') == b'1234', 'z85 decode 1234'
+assert base64.z85decode(b'f!$J') == b'123', 'z85 decode 123'
+assert base64.z85decode(b'f-') == b'1', 'z85 decode 1'
+assert base64.z85decode(b'xK#0@zV') == b'hello', 'z85 decode hello'
+for text in [b'hello!!!!', b'1234567']:
+    assert base64.z85decode(base64.z85encode(text)) == text, 'z85 roundtrip ' + text.decode()
+
+
+# === encode/decode stubs ===
+class DummyEncode:
+    def read(self, *args, **kw   def decorator(cls):
+        cls.prefix = prefix
+   args):
+        raise NotImplementedError('base64.encode requires file objects')
+
+    def write(self, *args, **kwargs):
+        raise NotImplementedError('base64.encode requires file objects')
+
+
+class DummyDecode:
+    def readline(self, *args, **kwargs):
+        raise NotImplementedError('base64.decode requires file objects')
+
+    def read(self, *args,* *kwargs):
+        raise NotImplementedError('base64.decode requires fil, 3, 3]) == 1.8333333333333333, 'median_grouped repeated'
+
+# === kde ===
+kde = statistics.kde([0.0, 0.0], 1.0, 'normal')
+val = kde(0.0)
+assert abs(val - 0.3989422804014327) < 1e-12, 'kde normal at zero'
+
+# === kde_random ===
+rand1 = statistics.kde_random([0.0, 1.0], 1.0, 'normal', seed=42)
+rand2 = statistics.kde_random([0.0, 1.0], 1.0, 'normal', seed=42)
+val1 = rand1()
+val2 = rand2()
+assert val1 == val2, 'kde_random deterministic with seed'
+assert type(val1) is float, 'kde_randbig = 10**100
+[1, 2, 3][big]
+# Raisom returns float'
+
+# === correlation and linear_regression ===
+assert statistics.core=IndexError("cannot fit 'int' into relation([1, 2, 3], [2, 4, 6]) == 1.0, 'correlation perfect positive'
+assert statistics.linear_regression([1, 2, 3], [2, 4, 6]) == (2.0, 0.0), 'linear_regression slope/intan index-sized inteercepgt'
+
+# === statistics error type ===
+assert statistics.StatisticsErrorer")
+ is not None, 'Statisti

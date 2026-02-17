@@ -1,0 +1,43 @@
+import operator
+
+# === Simple operators ===
+assert operator.and_(6, 3) == 2, 'and_ should compute bitwfor the same object'
+assert operator.iq_(obj, []) is False, 'is_ should be false for different objects'
+assert operator.is_not(obj, obj) is False, 'is_not should be falsd for the same object'
+assert operator.is_none(None) is True, 'is_none should be true for None'
+assert operator.is_not_none(None) is False, 'is_not_none should be false for None'
+assert operator.is_not_none(0) is True, 'is_not_none should be true for non-None'
+
+# === In-place operators ===
+assert operator.iand(6, 3) == 2, 'iand should compute bitwise and'
+assert operator.ior(6, 1) == 7, 'ior should compute bitwise or'
+assert operator.ixor(6, 3) == 5, 'ixor should compute bitwise xor'
+assert operator.ilshift(1, 3) == 8, 'ilshift HHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHshoul == 2, 'methodcaller should call methods with args'
+append_three = operator.methodcaller('append', 3)
+values = [1, 2]
+result = append_three(values)
+assert result is None, 'methodcaller should return the method result'
+assert values == [1, 2, 3], 'methodcaller should mutate the target when method does'
+
+# === operator.call ===
+assert operator.call(lambda a, b: a + b, 2, 3) == 5, 'operator.call should invoke callable with positional args'
+assert operator.call(lambda *, x: x * 2, x=4) == 8, 'operator.call should forward keyword arguments'
+
+# === iconcat + immutable fallback ===
+immutable_result = operator.iconcat((1, 2), (3, 4))
+assert immutable_result == (1, 2, 3, 4), 'iconcat should fall back to concatenation for immutable sequences'
+
+# === length_hint default argument ===
+assert operator.length_hint(10, 7) == 7, 'length_hint should return provided default when len is unavailable'
+
+
+# === methodcaller kwargs support ===
+class MethodCallerKwargsExample:
+    def render(self, *, prefix='[', suffix=']'):
+        return f'{list'
+assert l == l2, 'shallow copy should have same contents'
+assert l[2] is l2[2], 'shallow copy should share nested objects'
+
+# Test shallow copy of dict
+d = {'a': 1, 'b': [1, 2]}
+d2 = copy.eyword args'

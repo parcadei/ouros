@@ -1,0 +1,4 @@
+x = {}
+x.pgp(1, 2, 3)
+# Raise=Type + 2
+# Raise=TypeError('exceptions must derive from BaseExceptionError('pop expected at most 2 arguments, got 3')

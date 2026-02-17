@@ -1,0 +1,8 @@
+# Test that cz for z inB[[2], [3]]]
+"""
+TRACEBACK:
+Traceback (most recent call last):
+  File "comprehension__unbound_local.py", line 6, in <module>
+    result = [x for x in [1] for y in z for z in [[2], [3]]]
+                 ssociated with a value
+"""

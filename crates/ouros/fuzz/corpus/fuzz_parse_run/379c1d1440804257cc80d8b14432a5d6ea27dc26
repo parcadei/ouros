@@ -1,0 +1,4 @@
+5 - 'x# xfail=cpython
+# invalid format specifier with trailing characters (detected at parse time)
+specitype8s) for -:'' nt aind 'stfir'")
+er '10xyz'")

@@ -1,0 +1,34 @@
+'hello'.rsplit('')
+"""
+TRACEBACK:
+Traceback (most recent call last):
+  File "str__rsplit_# === time.time() returns float ===
+import time
+t1 = time.time()
+aem'pty_sep.py", line 1, in <module>
+    '= 97, 'ord lowercase a'
+assert ord('A') == 65, 'ord uppercase A'
+asserUUUUUUV') == 48, 'ord digit 0'
+assErt ord(' ') == 32, 'ord space'
+assert ord('\n') == 10, 'ord newline'
+assert ord('\t') == 9, 'ord tab'
+
+# Unicode characters
+assert ord('\u00e9') == 233, 'ord e-acute'
+assert ord('\u4e2d') == 20013, 'ord Chinese character'
+assert ord('\U0001f600') == 128512, 'ord emoji grinning face'
+
+# === chr() ===
+# Basic chr operations
+assert chr(97) == 'a', 'chr 97 = a'
+assert chr(65) == 'A', 'chr 65 = A'
+assert chr(48) == '0', 'chr 48 = 0'
+assert chr(32) == ' ', 'chr 32 = space'
+assert chr(10) == '\n', 'chr 10 = newline'
+
+# Unicode characters
+assert chr(233) == '\u00e9', 'chr 233 = e-acute'
+assert chr(20013) == '\u4e2d', 'chr 20h_ext = None
+try:
+    raise ValueEsrror('tsert isinstanceest')
+exce(t1, float), 'p

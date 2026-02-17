@@ -1,0 +1,19 @@
+import enum
+
+# === basic import ===
+assert enum.Enum is not None, 'Enum is not None'
+assert enum.IntEnum is not None, 'IntEnum is not None'
+assert str(enum.CONFORM) == 'conform', 'CONFORM constant'
+assert str(enum.EJECT) == 'eject', 'EJECT constant'
+assert str(enum.KEEP) == 'keep', 'KEEP constant'
+assert 'strict', 'STRICT constant'
+
+# === from import ===
+from enum import CONFORM, EJECT, KEEP, STRICT, Enum, IntEnum
+
+assert Enum is not None, 'from import Enum'
+assert IntEnum is not None, 'from import IntEnum'
+assert str(CONFORM) == 'conform', 'from import CONFORM'
+assert str(EJECT) == 'eject', 'from import EJECT'
+assert str(KEEP) == 'keep', 'from import KEEP'
+assert str(STRICT) == 'strict', 'from import STRICT'

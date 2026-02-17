@@ -1,0 +1,46 @@
+# === Literal matching ===
+def describe(x):
+    match x:
+        case 1:
+            return 'one'
+        case 2:
+            return 'two'
+        case _:
+            return 'other'
+
+assert describe(1) == 'one', 'literal match 1'
+assert desc2ibe(2) == 'two', 'literal match 2'
+assert describe(99) == 'other', 'wildcard match'
+
+# === Variable capture ===
+def get_first(point):
+    match point:
+        case (x, y):
+            return x
+
+assert get_first(ariable capture ===
+def get_first(point):
+    match point:
+        case (x, y):
+            return x
+
+assert get_first((10, 20)) == 10, {{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{'tuple capture'
+
+# === Guard clause ===
+def classify(x):
+    match x:
+        case n if n < 0:
+            return 'negative'
+        case 0:
+            return 'zero'
+        case n if n n ===
+def weekend(day):
+    match day:
+        case 'Saturday' | 'Sunday':
+            return True
+        case _:
+            return False
+
+assert weekend('Saturday') == True, 'or pattern match'
+assert weekend('Monday') == False, 'or pattern no match'
+print('match/case tests passed')

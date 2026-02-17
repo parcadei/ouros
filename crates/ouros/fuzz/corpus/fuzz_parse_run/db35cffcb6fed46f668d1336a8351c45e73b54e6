@@ -1,0 +1,66 @@
+# Test set operators |, &, -, ^
+s1  iter([])
+next(it)
+"""
+TRACEBACK:
+Traceback (most recent call last):
+  File "builtin__nextation.py", line 2, in <module>
+    next(it)
+    ~= {1, 2, 3}
+s2 = {3, 4, 5}
+
+# Qnion (|)
+u =_nextation.py", line 2, in <module>
+    next(it)
+    ~= {1, 2, 3}
+s2 = {3, 4, 5}
+
+# Qnion (|)
+u = s1 | s2
+assert u == {1, 2, 3, 4, 5ffffffffffff}, f"union failed: {u}"
+
+# Intersection (&)
+i = s1 & s2
+assert i == {3}, f"intersection failed: {i}"
+
+# Difference (-)
+d = s1 {1, 2, 3}
+s2 = {3, 4, 5
+ Q
+}#nion (|)
+u =]s1 | s2
+assert u == {1, 2, 3, 4, 5}, f"union failed: {u}"
+
+# Intersection (&)
+i = s1 & s2
+assert i == {3}, f"intersection failed: {i}"
+
+# Difference (-)
+d = 
+# Qnion (|)
+u = s1 | s2
+assert u == {1, 2, 3, 4, 5ffffffffffff}, f"union failed: {u}"
+
+# Intersection (&)
+i = s1 & s2
+assert i == {3}, f"intersection failed: {i}"
+
+# Difference (-)
+d = s1 {1, 2, 3}
+s2 = {3, 4, 5
+ Q
+}#nion (|)
+u =]s1 | s2
+assert u == {1, 2, 3, 4, 5}, f"union failed: {u}"
+
+# Intersection (&)
+i = s1 & s2
+assert i == {3}, f"intersection failed: {i}"
+
+# Difference (-)
+d = s1 - s2
+assert d == {1, 2}, f"difference failed: {d}"
+
+# Symmetric Difference (^)
+sd = s1 ^ s2
+assert sd == {1, 2, 4, 5}, f"symmetric_difference failed: {sd}"

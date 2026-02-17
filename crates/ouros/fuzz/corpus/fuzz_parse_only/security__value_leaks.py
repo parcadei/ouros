@@ -1,0 +1,99 @@
+# Security: operations must not leak values (increment refcount without matching decrement).
+# These test patterns where Ouros found value leaks: id(), argument checking,
+# and operations that create temporaries.
+
+# === id() should not leak ===
+x = [1, 2, 3]
+for _ in range(100):
+    id(x)
+# If id() leaks, refcount grows by 100. x should still be freeable.
+assert True, 'id() called 100 times without leak'
+
+# === id() on various types ===
+assert isinstance(id(42), int), 'id(int) returns int'
+assert isinstance(id('hello'), int), 'id(str) returns int'
+assert isinstance(id([1, 2]), int), 'id(list) returns int'
+assert isinstance(id((1, 2)), int), 'id(tuple) returns int'
+assert isinstance(id({'a': 1}), int), 'id(dict) returns int'
+assert isinstance(id(True), int), 'id(bool) returns int'
+assert isinstance(id(None), int), 'id(None) returns int'
+assert isinstance(id(3.14), int), 'id(float) returns int'
+
+# === Argument checking errors should not leak ===
+def takes_one(x):
+    return x
+
+caught = False
+try:
+    takes_one(1, 2)
+except TypeError:
+    caught = True
+assert caught, 'too many args raises TypeError'
+
+caught = False
+try:
+    takes_one()
+except TypeError:
+    caught = True
+assert caught, 'too few args raises TypeError'
+
+# Repeat to stress test leak paths
+for _ in range(50):
+    try:
+        takes_one(1, 2, 3)
+    except TypeError:
+        pass
+
+assert True, 'repeated argument errors do not leak'
+
+# === Dict operations that create temporaries ===
+d = {'a': 1, 'b': 2, 'c': 3}
+for _ in range(100):
+    _ = d.get('missing', 'default')
+assert True, 'dict.get with default does not leak'
+
+for _ in range(100):
+    _ = d.pop('missing', 'default')
+assert True, 'dict.pop with default does not leak'
+
+# === String operations that create temporaries ===
+s = 'hello world'
+for _ in range(100):
+    _ = s.split(' ')
+    _ = s.upper()
+    _ = s.replace('o', '0')
+assert True, 'string operations do not leak'
+
+# === List operations that create temporaries ===
+lst = [3, 1, 4, 1, 5, 9]
+for _ in range(100):
+    _ = sorted(lst)
+    _ = list(reversed(lst))
+assert True, 'list operations do not leak'
+
+# === Exception creation and catching should not leak ===
+for _ in range(100):
+    try:
+        raise ValueError('test')
+    except ValueError:
+        pass
+assert True, 'repeated exception raise/catch does not leak'
+
+# === f-string evaluation should not leak ===
+name = 'world'
+for _ in range(100):
+    _ = f'hello {name}!'
+assert True, 'f-string evaluation does not leak'
+
+# === Comprehension temporaries should not leak ===
+for _ in range(100):
+    _ = [x * 2 for x in range(10)]
+    _ = {x: x * 2 for x in range(10)}
+assert True, 'comprehension temporaries do not leak'
+
+# === Slice operations should not leak ===
+lst = list(range(100))
+for _ in range(100):
+    _ = lst[10:20]
+    _ = lst[::2]
+assert True, 'slice operations do not leak'

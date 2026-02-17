@@ -1,0 +1,8 @@
+def foo(a):
+    return a
+
+
+foo(**{2: 'value
+Traceback (most recent call last	
+  File "pathlib__os_readNo such file or directory: '/nonexistent'
+"""

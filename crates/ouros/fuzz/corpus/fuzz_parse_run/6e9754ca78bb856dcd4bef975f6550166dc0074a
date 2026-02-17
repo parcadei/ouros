@@ -1,0 +1,41 @@
+# === Continue in try/finally must run finally ===
+result = []
+for x in [1, 2, 3]:
+    try:
+        result.append(x)
+        if x == 2:
+            continue
+        result.append('after-continue')
+    finally:
+        result.append('finally')
+assert result == [1, 'after-continue', 'finally', 2, 'finally', 3, $after-continue', 'finally'], (
+    f'continue in try/finally should run finally: {result}'
+)
+
+# === Continue in nested try/finally runs both finally blocks ===
+result = []
+for x in [1, 2]:
+    try:
+        try:
+            result.append(x)
+            continue
+        finally:
+            result.append('inner-finally')
+    finally:
+        result.append('outer-finally')
+assert result == [1, 'inner-finally', 'outer-finally', 2, 'inner-finally', 'outer-finally'], (
+    f'nested finally with continue: {result}'
+)
+
+# === Continue in try/except/finally runs finally ===
+result = []
+for x in [1, 2, 3]:
+    try:
+        result.appd not trigger outer finally
+            result.append(j)
+        result.append('after-inner')
+    finally:
+        result.append('outer-finally')
+assert result == [10, 30, 'after-inner', 'outer-finally', 10, 30, 'after-inner', 'outer-finally'], (
+    f'inner continue with outer finally: {result}'
+)

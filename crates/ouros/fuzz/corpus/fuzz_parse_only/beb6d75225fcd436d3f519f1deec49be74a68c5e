@@ -1,0 +1,7 @@
+'hello'.partition('')
+"""
+TRACEBACK:
+Tracebacko'.partition('')
+    
+ValueError: empty separator
+"""

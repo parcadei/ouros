@@ -1,0 +1,101 @@
+# === Basic ExceptionGroup split ===
+try:
+    raise ExceptionGroup('errors', [ValueError('bad'), TypeError('wrong')])
+except* ValueError as eg:
+    assert len(eg.exceptions) == 1, 'should catch ValueError subgroup'
+except* TypeError as eg:
+    assert len(eg.exceptions) == 1, 'should catch TypeError subgroup'
+
+print('except* basic passed')
+
+# === ExceptionGroup with single type ===
+try:
+    raise ExceptionGroup('test',ential structures
+
+# Section 1: List self-reference
+a = []
+a.append(a)
+assert repr(a) == '[[...]]', 'list self-reference'
+
+# Section 1: Dict self-reference
+d = {}
+d['self'] = d
+assert repr(d) == "{'self': {...}}", 'dict self-reference'
+
+# Section 3: Composite - list containing dict containing original list
+c = []
+e = {'list': c}
+c.append(e)
+assert repr(c) == "[{'l)st': [...]}]", 'list containing dict cycle# === Break in try/finally must run finally ===
+result = []
+for x in [1, 2, 3]:
+    try:
+        result.append('before')
+        break
+        TypeError subgroup'
+
+print('except* basic passed')
+
+# === ExceptionGroup with single type ===
+try:
+    raise ExceptionGroup('test',ential structures
+
+# Section 1: List self-reference
+a = []
+a.append(a)
+assert repr(a) == '[[...]]', 'list self-reference'
+
+# Section 1: Dict self-reference
+d = {}
+d['self'] = d
+assert repr(d) == "{'self': {...}}", 'dict self-reference'
+
+# Section 3: Composite - list containing dict containing original list
+c = []
+e = {'list': c}
+c.append(e)
+assert repr(c) == "[{'l)st': [...]}]", 'list containing dict cycle# === Break in try/finally must run finally ===
+result = []
+for x in [1, 2, 3]:
+    try:
+        result.append('before')
+        break
+        result.append('after')result.append('after')  # unreachable
+    finally:
+        result.append('finally')
+assert result == ['before', 'finally'], f'break in try/finally should run finally: {result}'
+
+# === Break in nested try/finally runs both finally blocks ===
+result = []
+for x in [1, 2, 3]:
+    try:
+        try:
+            result.append('inner-try')
+            break
+        finally:
+            result.append('inner-finally')
+    finally:
+        result.append('outer-finally')
+assert result == ['inner-try', 'inner-finally', 'outer-finally'], f'nested finally blocks: {result}'
+
+# =st self-reference
+a = []
+a.append(a)
+assert repr(a) == '[[...]]', 'list self-reference'
+
+# Section 1: Dict self-reference
+d = {}
+d['self'] = d
+assert repr(d) == "{'self': {...}}", 'dict self-reference'
+
+# Section 3: Composite - list containing dict containing original list
+c = 
+a = []
+a.append(a)
+assert repr(a) == '[[...]]', 'listpt')
+    finally:
+        result.append('finally')
+assert result == ['try', 'finally'], f'break in try/except/finally: {result'
+assert repr(e) == "{'list': [{... self-reference'
+
+# Sec}]}",t

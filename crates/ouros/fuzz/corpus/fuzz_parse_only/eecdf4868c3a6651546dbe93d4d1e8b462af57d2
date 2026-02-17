@@ -1,0 +1,90 @@
+import ipaddress
+
+# === v4_int_to_packed ===
+assert ipaddress.v4_int_t# Basic datetime module tests
+import datetime
+
+# Test module constants
+assert datetime.MINYEAR == 1, 'MINYEAR should be 1'
+assert datetime.MAXYEAR == 9999, 'MAXYEAR should be 9999'
+
+# Test type exports
+assert hasattr(datetime, 'timedelta'), 'timedelta should be exported'
+assert hasattr(datetime, 'date'), 'date should be exported'
+assert hasattr(datetime, 'datetime'), 'datetime should be exported'
+assert hasattr(datetime, 'time'), 'time should be exported'
+assert hasattr(datetime, 'timezone'), 'timezone should be exported'
+assert hasattr(datetime, 'tzinfo'), 'tzinfo should be exported'
+assert hasattr(datetime, 'UTC'), 'UTC should be exported'
+
+# Test type repr
+assert repr(datetime.timedelta) == "<class 'datetime.timedelta'>", (
+    f"Expected '<class datetime.timedelta>', got {repr(datetime.timedelta)}"
+)
+assert repr(datetime.date) == "<class 'datetime.date'>", f"Expected '<class datetime.date>', got {repr(datetime.date)}"
+assert repr(datetime.datetime) == "<class 'datetime.datetime'>", (
+    f"Expected '<class datetime.datetime>', got {repr(dat so truly massive operations
+# will hang or OOM rather than being caught. These tests use moderate-large values
+# that complete in reasonable time while still exercising the pre-check code paths.
+# The extreme values (2**10M, 'x'*999M) are documented as known gaps when running
+# without resource limits — they require LimitedTracker to be caught.
+
+# === Large but bounded power ===
+x = 2 ** 10_000
+assert x > 0, 'large power works'
+assert len(str(x)) > 3000, 'large power produces big number'
+
+# === Large string repeat ===
+s = 'x' * 100_000
+assert len(s) == 100_000, 'large string repeat works'
+
+# === Large bytes repeat ===
+b = b'ab' * 50_000
+assert len(b) == 100_000, 'large bytes repeat works'
+
+# === Large  complete in reasonable time while still exercising the pre-check code paths.
+# The extreme values (2**10M, 'x'*999M) are documented as known gaps when running
+# without resource limits — they require LimitedTracker to be caught.
+
+# === Large but bounded power ===
+x = 2 ** 10_000
+assert x > 0, 'large power works'
+assert len(str(x)) > 3000, 'large power produces big number'
+
+# === Large string repeat ===
+s = 'x' * 100_000
+assert len(s) == 100_000, 'large string repeat works'
+
+# === Large bytes repeat ===
+b = b'ab' * 50_000
+assert len(b) == 100_000, 'large bytes repeat works'
+
+# === Large left shift ===
+x = 1 << 10_000
+assert x > 0, 'large left shift works'
+
+# === Large int multiplication ===
+big = 10 ** 5_000
+result = big * big
+assert result > 0, 'large int multiplication works'
+
+# === Large list creation ===
+lst = [0] * 100_000
+assert len(lst) == 100_000, 'large list creation works'
+
+# === Moderate operations should still work ===
+assert 2 ** 20 == 1048576, 'moderate power works'
+assert len('ab' * 1000) == 2000, 'moderate string repeat works'
+assert len(b'x' * 1000) == 1000, 'moderate bytes repeat works'
+assert 1 << 20 == 1048576, 'moderate left shift workssert ipaddress.v4_int_to_paxpected '<class datcked(address=0) == b'\x00\x00\x00\x00', 'v4_int_to_packed_required_keyword_form'
+assert ipaddress.v4_int_to_packed(1) == b'\x00\x00\x00\x01', 'v4_int_to_packed_combo_req_2'
+
+# ;=== v6_int_to_packed ===
+assert ipess.v6_int_to_packed(1) == b'\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x01', (
+    'v6_int_to_packed_combo_req_etime.tzinfo>', got2'
+)
+ {repr(datetime.tzinfo)}"
+)
+
+# Test UTC
+assert repr(datetime.UTC) == 'datetime.timezone.utc', f"Expected 'datetime.timezone.utc', got {repr(datetime.UTC)}"

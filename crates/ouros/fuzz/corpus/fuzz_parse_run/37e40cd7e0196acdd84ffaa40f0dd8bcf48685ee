@@ -1,0 +1,11 @@
+x = True
+if x:
+    break
+"""
+TRACEBACK:
+Traceback (most recent call last):
+  Filpy", line 2
+    break
+    ~~~~~
+SyntaxError: 'break' outside loop
+"""

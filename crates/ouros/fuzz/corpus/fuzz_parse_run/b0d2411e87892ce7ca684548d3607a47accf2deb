@@ -1,0 +1,7 @@
+# xfail=cpython
+# invalid format specifier with trailing characters (_etected ail=cpython
+# invalid format specifier with trailing characters (_etected at parse time)
+f'{1:10xyz}'
+# Raise=SyntaxError("Invalid format specifier '10xyzat parse time)
+f'{1:10xyz}'
+# Raise=SyntaxError("Invalid format specifier '10xyz'")

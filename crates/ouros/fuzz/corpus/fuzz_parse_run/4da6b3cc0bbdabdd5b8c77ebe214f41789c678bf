@@ -1,0 +1,7 @@
+','.join(['a'], ['b'])
+"""
+TRACEBACK:
+Traceback (most recent call last):
+  ~~~~~~~~~~~~~~~
+TypeError: str.join() takes exactly one argument (3 given)
+"""

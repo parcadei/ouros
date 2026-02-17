@@ -1,0 +1,206 @@
+# Tests for typing module stdlib functions and markers.
+
+import typing
+
+# === typing.cast ===
+x = typing.cast(int, 'hello')
+assert x == 'hello', 'cast should return the value unchanged'
+
+
+# === typing.get_type_hints ===
+def my_func():
+    return 42
+
+
+hints = typing.get_type_hints(my_func)
+assert isinstance(hints, dict), 'get_type_hints should return a dict'
+
+# === typing.get_origin ===
+origin = typing.get_origin(int)
+assert origin is None, 'get_origin on a plain type should return None'
+
+# === typing.get_args ===
+args = typing.get_args(int)
+assert isinstance(args, tuple), 'get_args should return a tuple'
+assert len(args) == 0, 'get_args on a plain type should return empty tuple'
+
+# === Identity-style runtime stubs ===
+sample_obj = ['a', 'b']
+assert typing.assert_type(sample_obj, typing.Sequence) is sample_obj, 'assert_type should return the same object'
+assert typing.reveal_type(sample_obj) is sample_obj, 'reveal_type should return the same object'
+
+# === Decorator/runtime helper stubs ===
+overload_result = typing.overload(my_func)
+assert overload_result is not None, 'overload should return a value'
+
+try:
+    runtime_checkable_result = typing.runtime_checkable(my_func)
+except TypeError:
+
+    class MyProtocol(typing.Protocol):
+        pass
+
+    runtime_checkable_result = typing.runtime_checkable(MyProtocol)
+
+assert runtime_checkable_result is not None, 'runtime_checkable should return a value'
+
+try:
+    dataclass_transformed = typing.dataclass_transform(my_func)
+except TypeError:
+    dataclass_transformed = typing.dataclass_transform()(my_func)
+assert dataclass_transformed is my_func, 'dataclass_transform should behave as a no-op decorator at runtime'
+
+assert typing.override(my_func) is my_func, 'override should be identity'
+if hasattr(typing, 'deprecated'):
+    assert typing.deprecated(my_func) is my_func, 'deprecated should be identity'
+
+# === typing.NewType ===
+result = typing.NewType('MyInt', int)
+assert result is not None, 'NewType should return a value'
+
+# === Marker availability (expanded typing compatibility surface) ===
+marker_names = [
+    'AnyStr',
+    'Awaitable',
+    'Coroutine',
+    'AsyncIterator',
+    'AsyncIterable',
+    'AsyncGenerator',
+    'MutableMapping',
+    'MutableSequence',
+    'MutableSet',
+    'Mapping',
+    'Sequence',
+    'Set',
+    'FrozenSet',
+    'DefaultDict',
+    'OrderedDict',
+    'Counter',
+    'Deque',
+    'ChainMap',
+    'Pattern',
+    'Match',
+    'IO',
+    'TextIO',
+    'BinaryIO',
+    'NamedTuple',
+    'TypedDict',
+    'Never',
+    'NoReturn',
+    'Self',
+    'TypeGuard',
+    'TypeIs',
+    'Unpack',
+    'ParamSpec',
+    'ParamSpecArgs',
+    'ParamSpecKwargs',
+    'Concatenate',
+    'TypeVarTuple',
+    'TypeAlias',
+    'Required',
+    'NotRequired',
+    'SupportsInt',
+    'SupportsFloat',
+    'SupportsComplex',
+    'SupportsBytes',
+    'SupportsAbs',
+    'SupportsRound',
+]
+
+for marker_name in marker_names:
+    marker = getattr(typing, marker_name)
+    assert marker is not None, f'{marker_name} should exist in typing module'
+
+
+# === Marker repr checks for names with tricky casing ===
+def assert_marker_repr(value, marker_name):
+    actual = repr(value)
+    assert actual in (
+        f'typing.{marker_name}',
+        f"<class 'typing.{marker_name}'>",
+    ), f'{marker_name} repr mismatch: {actual}'
+
+
+assert_marker_repr(typing.DefaultDict, 'DefaultDict')
+assert_marker_repr(typing.Deque, 'Deque')
+assert_marker_repr(typing.Pattern, 'Pattern')
+assert_marker_repr(typing.Match, 'Match')
+assert_marker_repr(typing.IO, 'IO')
+assert_marker_repr(typing.TextIO, 'TextIO')
+assert_marker_repr(typing.BinaryIO, 'BinaryIO')
+assert_marker_repr(typing.ParamSpecKwargs, 'ParamSpecKwargs')
+assert_marker_repr(typing.SupportsRound, 'SupportsRound')
+
+
+# === Protocol + runtime_checkable ===
+class NeedsRun(typing.Protocol):
+    def run(self):
+        pass
+
+
+class Runner:
+    def run(self):
+        return 'ok'
+
+
+class NoRunner:
+    pass
+
+
+raised_without_runtime_checkable = False
+pre_runtime_result = None
+try:
+    pre_runtime_result = isinstance(Runner(), NeedsRun)
+except TypeError:
+    raised_without_runtime_checkable = True
+if not raised_without_runtime_checkable:
+    assert pre_runtime_result == False, 'non-runtime-checkable protocol should not match'
+
+
+@typing.runtime_checkable
+class RuntimeNeedsRun(typing.Protocol):
+    def run(self):
+        pass
+
+
+runtime_runner_check = isinstance(Runner(), RuntimeNeedsRun)
+runtime_no_runner_check = isinstance(NoRunner(), RuntimeNeedsRun)
+assert type(runtime_runner_check) is bool, 'runtime-checkable protocol check should return bool'
+assert runtime_no_runner_check == False, 'runtime-checkable protocol should fail missing members'
+
+raised_runtime_non_protocol = False
+try:
+    typing.runtime_checkable(Runner)
+except TypeError:
+    raised_runtime_non_protocol = True
+assert raised_runtime_non_protocol, 'runtime_checkable should reject non-protocol classes'
+
+
+# === TypedDict class syntax ===
+class Movie(typing.TypedDict):
+    name: str
+    year: int
+
+
+movie = Movie(name='Blade Runner', year=1982)
+assert isinstance(movie, dict), 'TypedDict class call should return dict'
+assert movie == {'name': 'Blade Runner', 'year': 1982}, 'TypedDict class call should map kwargs into dict'
+assert Movie.__total__ == True, 'TypedDict class syntax should default total=True'
+
+
+class PartialMovie(typing.TypedDict, total=False):
+    name: str
+    year: int
+
+
+partial_movie = PartialMovie(name='Alien')
+assert partial_movie == {'name': 'Alien'}, 'TypedDict total=False should allow partial dict instances'
+assert PartialMovie.__total__ == False, 'TypedDict class syntax should respect total=False'
+
+# === TypedDict functional syntax ===
+typed_dict_factory = typing.TypedDict
+Book = typed_dict_factory('Book', {'title': str, 'pages': int}, total=False)
+book = Book(title='Dune')
+assert isinstance(book, dict), 'TypedDict functional call should return dict instances'
+assert book == {'title': 'Dune'}, 'TypedDict functional instances should accept kwargs mapping'
+assert Book.__total__ == False, 'TypedDict functional syntax should propagate total=False'

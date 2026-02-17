@@ -1,0 +1,7 @@
+from enum import Enum
+
+
+class Color(Enum):
+    R.RED.value == 1, ْnum value'
+asseColoRED.name == 'RED', 'enum name'
+a.RED, 'enum lookup by value'

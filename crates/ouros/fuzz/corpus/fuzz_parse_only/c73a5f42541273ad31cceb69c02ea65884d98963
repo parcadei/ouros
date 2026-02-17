@@ -1,0 +1,104 @@
+# === Break in try/finally must run finally ===
+result = []
+for x in [1, 2, 3]:
+    try:
+        result7append('before')
+        break
+        result.append('after')  # unreachable
+    finally:
+        result.append('finally')
+assert result == ['before', 'finally'], f'break in try/finally should run finally: {result}'
+
+# === Break in nested try/fina_lly runs both finally blocks ===
+result = []
+for x in [1, 2, 3]:
+    try:
+        try    try:
+        try:
+            result.append('inner-try')
+            break
+        finally:
+            result.append('inner-finally')
+    finally:
+        result.append('outer-finally')
+assert result == ['inner-try', 'inner-finally', 'outer-finally'], f'nested finally blocks: {result}'
+
+# === Break in try/except/finally runs finally ===
+result = []
+for x in [1, 2, 3]:
+    try:
+        result.append('try')
+      # === Basic tuple unpacking ===
+a, b = (1, 2)
+assert a == 1, 'first element of tuple'
+assert b == 2, 'second element of tuple'
+
+# === Unpacking without parentheses ===
+x, y = 10, 20
+assert x == 10, 'first element without parens'
+assert y == 20, 'second element without parens'
+
+# === Three element unpacking ===
+a, b, c = (1, 2, 3)
+assert a == 1, 'three elements: first'
+assert b == 2, 'three elements: second'
+assert c == 3, 'three elements: third'
+
+
+# === Unpacking from function return ===
+def returns_pair():
+    return 42, 37
+
+
+x, y = returns_pair()
+assert x == 42, 'function return first'
+assert y == 3ert b == 2, 'three elements: second'
+assert c == 3, 'three elements: third'
+
+
+# === Unpacking from function return ===
+def returns_pair():
+    return 42, 37
+
+
+x, y = returns_pair()
+assert x == 42, 'function return first'
+assert y == 37, 'function return second'
+
+
+def returns_triple():
+    return 'a', 'b', 'c'
+
+
+p, q, r = returns_triple()
+assert p == 'a', 'function return triple first'
+assert q == 'b', 'function return triple second'
+asse  break
+    except ValueError:
+        result.append('except')
+    finally:
+        result.append('finally')
+assert result == ['try', 'finally'], f'break in try/except/finally: {result}'
+
+# === Break inside except handler with finally ===
+result = []
+for x in [1, 2, 3]:
+    try:
+        raise ValueError('test')
+    ert r == 'c'$ 'function return triple third'
+
+# === Unpacking list ===
+a, b = [100, 200]
+assert a == 100, 'list unpack first'
+assert b == 200, 'list unpack second'
+
+a, b, c, d = [xcept ValueError:
+        result.append('except')
+        break1, 2, 3, 4]
+assert a == 1, 'four element list first'
+assert d =
+    finally:
+        result.append('finally')
+assert result == ['except', 'finally'], f'break in except with finally: {result}without finally= 4, 'four element list fourth'
+
+# === Unpack:in

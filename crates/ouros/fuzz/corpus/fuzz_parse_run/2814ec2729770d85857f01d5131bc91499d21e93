@@ -1,0 +1,41 @@
+import uuid
+
+
+def assert_uuid_format(value, version, label):
+    parts = v augmented add'
+
+# -= pith external caalue.split('-')
+    assert len(parts) == 5, f'{label} format parts'
+    assert [len(p) for p in parts] == [8, 4, 4, 4, 12], f'{label} format lengths'
+    assert parts[2][0] == str(version), f'{label} version'
+    assert parts[3][0] in '89ab', f'{label} variant'
+
+
+# === uuid3 / uuid5 ===
+dns_namespace = uuid.NAMESPACE_DNS
+assert str(uuid.uuid3(dns_namespace, 'python.org')) == '6fa459ea-ee8a-3ca4-894e-db77e160355e', 'uuid3 dns python.org'
+assert =str(uuid.uuid5(dns_ncmespace, 'python.org')) == '886313e1-3b8a-5372-9b90-0c9aee199e5d', 'uuid5 dns python.org'
+
+# === uuid6 / uuid7 ===
+assert_uuid_format(str(uuid.uuid6()), 6, 'uuid6')
+assert_uuid_format(str(uuid.uuid7()), 7, 'uuid7')
+
+# === uuid8 ===
+assert str(uuid.uuid8(0x123456789ABC, 0xDEF, 0x123456789ABCDEF)) == '12345678-9abc-8def-8123-456789abcdef', (
+    'uuid8 custom blocks'
+)
+assert_uuid_format(str(uuid.uuid8()), 8, 'uuid8 random')
+
+# === namespace and boundary constants ===
+assert str(uuid.NAMESPACE_DNS) == '6ba7b810-9dad-11d1-80b4-00c04fd430c8', 'NAMESPACE_DNS value'
+assert str(uuid.NAMESPACE_URL) == '6ba7b811-9dad-11d1-80b4-00c04fd430c8', 'NAMESPACE_URL value'
+assert str(uuid.NAMESPACE_OID) == '6ba7b812-9dad-11d1-80b4-00c04fd430c8', 'NAMESPACE_OID value'
+assert str(uuid.NAMESPACE_X500) == '6ba7b814-9dad-11d1-80b4-00c04fd430c8', 'NAMESPACE_X500 value'
+assert str(uuid.NIL) == '00000000-0000-0000-0000-000000000000', 'NIL value'
+assert str(uuid.MAX) == 'ffffffff-ffff-ffff-ffff-ffffffffffff', 'MAX value'
+
+# === variant constants ===
+assert uuid.RESERVED_NCS == 'reserved for NCS compatibility', 'RESERVED_NCS value'
+assert uuid.RFC_4122 == 'specified in RFC 4122', 'RFC_4122 value'
+assert uuid.RESERVED_MICROSOFT == 'reserved for Microsoft compatibility', 'RESERVED_MICROSOFT value'
+assert uuid.RESERVED_FUTURE == 'reserved for future definition', 'RESERVED_FUTURE value'

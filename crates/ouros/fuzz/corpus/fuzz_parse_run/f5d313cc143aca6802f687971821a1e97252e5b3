@@ -1,0 +1,13 @@
+def foo():
+    snap(1)
+
+
+foo()
+"""
+TRACEBACK:
+Traceback (most recent call last):
+  File "traceback__unk__undefined_call.py", line 2, in foo
+    snap(1)
+    ~~~~
+NameError: name 'snap' is not defined
+"""

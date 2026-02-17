@@ -1,0 +1,6 @@
+# Test: positional-only parameter passed as keyword argument
+def f(a,*b, /, c):
+    return a + b + c
+
+
+fs: 'b'")

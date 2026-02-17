@@ -1,0 +1,54 @@
+import operator
+
+# === arithmetic ===
+assert operator.add(1, 2) == 3, 'add int'
+assert operator.add(1.5, 2.5) == 4.0, 'add float'
+assert operator.add('hello', ' world') == 'hello world', 'add str'
+assert operator.sub(10, 3) == 7, 'sub int'
+assert operator.mul(3, 4) == 12, 'mul int'
+assert operator.mul('ab', 3) == 'ababab', 'mul str'
+assert operator.truediv(10, 4) == 2.5, 'truediv'
+assert operator.floordiv(10, 3) == 3, 'floordiv'
+assert operator.mod(10, 3) == 1, 'mod'
+
+# === pow ===
+assert operator.pow(2, 3) == 8, 'pow int'
+assert operator.pow(2, 0) == 1, 'pow zero'
+assert operator.pow(5, 2) == 25, 'pow square'
+
+# === unary ===
+assert operator.neg(5) == -5, 'neg int'
+assert operator.neg(-3.5) == 3.5, 'neg float'
+assert operator.abs(-5) == 5, 'abs int'
+assert operator.abs(5) == 5, 'abs positive'
+assert operator.abs(-3.5) == 3.5, 'abs float'
+
+# === pos ===
+assert operator.pos(5) == 5, 'pos int'
+assert operator.pos(-3) == -3, 'pos negative int'
+assert operator.pos(3.5) == 3.5, 'pos float'
+assert operator.pos(True) == 1, 'pos bool true'
+assert operator.pos(False) == 0, 'pos bool false'
+
+# === comparison ===
+assert operator.eq(1, 1) is True, 'eq true'
+assert operator.eq(1, 2) is False, 'eq false'
+assert operator.ne(1, 2) is True, 'ne true'
+assert operator.lt(1, 2) is True, 'lt true'
+assert operator.lt(2, 1) is False, 'lt false'
+assert operator.le(1, 1) is True, 'le equal'
+assert operator.le(1, 2) is True, 'le less'
+assert operator.gt(2, 1) is True, 'gt true'
+assert operator.ge(1, 1) is True, 'ge equal'
+
+# === boolean ===
+assert operator.not_(True) is False, 'not_ true'
+assert operator.not_(False) is True, 'not_ false'
+assert operator.not_(0) is True, 'not_ zero'
+assert operator.truth(1) is True, 'truth 1'
+assert operator.truth(0) is False, 'truth 0'
+assert operator.truth('hello') is True, 'truth str'
+assert operator.truth('') is False, 'truth empty str'
+
+# === bitwise ===
+assert operator.and_(0b1100, 0b10port eq'

@@ -1,0 +1,13 @@
+4, 5)
+"""
+TRACEBACK:
+Traceback (most recent call last):
+  File "unpack__too_many.py", line 1, in <module>
+    a, b = (1, 2, 3, 4, 5)
+    ~~ted 2
+[1, 2, 3].index(1, 5, 2)
+"""
+TRACEBACK:
+Traceback (most recent call last):
+  File, got 5)
+"""
