@@ -308,6 +308,200 @@ fn save_without_storage_dir_fails() {
 }
 
 // ============================================================================
+// StorageBackend trait + FsBackend
+// ============================================================================
+
+#[test]
+fn fs_backend_save_load_round_trip() {
+    use ouros::session_manager::{FsBackend, StorageBackend};
+
+    let dir = std::env::temp_dir().join(format!("ouros_fs_backend_{}", std::process::id()));
+    let backend = FsBackend::new(dir.clone());
+
+    let data = b"hello snapshot";
+    backend.save("test_snap", data).unwrap();
+
+    let loaded = backend.load("test_snap").unwrap();
+    assert_eq!(loaded, data);
+
+    let _ = std::fs::remove_dir_all(&dir);
+}
+
+#[test]
+fn fs_backend_list_returns_sorted_entries() {
+    use ouros::session_manager::{FsBackend, StorageBackend};
+
+    let dir = std::env::temp_dir().join(format!("ouros_fs_list_{}", std::process::id()));
+    let backend = FsBackend::new(dir.clone());
+
+    backend.save("charlie", b"c").unwrap();
+    backend.save("alpha", b"aa").unwrap();
+    backend.save("bravo", b"bbb").unwrap();
+
+    let list = backend.list().unwrap();
+    let names: Vec<&str> = list.iter().map(|s| s.name.as_str()).collect();
+    assert_eq!(names, vec!["alpha", "bravo", "charlie"]);
+
+    // Sizes should match data lengths.
+    assert_eq!(list[0].size_bytes, 2); // "aa"
+    assert_eq!(list[1].size_bytes, 3); // "bbb"
+    assert_eq!(list[2].size_bytes, 1); // "c"
+
+    let _ = std::fs::remove_dir_all(&dir);
+}
+
+#[test]
+fn fs_backend_delete_existing_returns_true() {
+    use ouros::session_manager::{FsBackend, StorageBackend};
+
+    let dir = std::env::temp_dir().join(format!("ouros_fs_del_{}", std::process::id()));
+    let backend = FsBackend::new(dir.clone());
+
+    backend.save("to_delete", b"data").unwrap();
+    let deleted = backend.delete("to_delete").unwrap();
+    assert!(deleted);
+
+    // Loading should now fail.
+    let err = backend.load("to_delete");
+    assert!(err.is_err());
+
+    let _ = std::fs::remove_dir_all(&dir);
+}
+
+#[test]
+fn fs_backend_delete_nonexistent_returns_false() {
+    use ouros::session_manager::{FsBackend, StorageBackend};
+
+    let dir = std::env::temp_dir().join(format!("ouros_fs_del2_{}", std::process::id()));
+    let backend = FsBackend::new(dir.clone());
+
+    let deleted = backend.delete("no_such_snap").unwrap();
+    assert!(!deleted);
+
+    let _ = std::fs::remove_dir_all(&dir);
+}
+
+#[test]
+fn set_storage_backend_with_custom_backend() {
+    use std::sync::Mutex;
+
+    use ouros::session_manager::{SavedSessionInfo, StorageBackend};
+
+    /// In-memory mock backend for testing.
+    #[derive(Debug)]
+    struct MemoryBackend {
+        store: Mutex<std::collections::HashMap<String, Vec<u8>>>,
+    }
+
+    impl MemoryBackend {
+        fn new() -> Self {
+            Self {
+                store: Mutex::new(std::collections::HashMap::new()),
+            }
+        }
+    }
+
+    impl StorageBackend for MemoryBackend {
+        fn save(&self, name: &str, data: &[u8]) -> Result<(), String> {
+            self.store.lock().unwrap().insert(name.to_owned(), data.to_vec());
+            Ok(())
+        }
+        fn load(&self, name: &str) -> Result<Vec<u8>, String> {
+            self.store
+                .lock()
+                .unwrap()
+                .get(name)
+                .cloned()
+                .ok_or_else(|| format!("not found: {name}"))
+        }
+        fn list(&self) -> Result<Vec<SavedSessionInfo>, String> {
+            let store = self.store.lock().unwrap();
+            let mut items: Vec<_> = store
+                .iter()
+                .map(|(k, v)| SavedSessionInfo {
+                    name: k.clone(),
+                    size_bytes: v.len() as u64,
+                })
+                .collect();
+            items.sort_by(|a, b| a.name.cmp(&b.name));
+            Ok(items)
+        }
+        fn delete(&self, name: &str) -> Result<bool, String> {
+            Ok(self.store.lock().unwrap().remove(name).is_some())
+        }
+    }
+
+    let mut mgr = SessionManager::new("test.py");
+    mgr.set_storage_backend(Box::new(MemoryBackend::new()));
+    mgr.execute(None, "x = 99").unwrap();
+
+    // Save using the custom backend.
+    let save_result = mgr.save_session(None, Some("mem_snap")).unwrap();
+    assert_eq!(save_result.name, "mem_snap");
+    assert!(save_result.size_bytes > 0);
+
+    // List should show the snapshot.
+    let list = mgr.list_saved_sessions().unwrap();
+    assert_eq!(list.len(), 1);
+    assert_eq!(list[0].name, "mem_snap");
+
+    // Load into a new session.
+    let loaded_id = mgr.load_session("mem_snap", Some("loaded")).unwrap();
+    assert_eq!(loaded_id, "loaded");
+    let val = mgr.get_variable(Some("loaded"), "x").unwrap();
+    assert_eq!(val.json_value, serde_json::json!(99));
+}
+
+#[test]
+fn delete_saved_session_removes_snapshot() {
+    let dir = std::env::temp_dir().join(format!("ouros_sm_del_{}", std::process::id()));
+
+    let mut mgr = SessionManager::new("test.py");
+    mgr.set_storage_dir(dir.clone());
+    mgr.execute(None, "x = 1").unwrap();
+
+    mgr.save_session(None, Some("to_remove")).unwrap();
+
+    // Should exist in the list.
+    let list = mgr.list_saved_sessions().unwrap();
+    assert!(list.iter().any(|s| s.name == "to_remove"));
+
+    // Delete it.
+    let deleted = mgr.delete_saved_session("to_remove").unwrap();
+    assert!(deleted);
+
+    // Should no longer be in the list.
+    let list = mgr.list_saved_sessions().unwrap();
+    assert!(!list.iter().any(|s| s.name == "to_remove"));
+
+    // Deleting again should return false.
+    let deleted_again = mgr.delete_saved_session("to_remove").unwrap();
+    assert!(!deleted_again);
+
+    let _ = std::fs::remove_dir_all(&dir);
+}
+
+#[test]
+fn delete_saved_session_without_storage_fails() {
+    let mgr = SessionManager::new("test.py");
+    let err = mgr.delete_saved_session("anything").unwrap_err();
+    assert!(matches!(err, SessionError::Storage(_)));
+}
+
+#[test]
+fn delete_saved_session_invalid_name_fails() {
+    let dir = std::env::temp_dir().join(format!("ouros_sm_del2_{}", std::process::id()));
+
+    let mut mgr = SessionManager::new("test.py");
+    mgr.set_storage_dir(dir.clone());
+
+    let err = mgr.delete_saved_session("../escape").unwrap_err();
+    assert!(matches!(err, SessionError::InvalidArgument(_)));
+
+    let _ = std::fs::remove_dir_all(&dir);
+}
+
+// ============================================================================
 // Heap stats, snapshot, diff
 // ============================================================================
 

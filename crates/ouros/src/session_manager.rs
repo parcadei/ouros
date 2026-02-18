@@ -205,6 +205,87 @@ pub struct ChangedVariable {
     pub after: String,
 }
 
+// =============================================================================
+// Storage backend
+// =============================================================================
+
+/// Pluggable storage backend for session persistence.
+///
+/// Implementations handle the actual I/O for saving, loading, listing, and
+/// deleting session snapshots. The default [`FsBackend`] uses the local
+/// filesystem; custom implementations can target Redis, S3, databases, etc.
+pub trait StorageBackend: std::fmt::Debug {
+    /// Saves snapshot data under the given name.
+    fn save(&self, name: &str, data: &[u8]) -> Result<(), String>;
+    /// Loads snapshot data by name.
+    fn load(&self, name: &str) -> Result<Vec<u8>, String>;
+    /// Lists all available snapshots.
+    fn list(&self) -> Result<Vec<SavedSessionInfo>, String>;
+    /// Deletes a snapshot by name. Returns `true` if it existed.
+    fn delete(&self, name: &str) -> Result<bool, String>;
+}
+
+/// Filesystem-based storage backend.
+///
+/// Stores session snapshots as `{dir}/{name}.bin` files. This is the default
+/// backend used when [`SessionManager::set_storage_dir`] is called.
+#[derive(Debug)]
+pub struct FsBackend {
+    dir: PathBuf,
+}
+
+impl FsBackend {
+    /// Creates a new filesystem backend, creating the directory if needed.
+    #[must_use]
+    pub fn new(dir: PathBuf) -> Self {
+        let _ = fs::create_dir_all(&dir);
+        Self { dir }
+    }
+}
+
+impl StorageBackend for FsBackend {
+    fn save(&self, name: &str, data: &[u8]) -> Result<(), String> {
+        let path = self.dir.join(format!("{name}.bin"));
+        fs::write(&path, data).map_err(|e| format!("failed to write snapshot: {e}"))
+    }
+
+    fn load(&self, name: &str) -> Result<Vec<u8>, String> {
+        let path = self.dir.join(format!("{name}.bin"));
+        fs::read(&path).map_err(|e| format!("snapshot '{name}' not found: {e}"))
+    }
+
+    fn list(&self) -> Result<Vec<SavedSessionInfo>, String> {
+        let mut sessions = Vec::new();
+        if self.dir.exists() {
+            let entries = fs::read_dir(&self.dir).map_err(|e| format!("failed to read storage dir: {e}"))?;
+            for entry in entries {
+                let entry = entry.map_err(|e| format!("dir entry error: {e}"))?;
+                let path = entry.path();
+                if path.extension().and_then(|e| e.to_str()) == Some("bin")
+                    && let Some(name) = path.file_stem().and_then(|s| s.to_str())
+                {
+                    let size = entry.metadata().map(|m| m.len()).unwrap_or(0);
+                    sessions.push(SavedSessionInfo {
+                        name: name.to_owned(),
+                        size_bytes: size,
+                    });
+                }
+            }
+        }
+        sessions.sort_by(|a, b| a.name.cmp(&b.name));
+        Ok(sessions)
+    }
+
+    fn delete(&self, name: &str) -> Result<bool, String> {
+        let path = self.dir.join(format!("{name}.bin"));
+        if !path.exists() {
+            return Ok(false);
+        }
+        fs::remove_file(&path).map_err(|e| format!("failed to delete snapshot: {e}"))?;
+        Ok(true)
+    }
+}
+
 /// Snapshot payload for heap diff storage.
 ///
 /// Contains the aggregate heap counters and optional per-variable repr strings.
@@ -272,8 +353,8 @@ pub struct SessionManager {
     resource_limits: ResourceLimits,
     /// Named heap snapshots for diff comparisons.
     snapshots: HashMap<String, HeapSnapshotEntry>,
-    /// Directory for storing saved sessions (None = persistence disabled).
-    storage_dir: Option<PathBuf>,
+    /// Storage backend for session persistence (None = persistence disabled).
+    storage: Option<Box<dyn StorageBackend>>,
 }
 
 // =============================================================================
@@ -301,20 +382,29 @@ impl SessionManager {
             script_name: script_name.to_owned(),
             resource_limits,
             snapshots: HashMap::new(),
-            storage_dir: None,
+            storage: None,
         };
         mgr.sessions
             .insert(DEFAULT_SESSION_ID.to_owned(), mgr.build_session_entry(Vec::new()));
         mgr
     }
 
-    /// Configures the directory for session persistence.
+    /// Configures the directory for session persistence using the default
+    /// filesystem backend.
     ///
-    /// When set, `save_session` and `load_session` become available. The
-    /// directory is created if it does not exist.
+    /// This is a convenience method equivalent to calling
+    /// `set_storage_backend(Box::new(FsBackend::new(dir)))`.
     pub fn set_storage_dir(&mut self, dir: PathBuf) {
-        let _ = fs::create_dir_all(&dir);
-        self.storage_dir = Some(dir);
+        self.storage = Some(Box::new(FsBackend::new(dir)));
+    }
+
+    /// Configures a custom storage backend for session persistence.
+    ///
+    /// Use this to plug in non-filesystem backends (Redis, S3, databases, etc.).
+    /// The backend is used by `save_session`, `load_session`, `list_saved_sessions`,
+    /// and `delete_saved_session`.
+    pub fn set_storage_backend(&mut self, backend: Box<dyn StorageBackend>) {
+        self.storage = Some(backend);
     }
 }
 
@@ -879,8 +969,8 @@ impl SessionManager {
     /// Returns `SessionError::Storage` if persistence is not configured or
     /// I/O fails, `SessionError::InvalidArgument` for invalid names.
     pub fn save_session(&self, session_id: Option<&str>, name: Option<&str>) -> Result<SaveResult, SessionError> {
-        let storage_dir = self
-            .storage_dir
+        let backend = self
+            .storage
             .as_ref()
             .ok_or_else(|| SessionError::Storage("storage not configured".to_owned()))?;
 
@@ -890,8 +980,7 @@ impl SessionManager {
 
         let entry = self.get_session(sid)?;
         let bytes = entry.session.save().map_err(SessionError::InvalidState)?;
-        let path = storage_dir.join(format!("{snapshot_name}.bin"));
-        fs::write(&path, &bytes).map_err(|e| SessionError::Storage(format!("failed to write snapshot: {e}")))?;
+        backend.save(&snapshot_name, &bytes).map_err(SessionError::Storage)?;
 
         Ok(SaveResult {
             name: snapshot_name,
@@ -910,8 +999,8 @@ impl SessionManager {
     /// Returns errors if the snapshot is not found, the session ID already
     /// exists, or deserialization fails.
     pub fn load_session(&mut self, name: &str, session_id: Option<&str>) -> Result<String, SessionError> {
-        let storage_dir = self
-            .storage_dir
+        let backend = self
+            .storage
             .as_ref()
             .ok_or_else(|| SessionError::Storage("storage not configured".to_owned()))?;
 
@@ -922,8 +1011,7 @@ impl SessionManager {
             return Err(SessionError::AlreadyExists(format!("session '{sid}' already exists")));
         }
 
-        let path = storage_dir.join(format!("{name}.bin"));
-        let bytes = fs::read(&path).map_err(|e| SessionError::Storage(format!("snapshot '{name}' not found: {e}")))?;
+        let bytes = backend.load(name).map_err(SessionError::Storage)?;
         let session = ReplSession::load(&bytes, self.resource_limits.clone())
             .map_err(|e| SessionError::Storage(format!("deserialization failed: {e}")))?;
 
@@ -947,31 +1035,69 @@ impl SessionManager {
     ///
     /// Returns `SessionError::Storage` if persistence is not configured.
     pub fn list_saved_sessions(&self) -> Result<Vec<SavedSessionInfo>, SessionError> {
-        let storage_dir = self
-            .storage_dir
+        let backend = self
+            .storage
             .as_ref()
             .ok_or_else(|| SessionError::Storage("storage not configured".to_owned()))?;
 
-        let mut sessions = Vec::new();
-        if storage_dir.exists() {
-            let entries = fs::read_dir(storage_dir)
-                .map_err(|e| SessionError::Storage(format!("failed to read storage dir: {e}")))?;
-            for entry in entries {
-                let entry = entry.map_err(|e| SessionError::Storage(format!("dir entry error: {e}")))?;
-                let path = entry.path();
-                if path.extension().and_then(|e| e.to_str()) == Some("bin")
-                    && let Some(name) = path.file_stem().and_then(|s| s.to_str())
-                {
-                    let size = entry.metadata().map(|m| m.len()).unwrap_or(0);
-                    sessions.push(SavedSessionInfo {
-                        name: name.to_owned(),
-                        size_bytes: size,
-                    });
-                }
-            }
+        backend.list().map_err(SessionError::Storage)
+    }
+
+    /// Deletes a saved session snapshot.
+    ///
+    /// Returns `true` if the snapshot existed and was removed, `false` if
+    /// no snapshot with the given name was found.
+    ///
+    /// # Errors
+    ///
+    /// Returns `SessionError::Storage` if persistence is not configured or
+    /// the delete operation fails, `SessionError::InvalidArgument` for invalid names.
+    pub fn delete_saved_session(&self, name: &str) -> Result<bool, SessionError> {
+        let backend = self
+            .storage
+            .as_ref()
+            .ok_or_else(|| SessionError::Storage("storage not configured".to_owned()))?;
+
+        validate_snapshot_name(name)?;
+        backend.delete(name).map_err(SessionError::Storage)
+    }
+
+    /// Serializes a session to raw bytes without involving the storage backend.
+    ///
+    /// This is the low-level counterpart to `save_session`: it returns the
+    /// snapshot bytes directly instead of writing them through a backend.
+    /// Useful for language bindings (e.g. JS) where the host controls storage.
+    pub fn dump_session_bytes(&self, session_id: Option<&str>) -> Result<Vec<u8>, SessionError> {
+        let sid = resolve_session_id(session_id);
+        let entry = self.get_session(sid)?;
+        entry.session.save().map_err(SessionError::InvalidState)
+    }
+
+    /// Restores a session from raw bytes without involving the storage backend.
+    ///
+    /// Creates a new session with the deserialized state. Returns the session
+    /// ID that was created. If `session_id` is `None`, defaults to `"default"`.
+    ///
+    /// This is the low-level counterpart to `load_session`: it accepts bytes
+    /// directly instead of reading them through a backend.
+    pub fn load_session_from_bytes(&mut self, data: &[u8], session_id: Option<&str>) -> Result<String, SessionError> {
+        let sid = session_id.unwrap_or(DEFAULT_SESSION_ID).to_owned();
+        if self.sessions.contains_key(&sid) {
+            return Err(SessionError::AlreadyExists(format!("session '{sid}' already exists")));
         }
-        sessions.sort_by(|a, b| a.name.cmp(&b.name));
-        Ok(sessions)
+
+        let session = ReplSession::load(data, self.resource_limits.clone())
+            .map_err(|e| SessionError::Storage(format!("deserialization failed: {e}")))?;
+
+        let entry = SessionEntry {
+            session,
+            external_functions: Vec::new(),
+            pending_call_id: None,
+            history: VecDeque::new(),
+            max_history: DEFAULT_MAX_HISTORY,
+        };
+        self.sessions.insert(sid.clone(), entry);
+        Ok(sid)
     }
 }
 

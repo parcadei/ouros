@@ -641,6 +641,36 @@ impl NapiSessionManager {
         Ok(sessions.into_iter().map(saved_session_info_to_napi).collect())
     }
 
+    /// Deletes a saved session snapshot. Returns whether the snapshot existed.
+    #[napi]
+    pub fn delete_saved_session(&self, name: String) -> Result<bool> {
+        self.inner.delete_saved_session(&name).map_err(session_error_to_napi)
+    }
+
+    /// Serializes a session to raw bytes (without storage backend).
+    ///
+    /// Returns the session state as a `Buffer` that can be stored externally
+    /// (e.g. in S3, Redis, a database) and later restored with `loadSessionFromBytes`.
+    #[napi]
+    pub fn dump_session(&self, session_id: Option<String>) -> Result<Buffer> {
+        let bytes = self
+            .inner
+            .dump_session_bytes(session_id.as_deref())
+            .map_err(session_error_to_napi)?;
+        Ok(bytes.into())
+    }
+
+    /// Restores a session from raw bytes previously obtained via `dumpSession`.
+    ///
+    /// Creates a new session with the deserialized state. Returns the session ID.
+    /// If `sessionId` is not provided, defaults to `"default"`.
+    #[napi]
+    pub fn load_session_from_bytes(&mut self, data: Buffer, session_id: Option<String>) -> Result<String> {
+        self.inner
+            .load_session_from_bytes(&data, session_id.as_deref())
+            .map_err(session_error_to_napi)
+    }
+
     // =========================================================================
     // History / rewind
     // =========================================================================

@@ -118,6 +118,10 @@ impl McpHandler {
                 "list_saved_sessions",
                 "List all saved session snapshots available on disk.",
             ),
+            tool(
+                "delete_saved_session",
+                "Delete a saved session snapshot from storage. Returns whether the snapshot existed.",
+            ),
             // Undo history.
             tool(
                 "rewind",
@@ -167,6 +171,7 @@ impl McpHandler {
             "save_session" => self.save_session_tool(arguments),
             "load_session" => self.load_session_tool(arguments),
             "list_saved_sessions" => self.list_saved_sessions_tool(),
+            "delete_saved_session" => self.delete_saved_session_tool(arguments),
             "rewind" => self.rewind_tool(arguments),
             "history" => self.history_tool(&arguments),
             "set_history_depth" => self.set_history_depth_tool(arguments),
@@ -777,6 +782,27 @@ impl McpHandler {
             .map(|info| json!({"name": info.name, "size_bytes": info.size_bytes}))
             .collect();
         Ok(json!({"sessions": sessions}))
+    }
+
+    /// Deletes a saved session snapshot from storage.
+    ///
+    /// Accepts `{"name": "..."}`. The `name` field is validated to prevent
+    /// path traversal. Returns whether the snapshot existed and was removed.
+    fn delete_saved_session_tool(&self, arguments: Value) -> Result<Value, String> {
+        #[derive(Deserialize)]
+        struct Args {
+            name: String,
+        }
+
+        let args: Args =
+            serde_json::from_value(arguments).map_err(|err| format!("invalid delete_saved_session args: {err}"))?;
+
+        let existed = self
+            .manager
+            .delete_saved_session(&args.name)
+            .map_err(|e| e.to_string())?;
+
+        Ok(json!({ "status": "ok", "name": args.name, "existed": existed }))
     }
 }
 

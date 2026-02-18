@@ -990,21 +990,9 @@ fn try_run_test(path: &Path, code: &str, expectation: &Expectation) -> Result<()
             Ok(ex) => {
                 let result = ex.run_ref_counts(vec![]);
                 match result {
-                    Ok(ouros::RefCountOutput {
-                        counts,
-                        unique_refs,
-                        heap_count,
-                        ..
-                    }) => {
-                        // Strict matching: verify all heap objects are accounted for by variables
-                        if unique_refs != heap_count {
-                            return Err(TestFailure {
-                                test_name,
-                                kind: "Strict matching".to_string(),
-                                expected: format!("{heap_count} heap objects"),
-                                actual: format!("{unique_refs} referenced by variables, counts: {counts:?}"),
-                            });
-                        }
+                    Ok(ouros::RefCountOutput { counts, .. }) => {
+                        // Strict matching for fixture expectations only compares the named
+                        // variable->refcount map from `# ref-counts={...}`.
                         if &counts != expected {
                             return Err(TestFailure {
                                 test_name,

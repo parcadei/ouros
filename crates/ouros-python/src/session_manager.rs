@@ -12,13 +12,13 @@ use ::ouros::{
     ExternalResult, HeapDiff, HeapStats, ReplProgress,
     session_manager::{
         ChangedVariable, EvalOutput, ExecuteOutput, HeapDiffResult, RewindResult, SaveResult, SavedSessionInfo,
-        SessionError, SessionInfo, SessionManager, VariableDiff, VariableInfo, VariableValue,
+        SessionError, SessionInfo, SessionManager, StorageBackend, VariableDiff, VariableInfo, VariableValue,
     },
 };
 use pyo3::{
     exceptions::PyRuntimeError,
     prelude::*,
-    types::{PyBool, PyDict, PyList},
+    types::{PyBool, PyBytes, PyDict, PyList},
 };
 use serde_json::Value as JsonValue;
 
@@ -42,6 +42,92 @@ fn session_err_to_py(err: SessionError) -> PyErr {
         SessionError::Storage(msg) => PyRuntimeError::new_err(format!("storage error: {msg}")),
         SessionError::InvalidArgument(msg) => PyRuntimeError::new_err(format!("invalid argument: {msg}")),
         SessionError::Repl(e) => PyRuntimeError::new_err(e.to_string()),
+    }
+}
+
+// =============================================================================
+// PyCallbackBackend - bridges StorageBackend to a Python object
+// =============================================================================
+
+/// Storage backend that delegates to a Python object's methods.
+///
+/// The Python object must implement:
+/// - `save(name: str, data: bytes) -> None`
+/// - `load(name: str) -> bytes`
+/// - `list() -> list[dict]` (each dict has "name" and "size_bytes" keys)
+/// - `delete(name: str) -> bool`
+struct PyCallbackBackend {
+    /// The Python backend object (stored as `Py<PyAny>` so it's `Send`).
+    inner: pyo3::Py<pyo3::PyAny>,
+}
+
+impl std::fmt::Debug for PyCallbackBackend {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.debug_struct("PyCallbackBackend").finish()
+    }
+}
+
+impl StorageBackend for PyCallbackBackend {
+    fn save(&self, name: &str, data: &[u8]) -> Result<(), String> {
+        pyo3::Python::attach(|py| {
+            let bytes = PyBytes::new(py, data);
+            self.inner
+                .call_method1(py, "save", (name, bytes))
+                .map_err(|e| format!("Python save() failed: {e}"))?;
+            Ok(())
+        })
+    }
+
+    fn load(&self, name: &str) -> Result<Vec<u8>, String> {
+        pyo3::Python::attach(|py| {
+            let result = self
+                .inner
+                .call_method1(py, "load", (name,))
+                .map_err(|e| format!("Python load() failed: {e}"))?;
+            let bytes: &[u8] = result
+                .extract(py)
+                .map_err(|e| format!("Python load() must return bytes: {e}"))?;
+            Ok(bytes.to_vec())
+        })
+    }
+
+    fn list(&self) -> Result<Vec<SavedSessionInfo>, String> {
+        pyo3::Python::attach(|py| {
+            let result = self
+                .inner
+                .call_method0(py, "list")
+                .map_err(|e| format!("Python list() failed: {e}"))?;
+            let list: Vec<pyo3::Bound<'_, pyo3::PyAny>> = result
+                .extract(py)
+                .map_err(|e| format!("Python list() must return a list: {e}"))?;
+            let mut sessions = Vec::new();
+            for item in list {
+                let name: String = item
+                    .get_item("name")
+                    .map_err(|e| format!("list item missing 'name': {e}"))?
+                    .extract()
+                    .map_err(|e| format!("'name' must be str: {e}"))?;
+                let size_bytes: u64 = item
+                    .get_item("size_bytes")
+                    .map_err(|e| format!("list item missing 'size_bytes': {e}"))?
+                    .extract()
+                    .map_err(|e| format!("'size_bytes' must be int: {e}"))?;
+                sessions.push(SavedSessionInfo { name, size_bytes });
+            }
+            Ok(sessions)
+        })
+    }
+
+    fn delete(&self, name: &str) -> Result<bool, String> {
+        pyo3::Python::attach(|py| {
+            let result = self
+                .inner
+                .call_method1(py, "delete", (name,))
+                .map_err(|e| format!("Python delete() failed: {e}"))?;
+            result
+                .extract(py)
+                .map_err(|e| format!("Python delete() must return bool: {e}"))
+        })
     }
 }
 
@@ -262,6 +348,22 @@ impl PySessionManager {
         Ok(())
     }
 
+    /// Configures a custom storage backend using a Python object.
+    ///
+    /// The backend object must implement:
+    /// - `save(name: str, data: bytes) -> None`
+    /// - `load(name: str) -> bytes`
+    /// - `list() -> list[dict]` — each dict has `name` (str) and `size_bytes` (int)
+    /// - `delete(name: str) -> bool`
+    #[expect(clippy::unnecessary_wraps)]
+    fn set_storage_backend(&mut self, backend: &Bound<'_, PyAny>) -> PyResult<()> {
+        let py_backend = PyCallbackBackend {
+            inner: backend.clone().unbind(),
+        };
+        self.inner.set_storage_backend(Box::new(py_backend));
+        Ok(())
+    }
+
     /// Saves a session to disk as a named snapshot.
     ///
     /// Returns a dict with `name` and `size_bytes`.
@@ -289,6 +391,11 @@ impl PySessionManager {
         let saved = self.inner.list_saved_sessions().map_err(session_err_to_py)?;
         let items: Vec<Bound<'py, PyDict>> = saved.into_iter().map(|s| saved_session_to_dict(py, &s)).collect();
         PyList::new(py, items)
+    }
+
+    /// Deletes a saved session snapshot. Returns `True` if it existed.
+    fn delete_saved_session(&self, name: &str) -> PyResult<bool> {
+        self.inner.delete_saved_session(name).map_err(session_err_to_py)
     }
 
     // -------------------------------------------------------------------------
