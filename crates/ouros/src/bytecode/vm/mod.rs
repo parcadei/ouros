@@ -4927,6 +4927,7 @@ impl<'a, T: ResourceTracker, P: PrintWriter, Tr: VmTracer> VM<'a, T, P, Tr> {
                         value.drop_with_heap(self.heap);
                         let frame_depth = self.frames.len();
                         self.drop_pending_getattr_for_frame(frame_depth);
+                        self.drop_pending_binary_dunder_for_frame(frame_depth);
                         let frame = self.frames.pop().expect("no frame to pop");
                         // Clean up frame's stack region
                         while self.stack.len() > frame.stack_base {
@@ -6381,6 +6382,7 @@ impl<'a, T: ResourceTracker, P: PrintWriter, Tr: VmTracer> VM<'a, T, P, Tr> {
     fn finalize_class_body(&mut self) -> RunResult<FinalizeClassResult> {
         let frame_depth = self.frames.len();
         self.drop_pending_getattr_for_frame(frame_depth);
+        self.drop_pending_binary_dunder_for_frame(frame_depth);
         let frame = self.frames.pop().expect("no frame to pop");
         let mut class_info = Some(frame.class_body_info.expect("not a class body frame"));
         let namespace_idx = frame.namespace_idx;
