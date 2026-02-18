@@ -3948,13 +3948,15 @@ impl<T: ResourceTracker> Heap<T> {
         // Proper __hash__ dunder dispatch is done at the VM level via hash() builtin.
         if let Some(HeapData::Instance(inst)) = &entry.data {
             let class_id = inst.class_id();
-            let has_eq = match self.get(class_id) {
-                HeapData::ClassObject(cls) => cls.mro_has_attr("__eq__", class_id, self, interns),
-                _ => false,
-            };
-            let has_hash = match self.get(class_id) {
-                HeapData::ClassObject(cls) => cls.mro_has_attr("__hash__", class_id, self, interns),
-                _ => false,
+            let (has_eq, has_hash, hash_is_none) = match self.get(class_id) {
+                HeapData::ClassObject(cls) => {
+                    let hash_attr = cls.namespace().get_by_str("__hash__", self, interns);
+                    let has_hash = hash_attr.is_some();
+                    let hash_is_none = matches!(hash_attr, Some(Value::None));
+                    let has_eq = cls.namespace().get_by_str("__eq__", self, interns).is_some();
+                    (has_eq, has_hash, hash_is_none)
+                }
+                _ => (false, false, false),
             };
 
             let entry = self
@@ -3964,7 +3966,7 @@ impl<T: ResourceTracker> Heap<T> {
                 .as_mut()
                 .expect("Heap::compute_hash_inner: object freed during instance check");
 
-            if has_eq && !has_hash {
+            if hash_is_none || (has_eq && !has_hash) {
                 entry.hash_state = HashState::Unhashable;
                 return None;
             }

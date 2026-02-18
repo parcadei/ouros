@@ -811,14 +811,15 @@ class BoolOverLen:
 assert not bool(BoolOverLen()), '__bool__ takes precedence over __len__'
 
 # === Dunder lookup on TYPE not instance (Finding #1) ===
-# TODO: Requires __dict__ attribute support on instances
-# class DunderOnType:
-#     def __add__(self, other):
-#         return 'class __add__'
-# dot = DunderOnType()
-# dot.__dict__['__add__'] = lambda self, other: 'instance __add__'
-# assert (dot + 1) == 'class __add__', 'dunder looked up on type not instance'
-# assert dot.__add__(dot, 1) == 'instance __add__', 'direct access sees instance __dict__'
+class DunderOnType:
+    def __add__(self, other):
+        return 'class __add__'
+
+
+dot = DunderOnType()
+dot.__dict__['__add__'] = lambda self, other: 'instance __add__'
+assert (dot + 1) == 'class __add__', 'dunder looked up on type not instance'
+assert dot.__add__(dot, 1) == 'instance __add__', 'direct access sees instance __dict__'
 
 
 # === Reflected operator order (Finding #2) ===
@@ -835,54 +836,62 @@ class HasReflect:
 assert (NoReflect() + HasReflect()) == 'left wins', '__radd__ not called when __add__ succeeds'
 
 # === Reflected operator called when __add__ returns NotImplemented ===
-# TODO: Requires NotImplemented singleton support
-# class ReturnsNotImpl:
-#     def __add__(self, other):
-#         return NotImplemented
-# class UseReflect:
-#     def __radd__(self, other):
-#         return 'right called'
-# assert (ReturnsNotImpl() + UseReflect()) == 'right called', '__radd__ called when __add__ returns NotImplemented'
+class ReturnsNotImpl:
+    def __add__(self, other):
+        return NotImplemented
+
+
+class UseReflect:
+    def __radd__(self, other):
+        return 'right called'
+
+
+assert (ReturnsNotImpl() + UseReflect()) == 'right called', '__radd__ called when __add__ returns NotImplemented'
 
 # === __eq__ without __hash__ makes unhashable (Finding #3) ===
-# TODO: Requires hash() builtin and __eq__-without-__hash__ detection
-# class EqOnly:
-#     def __eq__(self, other):
-#         return True
-# caught = False
-# try:
-#     hash(EqOnly())
-# except TypeError as e:
-#     caught = True
-#     assert 'unhashable type' in str(e), '__eq__ without __hash__ raises TypeError'
-# assert caught, '__eq__ without __hash__ is unhashable'
+class EqOnly:
+    def __eq__(self, other):
+        return True
+
+
+caught = False
+try:
+    hash(EqOnly())
+except TypeError as e:
+    caught = True
+    assert 'unhashable type' in str(e), '__eq__ without __hash__ raises TypeError'
+assert caught, '__eq__ without __hash__ is unhashable'
 
 # === __eq__ with explicit __hash__ is hashable ===
-# TODO: Requires hash() builtin
-# class EqAndHash:
-#     def __eq__(self, other):
-#         return True
-#     def __hash__(self):
-#         return 42
-# assert hash(EqAndHash()) == 42, '__eq__ with __hash__ is hashable'
+class EqAndHash:
+    def __eq__(self, other):
+        return True
+
+    def __hash__(self):
+        return 42
+
+
+assert hash(EqAndHash()) == 42, '__eq__ with __hash__ is hashable'
 
 # === __getattribute__ called before descriptor (Finding #10) ===
-# TODO: Requires __getattribute__/__getattr__ and __dict__ support
-# class Intercept:
-#     def __getattribute__(self, name):
-#         if name == 'secret':
-#             return 'intercepted'
-#         return super().__getattribute__(name)
-# i = Intercept()
-# i.__dict__['secret'] = 'original'
-# assert i.secret == 'intercepted', '__getattribute__ called before instance dict'
+class Intercept:
+    def __getattribute__(self, name):
+        if name == 'secret':
+            return 'intercepted'
+        return object.__getattribute__(self, name)
+
+
+i = Intercept()
+i.__dict__['secret'] = 'original'
+assert i.secret == 'intercepted', '__getattribute__ called before instance dict'
 
 # === __getattr__ only called when __getattribute__ raises AttributeError ===
-# TODO: Requires __getattr__ support
-# class Fallback:
-#     def __getattr__(self, name):
-#         return 'fallback'
-# f = Fallback()
-# assert f.anything == 'fallback', '__getattr__ called for missing attr'
-# f.real = 'exists'
-# assert f.real == 'exists', '__getattr__ NOT called when attr exists'
+class Fallback:
+    def __getattr__(self, name):
+        return 'fallback'
+
+
+f = Fallback()
+assert f.anything == 'fallback', '__getattr__ called for missing attr'
+f.real = 'exists'
+assert f.real == 'exists', '__getattr__ NOT called when attr exists'

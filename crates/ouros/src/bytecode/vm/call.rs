@@ -9,10 +9,11 @@ use std::{cmp::Ordering, env, fs, path::Path, ptr, str::FromStr};
 use smallvec::SmallVec;
 
 use super::{
-    AwaitResult, CallAttrInlineCacheEntry, CallAttrInlineCacheKind, CallFrame, PendingBuiltinFromList,
-    PendingBuiltinFromListKind, PendingContextDecorator, PendingContextDecoratorStage, PendingExitStack,
-    PendingExitStackAwaiting, PendingGroupBy, PendingListSort, PendingNewCall, PendingNextDefault, PendingReduce,
-    PendingStringifyReturn, PendingSumFromList, PendingTextwrapIndent, VM,
+    AwaitResult, CallAttrInlineCacheEntry, CallAttrInlineCacheKind, CallFrame, PendingBinaryDunder,
+    PendingBinaryDunderStage, PendingBuiltinFromList, PendingBuiltinFromListKind, PendingContextDecorator,
+    PendingContextDecoratorStage, PendingExitStack, PendingExitStackAwaiting, PendingGroupBy, PendingListSort,
+    PendingNewCall, PendingNextDefault, PendingReduce, PendingStringifyReturn, PendingSumFromList,
+    PendingTextwrapIndent, VM,
 };
 use crate::{
     args::{ArgValues, KwargsValues},
@@ -93,6 +94,39 @@ impl BisectOperation {
             Self::InsortLeft => "insort_left",
             Self::InsortRight => "insort_right",
         }
+    }
+}
+
+/// Maps binary dunder names to user-facing operator symbols for TypeError text.
+fn binary_symbol_for_dunder(dunder_id: StringId) -> &'static str {
+    if dunder_id == StaticStrings::DunderAdd {
+        "+"
+    } else if dunder_id == StaticStrings::DunderSub {
+        "-"
+    } else if dunder_id == StaticStrings::DunderMul {
+        "*"
+    } else if dunder_id == StaticStrings::DunderTruediv {
+        "/"
+    } else if dunder_id == StaticStrings::DunderFloordiv {
+        "//"
+    } else if dunder_id == StaticStrings::DunderMod {
+        "%"
+    } else if dunder_id == StaticStrings::DunderPow {
+        "**"
+    } else if dunder_id == StaticStrings::DunderLshift {
+        "<<"
+    } else if dunder_id == StaticStrings::DunderRshift {
+        ">>"
+    } else if dunder_id == StaticStrings::DunderAnd {
+        "&"
+    } else if dunder_id == StaticStrings::DunderOr {
+        "|"
+    } else if dunder_id == StaticStrings::DunderXor {
+        "^"
+    } else if dunder_id == StaticStrings::DunderMatmul {
+        "@"
+    } else {
+        "?"
     }
 }
 
@@ -10057,6 +10091,26 @@ impl<T: ResourceTracker, P: PrintWriter, Tr: VmTracer> VM<'_, T, P, Tr> {
             _ => return None,
         };
 
+        // `__hash__` has special class semantics:
+        // - If class defines `__hash__ = None`, instances are unhashable.
+        // - If class defines `__eq__` but omits `__hash__`, instances are unhashable.
+        if dunder_name_id == StaticStrings::DunderHash {
+            let (has_eq, has_hash, hash_is_none) = match self.heap.get(class_id) {
+                HeapData::ClassObject(cls) => {
+                    let hash_attr = cls.namespace().get_by_str("__hash__", self.heap, self.interns);
+                    let has_hash = hash_attr.is_some();
+                    let hash_is_none = matches!(hash_attr, Some(Value::None));
+                    let has_eq = cls.namespace().get_by_str("__eq__", self.heap, self.interns).is_some();
+                    (has_eq, has_hash, hash_is_none)
+                }
+                _ => (false, false, false),
+            };
+
+            if hash_is_none || (has_eq && !has_hash) {
+                return None;
+            }
+        }
+
         // Look up in the class namespace via MRO (NOT instance attrs)
         match self.heap.get(class_id) {
             HeapData::ClassObject(cls) => cls
@@ -10254,7 +10308,24 @@ impl<T: ResourceTracker, P: PrintWriter, Tr: VmTracer> VM<'_, T, P, Tr> {
             // Clone rhs for the call arg
             let rhs_clone = rhs.clone_with_heap(self.heap);
             let result = self.call_dunder(*lhs_id, method, ArgValues::One(rhs_clone))?;
-            return Ok(Some(result));
+            match result {
+                CallResult::FramePushed => {
+                    self.pending_binary_dunder.push(PendingBinaryDunder {
+                        lhs: lhs.clone_with_heap(self.heap),
+                        rhs: rhs.clone_with_heap(self.heap),
+                        primary_dunder_id: dunder_id,
+                        reflected_dunder_id,
+                        frame_depth: self.frames.len(),
+                        stage: PendingBinaryDunderStage::Primary,
+                    });
+                    return Ok(Some(CallResult::FramePushed));
+                }
+                other => {
+                    if let Some(result) = self.binary_result_if_implemented(other) {
+                        return Ok(Some(result));
+                    }
+                }
+            }
         }
 
         // Try rhs.__rop__(lhs) if provided
@@ -10266,10 +10337,43 @@ impl<T: ResourceTracker, P: PrintWriter, Tr: VmTracer> VM<'_, T, P, Tr> {
             // Clone lhs for the call arg
             let lhs_clone = lhs.clone_with_heap(self.heap);
             let result = self.call_dunder(*rhs_id, method, ArgValues::One(lhs_clone))?;
-            return Ok(Some(result));
+            return match result {
+                CallResult::FramePushed => {
+                    self.pending_binary_dunder.push(PendingBinaryDunder {
+                        lhs: lhs.clone_with_heap(self.heap),
+                        rhs: rhs.clone_with_heap(self.heap),
+                        primary_dunder_id: dunder_id,
+                        reflected_dunder_id,
+                        frame_depth: self.frames.len(),
+                        stage: PendingBinaryDunderStage::Reflected,
+                    });
+                    Ok(Some(CallResult::FramePushed))
+                }
+                other => Ok(self.binary_result_if_implemented(other)),
+            };
         }
 
         Ok(None)
+    }
+
+    /// Returns `None` when a binary dunder returned `NotImplemented`.
+    ///
+    /// This consumes and drops `NotImplemented` so callers can attempt reflected
+    /// dispatch (or eventually raise a type error).
+    fn binary_result_if_implemented(&mut self, result: CallResult) -> Option<CallResult> {
+        match result {
+            CallResult::Push(v) if matches!(v, Value::NotImplemented) => {
+                v.drop_with_heap(self.heap);
+                None
+            }
+            other => Some(other),
+        }
+    }
+
+    /// Builds a CPython-style binary type error from a dunder operation.
+    pub(super) fn binary_dunder_type_error(&self, lhs: &Value, rhs: &Value, primary_dunder_id: StringId) -> RunError {
+        let symbol = binary_symbol_for_dunder(primary_dunder_id);
+        ExcType::binary_type_error(symbol, lhs.py_type(self.heap), rhs.py_type(self.heap))
     }
 
     /// Executes an in-place dunder operation: tries `lhs.__iop__(rhs)`, falls back to `lhs.__op__(rhs)`.
