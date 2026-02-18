@@ -3065,6 +3065,12 @@ impl Value {
                 defer_drop!(class_value, heap);
                 return class_value.py_getattr(name_id, heap, interns);
             }
+            Self::Builtin(Builtins::ExcType(exc_type)) => {
+                // Expose exception class attributes (`__name__`, etc.) the same
+                // way as other builtin type objects.
+                let exception_type_value = Self::Builtin(Builtins::Type(Type::Exception(*exc_type)));
+                return exception_type_value.py_getattr(name_id, heap, interns);
+            }
             Self::ModuleFunction(module_function) => {
                 if matches!(module_function, ModuleFunctions::Itertools(ItertoolsFunctions::Chain))
                     && interns.get_str(name_id) == "from_iterable"

@@ -2213,6 +2213,14 @@ impl RunError {
             _ => false,
         }
     }
+
+    /// Returns true if this error is a catchable exception of `exc_type`.
+    pub fn is_exception_type(&self, exc_type: ExcType) -> bool {
+        match self {
+            Self::Exc(exc) => exc.exc.exc_type() == exc_type,
+            _ => false,
+        }
+    }
 }
 
 /// Formats a list of parameter names for error messages.

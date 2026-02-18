@@ -281,12 +281,54 @@ fn call_type_method(
             defer_drop!(instance, heap);
             if !matches!(
                 method,
-                StaticStrings::DunderSetattr | StaticStrings::DunderGetattribute | StaticStrings::DunderDelattr
+                StaticStrings::DunderSetattr
+                    | StaticStrings::DunderGetattribute
+                    | StaticStrings::DunderDelattr
+                    | StaticStrings::DunderInitSubclass
             ) {
                 rest_args.drop_with_heap(heap);
                 return Err(ExcType::type_error(format!(
                     "descriptor '{method_name}' not implemented for type '{ty}'"
                 )));
+            }
+
+            if method == StaticStrings::DunderInitSubclass {
+                let class_name = match &instance {
+                    Value::Ref(class_id) => match heap.get(*class_id) {
+                        HeapData::ClassObject(cls) => cls.name(interns).to_string(),
+                        _ => {
+                            rest_args.drop_with_heap(heap);
+                            return Err(ExcType::type_error(
+                                "object.__init_subclass__() requires a type object".to_string(),
+                            ));
+                        }
+                    },
+                    Value::Builtin(Builtins::Type(ty)) => ty.to_string(),
+                    _ => {
+                        rest_args.drop_with_heap(heap);
+                        return Err(ExcType::type_error(
+                            "object.__init_subclass__() requires a type object".to_string(),
+                        ));
+                    }
+                };
+                let (positional, kwargs) = rest_args.into_parts();
+                if positional.len() > 0 {
+                    positional.drop_with_heap(heap);
+                    kwargs.drop_with_heap(heap);
+                    return Err(ExcType::type_error(format!(
+                        "{class_name}.__init_subclass__() takes no positional arguments"
+                    )));
+                }
+                if !kwargs.is_empty() {
+                    positional.drop_with_heap(heap);
+                    kwargs.drop_with_heap(heap);
+                    return Err(ExcType::type_error(format!(
+                        "{class_name}.__init_subclass__() takes no keyword arguments"
+                    )));
+                }
+                positional.drop_with_heap(heap);
+                kwargs.drop_with_heap(heap);
+                return Ok(Value::None);
             }
 
             let Value::Ref(instance_id) = instance else {

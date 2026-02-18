@@ -3038,6 +3038,11 @@ impl<'a> Compiler<'a> {
                 self.code.emit_u16(Opcode::LoadConst, const_idx);
                 Ok(conv_bits | 0x04 | debug_bit) // has format spec on stack
             }
+            Some(FormatSpec::Raw(raw)) => {
+                let const_idx = self.code.add_const(Value::InternString(*raw));
+                self.code.emit_u16(Opcode::LoadConst, const_idx);
+                Ok(conv_bits | 0x04 | debug_bit) // has format spec on stack
+            }
             Some(FormatSpec::Dynamic(dynamic_parts)) => {
                 // Compile dynamic format spec parts to build a format spec string
                 // Then parse it at runtime
@@ -3058,6 +3063,10 @@ impl<'a> Compiler<'a> {
     fn compile_format_spec_as_string(&mut self, format_spec: &FormatSpec) -> Result<(), CompileError> {
         match format_spec {
             FormatSpec::Static { raw, .. } => {
+                let const_idx = self.code.add_const(Value::InternString(*raw));
+                self.code.emit_u16(Opcode::LoadConst, const_idx);
+            }
+            FormatSpec::Raw(raw) => {
                 let const_idx = self.code.add_const(Value::InternString(*raw));
                 self.code.emit_u16(Opcode::LoadConst, const_idx);
             }

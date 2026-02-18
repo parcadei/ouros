@@ -786,6 +786,9 @@ pub struct VM<'a, T: ResourceTracker, P: PrintWriter, Tr: VmTracer = crate::trac
     /// unwind exceptions without losing the outer pending conversion state.
     pending_stringify_return: Vec<(PendingStringifyReturn, usize)>,
 
+    /// Pending `print(...)` calls waiting on per-argument `__str__/__repr__`.
+    pending_print_call: Vec<PendingPrintCall>,
+
     /// When true, the next frame return should drop the return value instead of pushing it.
     ///
     /// Used for dunder methods like __setitem__, __delitem__, __exit__ that return None
@@ -797,6 +800,13 @@ pub struct VM<'a, T: ResourceTracker, P: PrintWriter, Tr: VmTracer = crate::trac
     /// Used for `not in` operator when __contains__ pushes a frame. The result
     /// needs to be negated before being used.
     pending_negate_bool: bool,
+
+    /// Stack of pending truthiness protocol returns (`__bool__`/`__len__`).
+    ///
+    /// Truthiness calls can push frames in multiple contexts (`not`, jumps,
+    /// `bool(x)`). We record the frame depth and protocol kind so ReturnValue
+    /// can validate/normalize the return according to CPython rules.
+    pending_truthiness_return: Vec<PendingTruthinessReturn>,
 
     /// When true, the next frame return is from `__instancecheck__`.
     ///
@@ -828,6 +838,14 @@ pub struct VM<'a, T: ResourceTracker, P: PrintWriter, Tr: VmTracer = crate::trac
     /// can continue the protocol correctly.
     pending_binary_dunder: Vec<PendingBinaryDunder>,
 
+    /// Pending rich-comparison dunder calls that pushed a frame.
+    ///
+    /// Comparisons (`==`, `!=`, `<`, `<=`, `>`, `>=`) need CPython-style
+    /// `NotImplemented` reflection and subclass-priority dispatch. When a
+    /// comparison dunder pushes a frame, this stack tracks the in-flight
+    /// protocol so ReturnValue can resume it correctly.
+    pending_compare_dunder: Vec<PendingCompareDunder>,
+
     /// Stack of pending `ForIter` jump offsets.
     ///
     /// `ForIter` can resume nested generators (`for` inside generator pipelines), so
@@ -835,6 +853,36 @@ pub struct VM<'a, T: ResourceTracker, P: PrintWriter, Tr: VmTracer = crate::trac
     /// - normal return/yield from `__next__`: pop one pending entry
     /// - `StopIteration` from `__next__`: pop one pending entry and jump to loop end
     pending_for_iter_jump: Vec<i16>,
+    /// Metadata parallel to `pending_for_iter_jump`.
+    ///
+    /// `true` marks a pending frame from old-style sequence iteration via
+    /// `__getitem__` in a `for` loop. These continuations treat `IndexError`
+    /// as normal iterator exhaustion and advance per-iterator indices.
+    pending_for_iter_getitem: Vec<bool>,
+
+    /// Per-instance index state for old-style sequence iteration.
+    ///
+    /// When `iter(obj)` falls back to `obj.__getitem__(0), __getitem__(1), ...`,
+    /// this map tracks the next index by iterator object id.
+    getitem_for_iter_indices: AHashMap<HeapId, i64>,
+
+    /// Frame depths awaiting `len(instance).__len__()` normalization.
+    ///
+    /// `len()` requires non-negative integer returns; this stack tracks frame-pushed
+    /// `__len__` calls so return values can be validated before pushing.
+    pending_len_return: Vec<usize>,
+
+    /// Frame depths awaiting `format(instance, spec)` `__format__` validation.
+    ///
+    /// `__format__` must return `str`; frame-pushed dunder calls are validated
+    /// on return before the value is pushed to the caller.
+    pending_format_return: Vec<usize>,
+
+    /// Pending single-argument builtin/type call awaiting `__index__` result.
+    pending_index_call: Option<PendingIndexCall>,
+
+    /// Pending `slice(...)` constructor argument coercion via `__index__`.
+    pending_slice_build: Option<PendingSliceBuild>,
 
     /// Pending `next(generator, default)` state while a generator frame executes.
     ///
@@ -1125,6 +1173,11 @@ pub(super) struct PendingNewCall {
     pub(super) init_func: Option<Value>,
     /// Original constructor args (to pass to `__init__`).
     pub(super) args: ArgValues,
+    /// Frame depth of the pending `__new__` frame.
+    ///
+    /// Used so nested calls inside `__new__` do not get mistaken for the
+    /// `__new__` return itself.
+    pub(super) frame_depth: usize,
 }
 
 /// Indicates whether a pending getattr fallback is for an instance or class object.
@@ -1160,6 +1213,16 @@ pub(super) enum PendingBinaryDunderStage {
     Inplace,
     /// Waiting for the primary `lhs.__op__(rhs)` result.
     Primary,
+    /// Waiting for a reflected-first `rhs.__rop__(lhs)` result.
+    ///
+    /// Used when rhs is a strict subclass of lhs and reflected method priority
+    /// applies. If it returns `NotImplemented`, falls back to primary.
+    ReflectedFirst,
+    /// Waiting for primary result after a reflected-first call already returned
+    /// `NotImplemented`.
+    ///
+    /// If this also returns `NotImplemented`, protocol is exhausted.
+    PrimaryFinal,
     /// Waiting for the reflected `rhs.__rop__(lhs)` result.
     Reflected,
 }
@@ -1178,6 +1241,49 @@ pub(super) struct PendingBinaryDunder {
     pub(super) frame_depth: usize,
     /// Which part of the protocol is currently in flight.
     pub(super) stage: PendingBinaryDunderStage,
+}
+
+/// Kind of comparison protocol currently being evaluated.
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub(super) enum PendingCompareKind {
+    Eq,
+    NePrimary,
+    NeEqFallback,
+    Lt,
+    Le,
+    Gt,
+    Ge,
+}
+
+/// Side to invoke for a comparison dispatch step.
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub(super) enum PendingCompareSide {
+    Lhs,
+    Rhs,
+}
+
+/// One comparison dunder invocation step in the protocol.
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub(super) struct PendingCompareStep {
+    pub(super) side: PendingCompareSide,
+    pub(super) dunder: StaticStrings,
+}
+
+/// Protocol cursor for an in-flight comparison dispatch.
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub(super) struct PendingCompareDispatch {
+    pub(super) kind: PendingCompareKind,
+    pub(super) first: Option<PendingCompareStep>,
+    pub(super) second: Option<PendingCompareStep>,
+    pub(super) next_step: u8,
+}
+
+/// Pending state for frame-based rich-comparison dispatch.
+pub(super) struct PendingCompareDunder {
+    pub(super) lhs: Value,
+    pub(super) rhs: Value,
+    pub(super) dispatch: PendingCompareDispatch,
+    pub(super) frame_depth: usize,
 }
 
 /// Pending state for class construction across async frame boundaries.
@@ -1340,6 +1446,40 @@ pub(super) enum PendingStringifyReturn {
     Repr,
 }
 
+/// Pending state for VM-managed `print(...)` argument stringification.
+pub(super) struct PendingPrintCall {
+    /// Remaining positional args to stringify, stored in reverse order.
+    pub(super) remaining_positional: Vec<Value>,
+    /// Already-stringified positional args in call order.
+    pub(super) rendered_positional: Vec<Value>,
+    /// Original kwargs forwarded to builtin `print`.
+    pub(super) kwargs: KwargsValues,
+    /// Whether the in-flight call was `__str__` or `__repr__`.
+    pub(super) awaiting_kind: PendingStringifyReturn,
+    /// Frame depth of the in-flight stringify dunder call.
+    pub(super) frame_depth: usize,
+}
+
+/// Truthiness protocol dunder currently being finalized.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub(super) enum PendingTruthinessKind {
+    /// Value came from `__bool__`; it must be a `bool`.
+    Bool,
+    /// Value came from `__len__`; it must be a non-negative integer.
+    Len,
+}
+
+/// Pending truthiness-protocol return that pushed a Python frame.
+#[derive(Debug, Clone, Copy)]
+pub(super) struct PendingTruthinessReturn {
+    /// Frame depth (including the in-flight frame) where this return is expected.
+    pub(super) frame_depth: usize,
+    /// Which truthiness dunder produced the return value.
+    pub(super) kind: PendingTruthinessKind,
+    /// Whether the normalized bool should be negated before pushing.
+    pub(super) negate: bool,
+}
+
 /// Builtins that can complete after generator list materialization.
 #[derive(Debug)]
 pub(super) enum PendingBuiltinFromListKind {
@@ -1347,6 +1487,8 @@ pub(super) enum PendingBuiltinFromListKind {
     Any,
     /// `all(generator)`
     All,
+    /// `needle in iterable` / `needle not in iterable` after materialization.
+    Contains { needle: Value, negate: bool },
     /// `tuple(generator)`
     Tuple,
     /// `dict(generator_of_pairs)`
@@ -1405,6 +1547,28 @@ pub(super) enum PendingBuiltinFromListKind {
 pub(super) struct PendingBuiltinFromList {
     /// Builtin to run after list materialization completes.
     pub(super) kind: PendingBuiltinFromListKind,
+}
+
+/// Deferred single-argument call target waiting on `__index__`.
+#[derive(Debug, Clone, Copy)]
+pub(super) enum PendingIndexCallTarget {
+    BuiltinFunction(crate::builtins::BuiltinsFunctions),
+    BuiltinType(crate::types::Type),
+}
+
+/// Pending single-argument call state while `__index__` frame runs.
+#[derive(Debug, Clone, Copy)]
+pub(super) struct PendingIndexCall {
+    pub(super) frame_depth: usize,
+    pub(super) target: PendingIndexCallTarget,
+}
+
+/// Pending `slice(...)` constructor coercion state while `__index__` frame runs.
+#[derive(Debug)]
+pub(super) struct PendingSliceBuild {
+    pub(super) frame_depth: usize,
+    pub(super) converted: Vec<Value>,
+    pub(super) remaining: Vec<Value>,
 }
 
 /// Action injected when resuming a suspended generator via `throw()`/`close()`.
@@ -1826,14 +1990,23 @@ impl<'a, T: ResourceTracker, P: PrintWriter, Tr: VmTracer> VM<'a, T, P, Tr> {
             pending_hash_target: None,
             pending_hash_push_result: false,
             pending_stringify_return: Vec::new(),
+            pending_print_call: Vec::new(),
             pending_discard_return: false,
             pending_negate_bool: false,
+            pending_truthiness_return: Vec::new(),
             pending_instancecheck_return: false,
             pending_subclasscheck_return: false,
             pending_dir_return: false,
             pending_getattr_fallback: Vec::new(),
             pending_binary_dunder: Vec::new(),
+            pending_compare_dunder: Vec::new(),
             pending_for_iter_jump: Vec::new(),
+            pending_for_iter_getitem: Vec::new(),
+            getitem_for_iter_indices: AHashMap::new(),
+            pending_len_return: Vec::new(),
+            pending_format_return: Vec::new(),
+            pending_index_call: None,
+            pending_slice_build: None,
             pending_next_default: None,
             pending_defaultdict_missing: None,
             pending_defaultdict_return: false,
@@ -1940,14 +2113,23 @@ impl<'a, T: ResourceTracker, P: PrintWriter, Tr: VmTracer> VM<'a, T, P, Tr> {
             pending_hash_target: None,
             pending_hash_push_result: false,
             pending_stringify_return: Vec::new(),
+            pending_print_call: Vec::new(),
             pending_discard_return: false,
             pending_negate_bool: false,
+            pending_truthiness_return: Vec::new(),
             pending_instancecheck_return: false,
             pending_subclasscheck_return: false,
             pending_dir_return: false,
             pending_getattr_fallback: Vec::new(),
             pending_binary_dunder: Vec::new(),
+            pending_compare_dunder: Vec::new(),
             pending_for_iter_jump: Vec::new(),
+            pending_for_iter_getitem: Vec::new(),
+            getitem_for_iter_indices: AHashMap::new(),
+            pending_len_return: Vec::new(),
+            pending_format_return: Vec::new(),
+            pending_index_call: None,
+            pending_slice_build: None,
             pending_next_default: None,
             pending_defaultdict_missing: None,
             pending_defaultdict_return: false,
@@ -2097,14 +2279,23 @@ impl<'a, T: ResourceTracker, P: PrintWriter, Tr: VmTracer> VM<'a, T, P, Tr> {
             pending_hash_target: None,
             pending_hash_push_result: false,
             pending_stringify_return: Vec::new(),
+            pending_print_call: Vec::new(),
             pending_discard_return: false,
             pending_negate_bool: false,
+            pending_truthiness_return: Vec::new(),
             pending_instancecheck_return: false,
             pending_subclasscheck_return: false,
             pending_dir_return: false,
             pending_getattr_fallback: Vec::new(),
             pending_binary_dunder: Vec::new(),
+            pending_compare_dunder: Vec::new(),
             pending_for_iter_jump: Vec::new(),
+            pending_for_iter_getitem: Vec::new(),
+            getitem_for_iter_indices: AHashMap::new(),
+            pending_len_return: Vec::new(),
+            pending_format_return: Vec::new(),
+            pending_index_call: None,
+            pending_slice_build: None,
             pending_next_default: None,
             pending_defaultdict_missing: None,
             pending_defaultdict_return: false,
@@ -2374,7 +2565,21 @@ impl<'a, T: ResourceTracker, P: PrintWriter, Tr: VmTracer> VM<'a, T, P, Tr> {
         self.pending_unpack = None;
         self.clear_pending_builtin_from_list();
         self.pending_stringify_return.clear();
+        self.clear_pending_print_call();
         self.pending_for_iter_jump.clear();
+        self.pending_for_iter_getitem.clear();
+        self.getitem_for_iter_indices.clear();
+        self.pending_len_return.clear();
+        self.pending_format_return.clear();
+        self.pending_index_call = None;
+        if let Some(pending) = self.pending_slice_build.take() {
+            for value in pending.converted {
+                value.drop_with_heap(self.heap);
+            }
+            for value in pending.remaining {
+                value.drop_with_heap(self.heap);
+            }
+        }
         self.clear_pending_next_default();
         self.clear_pending_generator_action();
         self.pending_yield_from.clear();
@@ -2939,16 +3144,18 @@ impl<'a, T: ResourceTracker, P: PrintWriter, Tr: VmTracer> VM<'a, T, P, Tr> {
                             self.current_frame_mut().ip = cached_frame.ip;
                             match self.call_dunder(*id, method, ArgValues::Empty) {
                                 Ok(CallResult::Push(bool_val)) => {
-                                    let b = bool_val.py_bool(self.heap, self.interns);
+                                    let b = self.truthiness_from_bool_dunder_return(&bool_val);
                                     bool_val.drop_with_heap(self.heap);
                                     value.drop_with_heap(self.heap);
-                                    self.push(Value::Bool(!b));
+                                    match b {
+                                        Ok(result) => self.push(Value::Bool(!result)),
+                                        Err(e) => catch_sync!(self, cached_frame, e),
+                                    }
                                 }
                                 Ok(CallResult::FramePushed) => {
-                                    // __bool__ pushed a frame. Use pending_negate_bool to
-                                    // negate the return value when the frame returns.
+                                    // __bool__ pushed a frame. Negate the validated bool return.
                                     value.drop_with_heap(self.heap);
-                                    self.pending_negate_bool = true;
+                                    self.push_pending_truthiness_return(PendingTruthinessKind::Bool, true);
                                     reload_cache!(self, cached_frame);
                                 }
                                 Err(e) => {
@@ -2967,16 +3174,17 @@ impl<'a, T: ResourceTracker, P: PrintWriter, Tr: VmTracer> VM<'a, T, P, Tr> {
                             self.current_frame_mut().ip = cached_frame.ip;
                             match self.call_dunder(*id, method, ArgValues::Empty) {
                                 Ok(CallResult::Push(len_val)) => {
-                                    let b = match &len_val {
-                                        Value::Int(n) => *n != 0,
-                                        _ => len_val.py_bool(self.heap, self.interns),
-                                    };
+                                    let b = self.truthiness_from_len_dunder_return(&len_val);
                                     len_val.drop_with_heap(self.heap);
                                     value.drop_with_heap(self.heap);
-                                    self.push(Value::Bool(!b));
+                                    match b {
+                                        Ok(result) => self.push(Value::Bool(!result)),
+                                        Err(e) => catch_sync!(self, cached_frame, e),
+                                    }
                                 }
                                 Ok(CallResult::FramePushed) => {
                                     value.drop_with_heap(self.heap);
+                                    self.push_pending_truthiness_return(PendingTruthinessKind::Len, true);
                                     reload_cache!(self, cached_frame);
                                 }
                                 Err(e) => {
@@ -3967,16 +4175,22 @@ impl<'a, T: ResourceTracker, P: PrintWriter, Tr: VmTracer> VM<'a, T, P, Tr> {
                             match self.call_dunder(id, method, ArgValues::Empty) {
                                 Ok(CallResult::FramePushed) => {
                                     cond.drop_with_heap(self.heap);
+                                    self.push_pending_truthiness_return(PendingTruthinessKind::Bool, false);
                                     reload_cache!(self, cached_frame);
                                 }
                                 Ok(CallResult::Push(bool_val)) => {
-                                    let b = bool_val.py_bool(self.heap, self.interns);
+                                    let b = self.truthiness_from_bool_dunder_return(&bool_val);
                                     bool_val.drop_with_heap(self.heap);
                                     cond.drop_with_heap(self.heap);
-                                    // Reset IP past the opcode+operand for this jump
-                                    cached_frame.ip = self.instruction_ip + 3; // 1 opcode + 2 offset bytes
-                                    if b {
-                                        jump_relative!(cached_frame.ip, offset);
+                                    match b {
+                                        Ok(result) => {
+                                            // Reset IP past the opcode+operand for this jump
+                                            cached_frame.ip = self.instruction_ip + 3; // 1 opcode + 2 offset bytes
+                                            if result {
+                                                jump_relative!(cached_frame.ip, offset);
+                                            }
+                                        }
+                                        Err(e) => catch_sync!(self, cached_frame, e),
                                     }
                                 }
                                 Err(e) => {
@@ -3997,18 +4211,21 @@ impl<'a, T: ResourceTracker, P: PrintWriter, Tr: VmTracer> VM<'a, T, P, Tr> {
                             match self.call_dunder(id, method, ArgValues::Empty) {
                                 Ok(CallResult::FramePushed) => {
                                     cond.drop_with_heap(self.heap);
+                                    self.push_pending_truthiness_return(PendingTruthinessKind::Len, false);
                                     reload_cache!(self, cached_frame);
                                 }
                                 Ok(CallResult::Push(len_val)) => {
-                                    let b = match &len_val {
-                                        Value::Int(i) => *i != 0,
-                                        _ => true,
-                                    };
+                                    let b = self.truthiness_from_len_dunder_return(&len_val);
                                     len_val.drop_with_heap(self.heap);
                                     cond.drop_with_heap(self.heap);
-                                    cached_frame.ip = self.instruction_ip + 3;
-                                    if b {
-                                        jump_relative!(cached_frame.ip, offset);
+                                    match b {
+                                        Ok(result) => {
+                                            cached_frame.ip = self.instruction_ip + 3;
+                                            if result {
+                                                jump_relative!(cached_frame.ip, offset);
+                                            }
+                                        }
+                                        Err(e) => catch_sync!(self, cached_frame, e),
                                     }
                                 }
                                 Err(e) => {
@@ -4042,15 +4259,21 @@ impl<'a, T: ResourceTracker, P: PrintWriter, Tr: VmTracer> VM<'a, T, P, Tr> {
                             match self.call_dunder(id, method, ArgValues::Empty) {
                                 Ok(CallResult::FramePushed) => {
                                     cond.drop_with_heap(self.heap);
+                                    self.push_pending_truthiness_return(PendingTruthinessKind::Bool, false);
                                     reload_cache!(self, cached_frame);
                                 }
                                 Ok(CallResult::Push(bool_val)) => {
-                                    let b = bool_val.py_bool(self.heap, self.interns);
+                                    let b = self.truthiness_from_bool_dunder_return(&bool_val);
                                     bool_val.drop_with_heap(self.heap);
                                     cond.drop_with_heap(self.heap);
-                                    cached_frame.ip = self.instruction_ip + 3;
-                                    if !b {
-                                        jump_relative!(cached_frame.ip, offset);
+                                    match b {
+                                        Ok(result) => {
+                                            cached_frame.ip = self.instruction_ip + 3;
+                                            if !result {
+                                                jump_relative!(cached_frame.ip, offset);
+                                            }
+                                        }
+                                        Err(e) => catch_sync!(self, cached_frame, e),
                                     }
                                 }
                                 Err(e) => {
@@ -4070,18 +4293,21 @@ impl<'a, T: ResourceTracker, P: PrintWriter, Tr: VmTracer> VM<'a, T, P, Tr> {
                             match self.call_dunder(id, method, ArgValues::Empty) {
                                 Ok(CallResult::FramePushed) => {
                                     cond.drop_with_heap(self.heap);
+                                    self.push_pending_truthiness_return(PendingTruthinessKind::Len, false);
                                     reload_cache!(self, cached_frame);
                                 }
                                 Ok(CallResult::Push(len_val)) => {
-                                    let b = match &len_val {
-                                        Value::Int(i) => *i != 0,
-                                        _ => true,
-                                    };
+                                    let b = self.truthiness_from_len_dunder_return(&len_val);
                                     len_val.drop_with_heap(self.heap);
                                     cond.drop_with_heap(self.heap);
-                                    cached_frame.ip = self.instruction_ip + 3;
-                                    if !b {
-                                        jump_relative!(cached_frame.ip, offset);
+                                    match b {
+                                        Ok(result) => {
+                                            cached_frame.ip = self.instruction_ip + 3;
+                                            if !result {
+                                                jump_relative!(cached_frame.ip, offset);
+                                            }
+                                        }
+                                        Err(e) => catch_sync!(self, cached_frame, e),
                                     }
                                 }
                                 Err(e) => {
@@ -4102,7 +4328,7 @@ impl<'a, T: ResourceTracker, P: PrintWriter, Tr: VmTracer> VM<'a, T, P, Tr> {
                 }
                 Opcode::JumpIfTrueOrPop => {
                     let offset = fetch_i16!(cached_frame);
-                    // For instances with __bool__, dispatch dunder then re-execute
+                    // For instances with truthiness dunders, dispatch then re-execute
                     if let Value::Ref(id) = self.peek() {
                         let id = *id;
                         if matches!(self.heap.get(id), HeapData::Instance(_)) {
@@ -4114,14 +4340,52 @@ impl<'a, T: ResourceTracker, P: PrintWriter, Tr: VmTracer> VM<'a, T, P, Tr> {
                                 match self.call_dunder(id, method, ArgValues::Empty) {
                                     Ok(CallResult::FramePushed) => {
                                         cond.drop_with_heap(self.heap);
+                                        self.push_pending_truthiness_return(PendingTruthinessKind::Bool, false);
                                         reload_cache!(self, cached_frame);
                                     }
                                     Ok(CallResult::Push(bool_val)) => {
-                                        let b = bool_val.py_bool(self.heap, self.interns);
+                                        let b = self.truthiness_from_bool_dunder_return(&bool_val);
                                         bool_val.drop_with_heap(self.heap);
                                         cond.drop_with_heap(self.heap);
-                                        // Push a Bool to replace the instance for re-execution
-                                        self.push(Value::Bool(b));
+                                        match b {
+                                            Ok(result) => {
+                                                // Push a bool to replace the instance for re-execution.
+                                                self.push(Value::Bool(result));
+                                            }
+                                            Err(e) => catch_sync!(self, cached_frame, e),
+                                        }
+                                    }
+                                    Err(e) => {
+                                        cond.drop_with_heap(self.heap);
+                                        catch_sync!(self, cached_frame, e);
+                                    }
+                                    _ => {
+                                        cond.drop_with_heap(self.heap);
+                                    }
+                                }
+                                continue;
+                            }
+                            let len_id: StringId = StaticStrings::DunderLen.into();
+                            if let Some(method) = self.lookup_type_dunder(id, len_id) {
+                                let cond = self.pop();
+                                self.current_frame_mut().ip = self.instruction_ip;
+                                cached_frame.ip = self.instruction_ip;
+                                match self.call_dunder(id, method, ArgValues::Empty) {
+                                    Ok(CallResult::FramePushed) => {
+                                        cond.drop_with_heap(self.heap);
+                                        self.push_pending_truthiness_return(PendingTruthinessKind::Len, false);
+                                        reload_cache!(self, cached_frame);
+                                    }
+                                    Ok(CallResult::Push(len_val)) => {
+                                        let b = self.truthiness_from_len_dunder_return(&len_val);
+                                        len_val.drop_with_heap(self.heap);
+                                        cond.drop_with_heap(self.heap);
+                                        match b {
+                                            Ok(result) => {
+                                                self.push(Value::Bool(result));
+                                            }
+                                            Err(e) => catch_sync!(self, cached_frame, e),
+                                        }
                                     }
                                     Err(e) => {
                                         cond.drop_with_heap(self.heap);
@@ -4144,7 +4408,7 @@ impl<'a, T: ResourceTracker, P: PrintWriter, Tr: VmTracer> VM<'a, T, P, Tr> {
                 }
                 Opcode::JumpIfFalseOrPop => {
                     let offset = fetch_i16!(cached_frame);
-                    // For instances with __bool__, dispatch dunder then re-execute
+                    // For instances with truthiness dunders, dispatch then re-execute
                     if let Value::Ref(id) = self.peek() {
                         let id = *id;
                         if matches!(self.heap.get(id), HeapData::Instance(_)) {
@@ -4156,13 +4420,47 @@ impl<'a, T: ResourceTracker, P: PrintWriter, Tr: VmTracer> VM<'a, T, P, Tr> {
                                 match self.call_dunder(id, method, ArgValues::Empty) {
                                     Ok(CallResult::FramePushed) => {
                                         cond.drop_with_heap(self.heap);
+                                        self.push_pending_truthiness_return(PendingTruthinessKind::Bool, false);
                                         reload_cache!(self, cached_frame);
                                     }
                                     Ok(CallResult::Push(bool_val)) => {
-                                        let b = bool_val.py_bool(self.heap, self.interns);
+                                        let b = self.truthiness_from_bool_dunder_return(&bool_val);
                                         bool_val.drop_with_heap(self.heap);
                                         cond.drop_with_heap(self.heap);
-                                        self.push(Value::Bool(b));
+                                        match b {
+                                            Ok(result) => self.push(Value::Bool(result)),
+                                            Err(e) => catch_sync!(self, cached_frame, e),
+                                        }
+                                    }
+                                    Err(e) => {
+                                        cond.drop_with_heap(self.heap);
+                                        catch_sync!(self, cached_frame, e);
+                                    }
+                                    _ => {
+                                        cond.drop_with_heap(self.heap);
+                                    }
+                                }
+                                continue;
+                            }
+                            let len_id: StringId = StaticStrings::DunderLen.into();
+                            if let Some(method) = self.lookup_type_dunder(id, len_id) {
+                                let cond = self.pop();
+                                self.current_frame_mut().ip = self.instruction_ip;
+                                cached_frame.ip = self.instruction_ip;
+                                match self.call_dunder(id, method, ArgValues::Empty) {
+                                    Ok(CallResult::FramePushed) => {
+                                        cond.drop_with_heap(self.heap);
+                                        self.push_pending_truthiness_return(PendingTruthinessKind::Len, false);
+                                        reload_cache!(self, cached_frame);
+                                    }
+                                    Ok(CallResult::Push(len_val)) => {
+                                        let b = self.truthiness_from_len_dunder_return(&len_val);
+                                        len_val.drop_with_heap(self.heap);
+                                        cond.drop_with_heap(self.heap);
+                                        match b {
+                                            Ok(result) => self.push(Value::Bool(result)),
+                                            Err(e) => catch_sync!(self, cached_frame, e),
+                                        }
                                     }
                                     Err(e) => {
                                         cond.drop_with_heap(self.heap);
@@ -4227,6 +4525,13 @@ impl<'a, T: ResourceTracker, P: PrintWriter, Tr: VmTracer> VM<'a, T, P, Tr> {
                             }
                             continue;
                         }
+                        let getitem_id: StringId = StaticStrings::DunderGetitem.into();
+                        if self.lookup_type_dunder(id, getitem_id).is_some() {
+                            // Old-style sequence iteration fallback: __getitem__(0), __getitem__(1), ...
+                            self.getitem_for_iter_indices.insert(id, 0);
+                            self.push(value);
+                            continue;
+                        }
                     }
                     // Check if value is a class object with metaclass __iter__
                     if let Value::Ref(id) = &value
@@ -4283,6 +4588,7 @@ impl<'a, T: ResourceTracker, P: PrintWriter, Tr: VmTracer> VM<'a, T, P, Tr> {
                         match self.generator_next(heap_id) {
                             Ok(CallResult::FramePushed) => {
                                 self.pending_for_iter_jump.push(offset);
+                                self.pending_for_iter_getitem.push(false);
                                 reload_cache!(self, cached_frame);
                             }
                             Err(e) if e.is_stop_iteration() => {
@@ -4314,6 +4620,7 @@ impl<'a, T: ResourceTracker, P: PrintWriter, Tr: VmTracer> VM<'a, T, P, Tr> {
                                     // - On normal return: push the value (next item)
                                     // - On StopIteration: pop iterator and jump to end
                                     self.pending_for_iter_jump.push(offset);
+                                    self.pending_for_iter_getitem.push(false);
                                     reload_cache!(self, cached_frame);
                                 }
                                 Err(e) => {
@@ -4332,6 +4639,44 @@ impl<'a, T: ResourceTracker, P: PrintWriter, Tr: VmTracer> VM<'a, T, P, Tr> {
                             }
                             continue;
                         }
+
+                        if let Some(index) = self.getitem_for_iter_indices.get(&heap_id).copied() {
+                            let getitem_id: StringId = StaticStrings::DunderGetitem.into();
+                            if let Some(method) = self.lookup_type_dunder(heap_id, getitem_id) {
+                                self.current_frame_mut().ip = cached_frame.ip;
+                                match self.call_dunder(heap_id, method, ArgValues::One(Value::Int(index))) {
+                                    Ok(CallResult::Push(next_val)) => {
+                                        self.getitem_for_iter_indices
+                                            .insert(heap_id, index.checked_add(1).expect("getitem index overflow"));
+                                        self.push(next_val);
+                                    }
+                                    Ok(CallResult::FramePushed) => {
+                                        self.pending_for_iter_jump.push(offset);
+                                        self.pending_for_iter_getitem.push(true);
+                                        reload_cache!(self, cached_frame);
+                                    }
+                                    Err(e) => {
+                                        if e.is_exception_type(ExcType::IndexError) {
+                                            let iter = self.pop();
+                                            if let Value::Ref(iter_id) = iter {
+                                                self.getitem_for_iter_indices.remove(&iter_id);
+                                            }
+                                            iter.drop_with_heap(self.heap);
+                                            jump_relative!(cached_frame.ip, offset);
+                                        } else {
+                                            let iter = self.pop();
+                                            if let Value::Ref(iter_id) = iter {
+                                                self.getitem_for_iter_indices.remove(&iter_id);
+                                            }
+                                            iter.drop_with_heap(self.heap);
+                                            catch_sync!(self, cached_frame, e);
+                                        }
+                                    }
+                                    _ => {}
+                                }
+                                continue;
+                            }
+                        }
                     }
 
                     // Use advance_iterator which avoids std::mem::replace overhead
@@ -4341,12 +4686,18 @@ impl<'a, T: ResourceTracker, P: PrintWriter, Tr: VmTracer> VM<'a, T, P, Tr> {
                         Ok(None) => {
                             // Iterator exhausted - pop it and jump to end
                             let iter = self.pop();
+                            if let Value::Ref(iter_id) = iter {
+                                self.getitem_for_iter_indices.remove(&iter_id);
+                            }
                             iter.drop_with_heap(self.heap);
                             jump_relative!(cached_frame.ip, offset);
                         }
                         Err(e) => {
                             // Error during iteration (e.g., dict size changed)
                             let iter = self.pop();
+                            if let Value::Ref(iter_id) = iter {
+                                self.getitem_for_iter_indices.remove(&iter_id);
+                            }
                             iter.drop_with_heap(self.heap);
                             catch_sync!(self, cached_frame, e);
                         }
@@ -4594,28 +4945,35 @@ impl<'a, T: ResourceTracker, P: PrintWriter, Tr: VmTracer> VM<'a, T, P, Tr> {
                     }
                 }
                 Opcode::WithExceptSetup => {
-                    // Stack: [..., exception] -> [..., exc_type, exc_val, None]
-                    // Used in with-statement exception handler to set up __exit__ args
+                    // Stack: [..., exception] -> [..., exc_type, exc_val, exc_tb]
+                    // Used in with-statement exception handler to set up __exit__ args.
+                    // We don't currently materialize traceback objects, so we pass a
+                    // non-None placeholder when an exception exists.
                     let exc_val = self.pop();
-                    // Extract the ExcType from the exception value
                     if let Value::Ref(exc_id) = &exc_val {
-                        if let HeapData::Exception(exc) = self.heap.get(*exc_id) {
-                            let exc_type = exc.exc_type();
-                            // Push exc_type as a builtin value
-                            self.push(Value::Builtin(crate::builtins::Builtins::ExcType(exc_type)));
-                            // Push the exception value itself (as exc_val)
-                            self.push(exc_val);
-                            // Push None for traceback
-                            self.push(Value::None);
-                        } else {
-                            // Not an exception - shouldn't happen, but handle gracefully
-                            exc_val.drop_with_heap(self.heap);
-                            self.push(Value::None);
-                            self.push(Value::None);
-                            self.push(Value::None);
+                        match self.heap.get(*exc_id) {
+                            HeapData::Exception(exc) => {
+                                // Use builtin exception class object identity (e.g. KeyError)
+                                // so checks like `exc_type is KeyError` behave like CPython.
+                                self.push(Value::Builtin(crate::builtins::Builtins::ExcType(exc.exc_type())));
+                                self.push(exc_val.clone_with_heap(self.heap));
+                                self.push(exc_val);
+                            }
+                            HeapData::Instance(inst) => {
+                                // User-defined exception instance: exc_type is its class.
+                                self.heap.inc_ref(inst.class_id());
+                                self.push(Value::Ref(inst.class_id()));
+                                self.push(exc_val.clone_with_heap(self.heap));
+                                self.push(exc_val);
+                            }
+                            _ => {
+                                exc_val.drop_with_heap(self.heap);
+                                self.push(Value::None);
+                                self.push(Value::None);
+                                self.push(Value::None);
+                            }
                         }
                     } else {
-                        // Not a ref - shouldn't happen
                         exc_val.drop_with_heap(self.heap);
                         self.push(Value::None);
                         self.push(Value::None);
@@ -4723,7 +5081,11 @@ impl<'a, T: ResourceTracker, P: PrintWriter, Tr: VmTracer> VM<'a, T, P, Tr> {
                         // ForIter continuation for generator.__next__(): iterator is still on the
                         // caller stack. Pop it and jump to the end of the loop body.
                         if let Some(offset) = self.pending_for_iter_jump.pop() {
+                            self.pending_for_iter_getitem.pop();
                             let iter = self.pop();
+                            if let Value::Ref(iter_id) = iter {
+                                self.getitem_for_iter_indices.remove(&iter_id);
+                            }
                             iter.drop_with_heap(self.heap);
                             let frame = self.current_frame_mut();
                             jump_relative!(frame.ip, offset);
@@ -4872,9 +5234,16 @@ impl<'a, T: ResourceTracker, P: PrintWriter, Tr: VmTracer> VM<'a, T, P, Tr> {
                                     Err(e) => catch_sync!(self, cached_frame, e),
                                 }
                             }
-                            Err(e) => catch_sync!(self, cached_frame, e),
+                            Err(e) => {
+                                self.instruction_ip = self.current_frame().ip;
+                                catch_sync!(self, cached_frame, e);
+                            }
                         }
-                    } else if self.pending_new_call.is_some() {
+                    } else if self
+                        .pending_new_call
+                        .as_ref()
+                        .is_some_and(|pending| pending.frame_depth == self.frames.len())
+                    {
                         // __new__ call returned - handle the result (maybe call __init__)
                         let pending = self.pending_new_call.take().expect("checked above");
                         let pending_class_heap_id = pending.class_heap_id;
@@ -4920,17 +5289,23 @@ impl<'a, T: ResourceTracker, P: PrintWriter, Tr: VmTracer> VM<'a, T, P, Tr> {
                                 // The init_instance field was already set by handle_new_result.
                                 reload_cache!(self, cached_frame);
                             }
-                            Err(e) => catch_sync!(self, cached_frame, e),
+                            Err(e) => {
+                                self.instruction_ip = self.current_frame().ip;
+                                catch_sync!(self, cached_frame, e);
+                            }
                             _ => {
                                 reload_cache!(self, cached_frame);
                             }
                         }
                     } else if self.current_frame().init_instance.is_some() {
-                        // __init__ call returning - drop None return value, push the instance.
-                        value.drop_with_heap(self.heap);
+                        // __init__ call returning - validate return value and push instance.
+                        let init_return = value;
                         let frame_depth = self.frames.len();
                         self.drop_pending_getattr_for_frame(frame_depth);
                         self.drop_pending_binary_dunder_for_frame(frame_depth);
+                        self.drop_pending_len_for_frame(frame_depth);
+                        self.drop_pending_format_for_frame(frame_depth);
+                        self.drop_pending_index_for_frame(frame_depth);
                         let frame = self.frames.pop().expect("no frame to pop");
                         // Clean up frame's stack region
                         while self.stack.len() > frame.stack_base {
@@ -4943,45 +5318,54 @@ impl<'a, T: ResourceTracker, P: PrintWriter, Tr: VmTracer> VM<'a, T, P, Tr> {
                         }
                         // Push the instance that was stashed in the frame
                         let instance = frame.init_instance.expect("checked above");
-                        let should_resume_metaclass_finalize =
-                            self.pending_class_finalize.as_ref().is_some_and(|pending_finalize| {
-                                let PendingClassFinalize::MetaclassCall { metaclass_id, .. } = pending_finalize else {
-                                    return false;
-                                };
-                                let Value::Ref(class_id) = &instance else {
-                                    return false;
-                                };
-                                match self.heap.get(*class_id) {
-                                    HeapData::ClassObject(cls) => {
-                                        matches!(cls.metaclass(), Value::Ref(id) if *id == *metaclass_id)
-                                    }
-                                    _ => false,
-                                }
-                            });
-                        if should_resume_metaclass_finalize {
-                            let pending_finalize = self
-                                .pending_class_finalize
-                                .take()
-                                .expect("pending class finalize should exist");
-                            match self.resume_class_finalize(pending_finalize, instance) {
-                                Ok(class_value) => {
-                                    self.push(class_value);
-                                    match self.process_next_set_name_call() {
-                                        Ok(true) => {
-                                            reload_cache!(self, cached_frame);
-                                        }
-                                        Ok(false) => match self.process_next_init_subclass_call() {
-                                            Ok(_) => reload_cache!(self, cached_frame),
-                                            Err(e) => catch_sync!(self, cached_frame, e),
-                                        },
-                                        Err(e) => catch_sync!(self, cached_frame, e),
-                                    }
-                                }
-                                Err(e) => catch_sync!(self, cached_frame, e),
-                            }
+                        if let Err(e) = self.validate_init_return(&init_return) {
+                            init_return.drop_with_heap(self.heap);
+                            instance.drop_with_heap(self.heap);
+                            self.instruction_ip = self.current_frame().ip;
+                            catch_sync!(self, cached_frame, e);
                         } else {
-                            self.push(instance);
-                            reload_cache!(self, cached_frame);
+                            init_return.drop_with_heap(self.heap);
+                            let should_resume_metaclass_finalize =
+                                self.pending_class_finalize.as_ref().is_some_and(|pending_finalize| {
+                                    let PendingClassFinalize::MetaclassCall { metaclass_id, .. } = pending_finalize
+                                    else {
+                                        return false;
+                                    };
+                                    let Value::Ref(class_id) = &instance else {
+                                        return false;
+                                    };
+                                    match self.heap.get(*class_id) {
+                                        HeapData::ClassObject(cls) => {
+                                            matches!(cls.metaclass(), Value::Ref(id) if *id == *metaclass_id)
+                                        }
+                                        _ => false,
+                                    }
+                                });
+                            if should_resume_metaclass_finalize {
+                                let pending_finalize = self
+                                    .pending_class_finalize
+                                    .take()
+                                    .expect("pending class finalize should exist");
+                                match self.resume_class_finalize(pending_finalize, instance) {
+                                    Ok(class_value) => {
+                                        self.push(class_value);
+                                        match self.process_next_set_name_call() {
+                                            Ok(true) => {
+                                                reload_cache!(self, cached_frame);
+                                            }
+                                            Ok(false) => match self.process_next_init_subclass_call() {
+                                                Ok(_) => reload_cache!(self, cached_frame),
+                                                Err(e) => catch_sync!(self, cached_frame, e),
+                                            },
+                                            Err(e) => catch_sync!(self, cached_frame, e),
+                                        }
+                                    }
+                                    Err(e) => catch_sync!(self, cached_frame, e),
+                                }
+                            } else {
+                                self.push(instance);
+                                reload_cache!(self, cached_frame);
+                            }
                         }
                     } else if self.pending_set_name_return {
                         // __set_name__ call returned - discard the return value,
@@ -5001,7 +5385,10 @@ impl<'a, T: ResourceTracker, P: PrintWriter, Tr: VmTracer> VM<'a, T, P, Tr> {
                                     Err(e) => catch_sync!(self, cached_frame, e),
                                 }
                             }
-                            Err(e) => catch_sync!(self, cached_frame, e),
+                            Err(e) => {
+                                self.instruction_ip = self.current_frame().ip;
+                                catch_sync!(self, cached_frame, e);
+                            }
                         }
                     } else if self.pending_init_subclass_return {
                         // __init_subclass__ call returned - discard, pop, process next
@@ -5010,7 +5397,10 @@ impl<'a, T: ResourceTracker, P: PrintWriter, Tr: VmTracer> VM<'a, T, P, Tr> {
                         self.pop_frame();
                         match self.process_next_init_subclass_call() {
                             Ok(_) => reload_cache!(self, cached_frame),
-                            Err(e) => catch_sync!(self, cached_frame, e),
+                            Err(e) => {
+                                self.instruction_ip = self.current_frame().ip;
+                                catch_sync!(self, cached_frame, e);
+                            }
                         }
                     } else if self.pending_discard_return {
                         // Dunder like __setitem__/__delitem__ returned - discard the value
@@ -5050,7 +5440,96 @@ impl<'a, T: ResourceTracker, P: PrintWriter, Tr: VmTracer> VM<'a, T, P, Tr> {
                                 self.push(sorted);
                                 reload_cache!(self, cached_frame);
                             }
-                            Err(e) => catch_sync!(self, cached_frame, e),
+                            Err(e) => {
+                                self.instruction_ip = self.current_frame().ip;
+                                catch_sync!(self, cached_frame, e);
+                            }
+                        }
+                    } else if self
+                        .pending_truthiness_return
+                        .last()
+                        .is_some_and(|pending| pending.frame_depth == self.frames.len())
+                    {
+                        // __bool__/__len__ returned from a frame-pushed truthiness context.
+                        let pending = self
+                            .pending_truthiness_return
+                            .pop()
+                            .expect("pending truthiness return disappeared");
+                        let b = self.truthiness_from_dunder_return(&value, pending.kind);
+                        value.drop_with_heap(self.heap);
+                        self.pop_frame();
+                        match b {
+                            Ok(result) => {
+                                self.push(Value::Bool(if pending.negate { !result } else { result }));
+                                reload_cache!(self, cached_frame);
+                            }
+                            Err(e) => {
+                                self.instruction_ip = self.current_frame().ip;
+                                catch_sync!(self, cached_frame, e);
+                            }
+                        }
+                    } else if self
+                        .pending_slice_build
+                        .as_ref()
+                        .is_some_and(|pending| pending.frame_depth == self.frames.len())
+                    {
+                        let pending = self.pending_slice_build.take().expect("checked pending slice build");
+                        self.pop_frame();
+                        let result = self.resume_pending_slice_build(pending, value);
+                        handle_call_result!(self, cached_frame, result);
+                        reload_cache!(self, cached_frame);
+                    } else if self
+                        .pending_index_call
+                        .as_ref()
+                        .is_some_and(|pending| pending.frame_depth == self.frames.len())
+                    {
+                        let pending = self.pending_index_call.take().expect("checked pending index call");
+                        self.pop_frame();
+                        let result = self.resume_pending_index_call(pending, value);
+                        handle_call_result!(self, cached_frame, result);
+                        reload_cache!(self, cached_frame);
+                    } else if self
+                        .pending_format_return
+                        .last()
+                        .is_some_and(|pending_depth| *pending_depth == self.frames.len())
+                    {
+                        self.pending_format_return.pop();
+                        let validation = if self.is_str_value(&value) {
+                            Ok(())
+                        } else {
+                            Err(ExcType::type_error(format!(
+                                "__format__ must return a str, not {}",
+                                value.py_type(self.heap)
+                            )))
+                        };
+                        if validation.is_ok() {
+                            self.pop_frame();
+                            self.push(value);
+                            reload_cache!(self, cached_frame);
+                        } else if let Err(e) = validation {
+                            value.drop_with_heap(self.heap);
+                            self.pop_frame();
+                            self.instruction_ip = self.current_frame().ip;
+                            catch_sync!(self, cached_frame, e);
+                        }
+                    } else if self
+                        .pending_len_return
+                        .last()
+                        .is_some_and(|pending_depth| *pending_depth == self.frames.len())
+                    {
+                        self.pending_len_return.pop();
+                        let len = self.normalized_len_dunder_return(&value);
+                        value.drop_with_heap(self.heap);
+                        self.pop_frame();
+                        match len {
+                            Ok(normalized) => {
+                                self.push(Value::Int(normalized));
+                                reload_cache!(self, cached_frame);
+                            }
+                            Err(e) => {
+                                self.instruction_ip = self.current_frame().ip;
+                                catch_sync!(self, cached_frame, e);
+                            }
                         }
                     } else if self.pending_negate_bool {
                         // __contains__ or __bool__ returned for 'not in' - negate the result
@@ -5063,6 +5542,13 @@ impl<'a, T: ResourceTracker, P: PrintWriter, Tr: VmTracer> VM<'a, T, P, Tr> {
                     } else if !self.pending_for_iter_jump.is_empty() {
                         // __next__ dunder returned normally - push the value (next item)
                         self.pending_for_iter_jump.pop();
+                        let from_getitem = self.pending_for_iter_getitem.pop().unwrap_or(false);
+                        if from_getitem
+                            && let Value::Ref(iter_id) = *self.peek()
+                            && let Some(index) = self.getitem_for_iter_indices.get_mut(&iter_id)
+                        {
+                            *index = index.checked_add(1).expect("getitem for-iter index overflow");
+                        }
                         self.pop_frame();
                         self.push(value);
                         reload_cache!(self, cached_frame);
@@ -5075,6 +5561,64 @@ impl<'a, T: ResourceTracker, P: PrintWriter, Tr: VmTracer> VM<'a, T, P, Tr> {
                         k.drop_with_heap(self.heap);
                         self.push(Value::Bool(is_equal));
                         reload_cache!(self, cached_frame);
+                    } else if self
+                        .pending_compare_dunder
+                        .last()
+                        .is_some_and(|pending| pending.frame_depth == self.frames.len())
+                    {
+                        // Rich comparison dunder returned from a frame-pushed dispatch.
+                        let pending = self
+                            .pending_compare_dunder
+                            .pop()
+                            .expect("pending compare dunder entry disappeared");
+                        self.pop_frame();
+                        match self.resume_pending_compare_dunder(pending, value) {
+                            Ok(CallResult::Push(compare_value)) => {
+                                if let Some(offset) = self.pending_compare_eq_jump.take() {
+                                    let is_equal = compare_value.py_bool(self.heap, self.interns);
+                                    compare_value.drop_with_heap(self.heap);
+                                    if !is_equal {
+                                        let frame = self.current_frame_mut();
+                                        jump_relative!(frame.ip, offset);
+                                    }
+                                } else {
+                                    self.push(compare_value);
+                                }
+                                reload_cache!(self, cached_frame);
+                            }
+                            Ok(CallResult::FramePushed) => {
+                                reload_cache!(self, cached_frame);
+                            }
+                            Ok(CallResult::External(ext_id, args)) => {
+                                let call_id = self.allocate_call_id();
+                                return Ok(FrameExit::ExternalCall {
+                                    ext_function_id: ext_id,
+                                    args,
+                                    call_id,
+                                });
+                            }
+                            Ok(CallResult::Proxy(proxy_id, method, args)) => {
+                                let call_id = self.allocate_call_id();
+                                return Ok(FrameExit::ProxyCall {
+                                    proxy_id,
+                                    method,
+                                    args,
+                                    call_id,
+                                });
+                            }
+                            Ok(CallResult::OsCall(function, args)) => {
+                                let call_id = self.allocate_call_id();
+                                return Ok(FrameExit::OsCall {
+                                    function,
+                                    args,
+                                    call_id,
+                                });
+                            }
+                            Err(e) => {
+                                self.instruction_ip = self.current_frame().ip;
+                                catch_sync!(self, cached_frame, e);
+                            }
+                        }
                     } else if let Some(offset) = self.pending_compare_eq_jump.take() {
                         // __eq__ dunder returned for CompareEqJumpIfFalse.
                         // Consume the result and jump if the comparison is falsy.
@@ -5162,11 +5706,101 @@ impl<'a, T: ResourceTracker, P: PrintWriter, Tr: VmTracer> VM<'a, T, P, Tr> {
                                             );
                                             pending.lhs.drop_with_heap(self.heap);
                                             pending.rhs.drop_with_heap(self.heap);
+                                            self.instruction_ip = self.current_frame().ip;
                                             catch_sync!(self, cached_frame, err);
                                         }
                                         Err(err) => {
                                             pending.lhs.drop_with_heap(self.heap);
                                             pending.rhs.drop_with_heap(self.heap);
+                                            self.instruction_ip = self.current_frame().ip;
+                                            catch_sync!(self, cached_frame, err);
+                                        }
+                                    }
+                                }
+                                PendingBinaryDunderStage::ReflectedFirst => {
+                                    let primary_result = if let Value::Ref(lhs_id) = &pending.lhs
+                                        && matches!(self.heap.get(*lhs_id), HeapData::Instance(_))
+                                        && let Some(method) =
+                                            self.lookup_type_dunder(*lhs_id, pending.primary_dunder_id)
+                                    {
+                                        let rhs_arg = pending.rhs.clone_with_heap(self.heap);
+                                        Some(self.call_dunder(*lhs_id, method, ArgValues::One(rhs_arg)))
+                                    } else {
+                                        None
+                                    };
+
+                                    match primary_result {
+                                        Some(Ok(CallResult::Push(primary_value))) => {
+                                            if matches!(primary_value, Value::NotImplemented) {
+                                                primary_value.drop_with_heap(self.heap);
+                                                let err = self.binary_dunder_type_error(
+                                                    &pending.lhs,
+                                                    &pending.rhs,
+                                                    pending.primary_dunder_id,
+                                                );
+                                                pending.lhs.drop_with_heap(self.heap);
+                                                pending.rhs.drop_with_heap(self.heap);
+                                                self.instruction_ip = self.current_frame().ip;
+                                                catch_sync!(self, cached_frame, err);
+                                            } else {
+                                                pending.lhs.drop_with_heap(self.heap);
+                                                pending.rhs.drop_with_heap(self.heap);
+                                                self.push(primary_value);
+                                                reload_cache!(self, cached_frame);
+                                            }
+                                        }
+                                        Some(Ok(CallResult::FramePushed)) => {
+                                            pending.stage = PendingBinaryDunderStage::PrimaryFinal;
+                                            pending.frame_depth = self.frames.len();
+                                            self.pending_binary_dunder.push(pending);
+                                            reload_cache!(self, cached_frame);
+                                        }
+                                        Some(Ok(CallResult::External(ext_id, args))) => {
+                                            pending.lhs.drop_with_heap(self.heap);
+                                            pending.rhs.drop_with_heap(self.heap);
+                                            let call_id = self.allocate_call_id();
+                                            return Ok(FrameExit::ExternalCall {
+                                                ext_function_id: ext_id,
+                                                args,
+                                                call_id,
+                                            });
+                                        }
+                                        Some(Ok(CallResult::Proxy(proxy_id, method, args))) => {
+                                            pending.lhs.drop_with_heap(self.heap);
+                                            pending.rhs.drop_with_heap(self.heap);
+                                            let call_id = self.allocate_call_id();
+                                            return Ok(FrameExit::ProxyCall {
+                                                proxy_id,
+                                                method,
+                                                args,
+                                                call_id,
+                                            });
+                                        }
+                                        Some(Ok(CallResult::OsCall(function, args))) => {
+                                            pending.lhs.drop_with_heap(self.heap);
+                                            pending.rhs.drop_with_heap(self.heap);
+                                            let call_id = self.allocate_call_id();
+                                            return Ok(FrameExit::OsCall {
+                                                function,
+                                                args,
+                                                call_id,
+                                            });
+                                        }
+                                        Some(Err(err)) => {
+                                            pending.lhs.drop_with_heap(self.heap);
+                                            pending.rhs.drop_with_heap(self.heap);
+                                            self.instruction_ip = self.current_frame().ip;
+                                            catch_sync!(self, cached_frame, err);
+                                        }
+                                        None => {
+                                            let err = self.binary_dunder_type_error(
+                                                &pending.lhs,
+                                                &pending.rhs,
+                                                pending.primary_dunder_id,
+                                            );
+                                            pending.lhs.drop_with_heap(self.heap);
+                                            pending.rhs.drop_with_heap(self.heap);
+                                            self.instruction_ip = self.current_frame().ip;
                                             catch_sync!(self, cached_frame, err);
                                         }
                                     }
@@ -5194,6 +5828,7 @@ impl<'a, T: ResourceTracker, P: PrintWriter, Tr: VmTracer> VM<'a, T, P, Tr> {
                                                 );
                                                 pending.lhs.drop_with_heap(self.heap);
                                                 pending.rhs.drop_with_heap(self.heap);
+                                                self.instruction_ip = self.current_frame().ip;
                                                 catch_sync!(self, cached_frame, err);
                                             } else {
                                                 pending.lhs.drop_with_heap(self.heap);
@@ -5242,6 +5877,7 @@ impl<'a, T: ResourceTracker, P: PrintWriter, Tr: VmTracer> VM<'a, T, P, Tr> {
                                         Some(Err(err)) => {
                                             pending.lhs.drop_with_heap(self.heap);
                                             pending.rhs.drop_with_heap(self.heap);
+                                            self.instruction_ip = self.current_frame().ip;
                                             catch_sync!(self, cached_frame, err);
                                         }
                                         None => {
@@ -5252,6 +5888,7 @@ impl<'a, T: ResourceTracker, P: PrintWriter, Tr: VmTracer> VM<'a, T, P, Tr> {
                                             );
                                             pending.lhs.drop_with_heap(self.heap);
                                             pending.rhs.drop_with_heap(self.heap);
+                                            self.instruction_ip = self.current_frame().ip;
                                             catch_sync!(self, cached_frame, err);
                                         }
                                     }
@@ -5264,6 +5901,18 @@ impl<'a, T: ResourceTracker, P: PrintWriter, Tr: VmTracer> VM<'a, T, P, Tr> {
                                     );
                                     pending.lhs.drop_with_heap(self.heap);
                                     pending.rhs.drop_with_heap(self.heap);
+                                    self.instruction_ip = self.current_frame().ip;
+                                    catch_sync!(self, cached_frame, err);
+                                }
+                                PendingBinaryDunderStage::PrimaryFinal => {
+                                    let err = self.binary_dunder_type_error(
+                                        &pending.lhs,
+                                        &pending.rhs,
+                                        pending.primary_dunder_id,
+                                    );
+                                    pending.lhs.drop_with_heap(self.heap);
+                                    pending.rhs.drop_with_heap(self.heap);
+                                    self.instruction_ip = self.current_frame().ip;
                                     catch_sync!(self, cached_frame, err);
                                 }
                             }
@@ -5285,6 +5934,7 @@ impl<'a, T: ResourceTracker, P: PrintWriter, Tr: VmTracer> VM<'a, T, P, Tr> {
                                 value.drop_with_heap(self.heap);
                                 self.pop_frame();
                                 reload_cache!(self, cached_frame);
+                                self.instruction_ip = self.current_frame().ip;
                                 catch_sync!(
                                     self,
                                     cached_frame,
@@ -5303,6 +5953,54 @@ impl<'a, T: ResourceTracker, P: PrintWriter, Tr: VmTracer> VM<'a, T, P, Tr> {
                         }
                         // For dict operations, DON'T push value - the calling opcode will re-execute.
                         reload_cache!(self, cached_frame);
+                    } else if self
+                        .pending_print_call
+                        .last()
+                        .is_some_and(|pending| pending.frame_depth == self.frames.len())
+                    {
+                        let pending = self
+                            .pending_print_call
+                            .pop()
+                            .expect("pending print call state disappeared");
+                        self.pop_frame();
+                        match self.resume_pending_print_call(pending, value) {
+                            Ok(CallResult::Push(print_result)) => {
+                                self.push(print_result);
+                                reload_cache!(self, cached_frame);
+                            }
+                            Ok(CallResult::FramePushed) => {
+                                reload_cache!(self, cached_frame);
+                            }
+                            Ok(CallResult::External(ext_id, args)) => {
+                                let call_id = self.allocate_call_id();
+                                return Ok(FrameExit::ExternalCall {
+                                    ext_function_id: ext_id,
+                                    args,
+                                    call_id,
+                                });
+                            }
+                            Ok(CallResult::Proxy(proxy_id, method, args)) => {
+                                let call_id = self.allocate_call_id();
+                                return Ok(FrameExit::ProxyCall {
+                                    proxy_id,
+                                    method,
+                                    args,
+                                    call_id,
+                                });
+                            }
+                            Ok(CallResult::OsCall(function, args)) => {
+                                let call_id = self.allocate_call_id();
+                                return Ok(FrameExit::OsCall {
+                                    function,
+                                    args,
+                                    call_id,
+                                });
+                            }
+                            Err(err) => {
+                                self.instruction_ip = self.current_frame().ip;
+                                catch_sync!(self, cached_frame, err);
+                            }
+                        }
                     } else if self
                         .pending_stringify_return
                         .last()
@@ -5485,12 +6183,16 @@ impl<'a, T: ResourceTracker, P: PrintWriter, Tr: VmTracer> VM<'a, T, P, Tr> {
                         let result = self.maybe_finish_sum_from_list_result(list_build_result);
                         let result = self.maybe_finish_builtin_from_list_result(result);
                         handle_call_result!(self, cached_frame, result);
+                        reload_cache!(self, cached_frame);
                     } else if self.pending_list_iter_return {
                         // __iter__ dunder returned for list construction - continue with list_build_from_iterator
                         self.pending_list_iter_return = false;
                         self.pop_frame();
                         let result = self.list_build_from_iterator(value);
+                        let result = self.maybe_finish_sum_from_list_result(result);
+                        let result = self.maybe_finish_builtin_from_list_result(result);
                         handle_call_result!(self, cached_frame, result);
+                        reload_cache!(self, cached_frame);
                     } else {
                         // Normal function return - pop frame and push return value
                         self.pop_frame();
@@ -5659,6 +6361,7 @@ impl<'a, T: ResourceTracker, P: PrintWriter, Tr: VmTracer> VM<'a, T, P, Tr> {
                             }
                             if !self.pending_for_iter_jump.is_empty() {
                                 self.pending_for_iter_jump.pop();
+                                self.pending_for_iter_getitem.pop();
                                 reload_cache!(self, cached_frame);
                                 continue;
                             }
@@ -5827,6 +6530,7 @@ impl<'a, T: ResourceTracker, P: PrintWriter, Tr: VmTracer> VM<'a, T, P, Tr> {
                         }
                         if !self.pending_for_iter_jump.is_empty() {
                             self.pending_for_iter_jump.pop();
+                            self.pending_for_iter_getitem.pop();
                             reload_cache!(self, cached_frame);
                             continue;
                         }
@@ -5847,6 +6551,7 @@ impl<'a, T: ResourceTracker, P: PrintWriter, Tr: VmTracer> VM<'a, T, P, Tr> {
                     // clear pending state, and continue in the caller frame.
                     if !self.pending_for_iter_jump.is_empty() {
                         self.pending_for_iter_jump.pop();
+                        self.pending_for_iter_getitem.pop();
                         reload_cache!(self, cached_frame);
                         continue;
                     }
@@ -6455,6 +7160,9 @@ impl<'a, T: ResourceTracker, P: PrintWriter, Tr: VmTracer> VM<'a, T, P, Tr> {
         let frame_depth = self.frames.len();
         self.drop_pending_getattr_for_frame(frame_depth);
         self.drop_pending_binary_dunder_for_frame(frame_depth);
+        self.drop_pending_len_for_frame(frame_depth);
+        self.drop_pending_format_for_frame(frame_depth);
+        self.drop_pending_index_for_frame(frame_depth);
         let frame = self.frames.pop().expect("no frame to pop");
         let mut class_info = Some(frame.class_body_info.expect("not a class body frame"));
         let namespace_idx = frame.namespace_idx;
@@ -7042,6 +7750,19 @@ impl<'a, T: ResourceTracker, P: PrintWriter, Tr: VmTracer> VM<'a, T, P, Tr> {
                 }
             }
 
+            // CPython class semantics: defining __eq__ without defining __hash__
+            // in the same class body makes the class explicitly unhashable.
+            if class_dict.get_by_str("__eq__", this.heap, this.interns).is_some()
+                && class_dict.get_by_str("__hash__", this.heap, this.interns).is_none()
+            {
+                let hash_key: StringId = StaticStrings::DunderHash.into();
+                if let Some(old) =
+                    class_dict.set(Value::InternString(hash_key), Value::None, this.heap, this.interns)?
+                {
+                    old.drop_with_heap(this.heap);
+                }
+            }
+
             if this.class_has_typing_namedtuple_base(class_info.orig_bases) {
                 let field_names = this.namedtuple_fields_from_annotations(class_dict);
                 let class_name = this.interns.get_str(class_info.name_id).to_string();
@@ -7578,7 +8299,8 @@ impl<'a, T: ResourceTracker, P: PrintWriter, Tr: VmTracer> VM<'a, T, P, Tr> {
     fn process_next_set_name_call(&mut self) -> RunResult<bool> {
         let set_name_id: StringId = StaticStrings::DunderSetName.into();
 
-        while let Some((attr_name_id, desc_id, class_id)) = self.pending_set_name_calls.pop() {
+        while !self.pending_set_name_calls.is_empty() {
+            let (attr_name_id, desc_id, class_id) = self.pending_set_name_calls.remove(0);
             if let Some(method) = self.lookup_type_dunder(desc_id, set_name_id) {
                 // Call __set_name__(self=descriptor, owner=class, name=attr_name)
                 self.heap.inc_ref(desc_id);
@@ -7649,7 +8371,8 @@ impl<'a, T: ResourceTracker, P: PrintWriter, Tr: VmTracer> VM<'a, T, P, Tr> {
     fn process_next_init_subclass_call(&mut self) -> RunResult<bool> {
         let init_subclass_id: StringId = StaticStrings::DunderInitSubclass.into();
 
-        while let Some((base_id, new_class_id, kwargs_val)) = self.pending_init_subclass_calls.pop() {
+        while !self.pending_init_subclass_calls.is_empty() {
+            let (base_id, new_class_id, kwargs_val) = self.pending_init_subclass_calls.remove(0);
             if let Some(method) = {
                 match self.heap.get(base_id) {
                     HeapData::ClassObject(cls) => {
@@ -7782,6 +8505,72 @@ impl<'a, T: ResourceTracker, P: PrintWriter, Tr: VmTracer> VM<'a, T, P, Tr> {
         self.frames.last_mut().expect("no active frame")
     }
 
+    /// Records a pending truthiness-protocol return for a frame-pushed dunder call.
+    #[inline]
+    fn push_pending_truthiness_return(&mut self, kind: PendingTruthinessKind, negate: bool) {
+        self.pending_truthiness_return.push(PendingTruthinessReturn {
+            frame_depth: self.frames.len(),
+            kind,
+            negate,
+        });
+    }
+
+    /// Converts a truthiness dunder return value using CPython protocol rules.
+    #[inline]
+    fn truthiness_from_dunder_return(&self, value: &Value, kind: PendingTruthinessKind) -> RunResult<bool> {
+        match kind {
+            PendingTruthinessKind::Bool => self.truthiness_from_bool_dunder_return(value),
+            PendingTruthinessKind::Len => self.truthiness_from_len_dunder_return(value),
+        }
+    }
+
+    /// `__bool__` must return `bool`; any other type is a `TypeError`.
+    #[inline]
+    fn truthiness_from_bool_dunder_return(&self, value: &Value) -> RunResult<bool> {
+        match value {
+            Value::Bool(b) => Ok(*b),
+            _ => {
+                let returned = if matches!(value, Value::NotImplemented) {
+                    "NotImplementedType".to_owned()
+                } else {
+                    value.py_type(self.heap).to_string()
+                };
+                Err(ExcType::type_error(format!(
+                    "__bool__ should return bool, returned {returned}"
+                )))
+            }
+        }
+    }
+
+    /// Validates and normalizes a `__len__` dunder return value.
+    ///
+    /// CPython requires `__len__` to return a non-negative integer (bool allowed
+    /// as an int subclass).
+    #[inline]
+    pub(super) fn normalized_len_dunder_return(&self, value: &Value) -> RunResult<i64> {
+        let len = match value {
+            Value::Int(i) => *i,
+            Value::Bool(b) => i64::from(*b),
+            Value::Ref(id) => match self.heap.get(*id) {
+                HeapData::LongInt(li) => li
+                    .to_i64()
+                    .ok_or_else(|| RunError::from(ExcType::overflow_repeat_count()))?,
+                _ => return Err(ExcType::type_error_not_integer(value.py_type(self.heap))),
+            },
+            _ => return Err(ExcType::type_error_not_integer(value.py_type(self.heap))),
+        };
+        if len < 0 {
+            return Err(SimpleException::new_msg(ExcType::ValueError, "__len__() should return >= 0").into());
+        }
+        Ok(len)
+    }
+
+    /// `__len__` must return a non-negative integer; converts to truthiness.
+    #[inline]
+    fn truthiness_from_len_dunder_return(&self, value: &Value) -> RunResult<bool> {
+        Ok(self.normalized_len_dunder_return(value)? != 0)
+    }
+
     /// Records a pending `__getattr__` fallback for a `__getattribute__` call.
     ///
     /// Keeps an extra reference to the receiver so it stays alive if we need
@@ -7818,6 +8607,66 @@ impl<'a, T: ResourceTracker, P: PrintWriter, Tr: VmTracer> VM<'a, T, P, Tr> {
         }
     }
 
+    /// Drops pending truthiness return state for a frame being unwound.
+    fn drop_pending_truthiness_for_frame(&mut self, frame_depth: usize) {
+        if let Some(pending) = self.pending_truthiness_return.last()
+            && pending.frame_depth == frame_depth
+        {
+            self.pending_truthiness_return.pop();
+        }
+    }
+
+    /// Clears all pending truthiness return state.
+    fn clear_pending_truthiness_return(&mut self) {
+        self.pending_truthiness_return.clear();
+    }
+
+    /// Drops pending len-normalization state for a frame being unwound.
+    fn drop_pending_len_for_frame(&mut self, frame_depth: usize) {
+        if self
+            .pending_len_return
+            .last()
+            .is_some_and(|pending_depth| *pending_depth == frame_depth)
+        {
+            self.pending_len_return.pop();
+        }
+    }
+
+    /// Drops pending format-validation state for a frame being unwound.
+    fn drop_pending_format_for_frame(&mut self, frame_depth: usize) {
+        if self
+            .pending_format_return
+            .last()
+            .is_some_and(|pending_depth| *pending_depth == frame_depth)
+        {
+            self.pending_format_return.pop();
+        }
+    }
+
+    /// Drops pending index-call state for a frame being unwound.
+    fn drop_pending_index_for_frame(&mut self, frame_depth: usize) {
+        if self
+            .pending_index_call
+            .as_ref()
+            .is_some_and(|pending| pending.frame_depth == frame_depth)
+        {
+            self.pending_index_call = None;
+        }
+        if self
+            .pending_slice_build
+            .as_ref()
+            .is_some_and(|pending| pending.frame_depth == frame_depth)
+            && let Some(pending) = self.pending_slice_build.take()
+        {
+            for value in pending.converted {
+                value.drop_with_heap(self.heap);
+            }
+            for value in pending.remaining {
+                value.drop_with_heap(self.heap);
+            }
+        }
+    }
+
     /// Drops pending binary dunder state for a frame being popped.
     ///
     /// This releases held operand references when a dunder frame exits via
@@ -7837,6 +8686,31 @@ impl<'a, T: ResourceTracker, P: PrintWriter, Tr: VmTracer> VM<'a, T, P, Tr> {
         for pending in self.pending_binary_dunder.drain(..) {
             pending.lhs.drop_with_heap(self.heap);
             pending.rhs.drop_with_heap(self.heap);
+        }
+    }
+
+    fn drop_pending_print_call_values(&mut self, pending: PendingPrintCall) {
+        for value in pending.remaining_positional {
+            value.drop_with_heap(self.heap);
+        }
+        for value in pending.rendered_positional {
+            value.drop_with_heap(self.heap);
+        }
+        pending.kwargs.drop_with_heap(self.heap);
+    }
+
+    fn drop_pending_print_call_for_frame(&mut self, frame_depth: usize) {
+        if let Some(pending) = self.pending_print_call.last()
+            && pending.frame_depth == frame_depth
+        {
+            let pending = self.pending_print_call.pop().expect("checked pending print call");
+            self.drop_pending_print_call_values(pending);
+        }
+    }
+
+    fn clear_pending_print_call(&mut self) {
+        while let Some(pending) = self.pending_print_call.pop() {
+            self.drop_pending_print_call_values(pending);
         }
     }
 
@@ -7866,6 +8740,10 @@ impl<'a, T: ResourceTracker, P: PrintWriter, Tr: VmTracer> VM<'a, T, P, Tr> {
         let frame_depth = self.frames.len();
         self.drop_pending_getattr_for_frame(frame_depth);
         self.drop_pending_binary_dunder_for_frame(frame_depth);
+        self.drop_pending_len_for_frame(frame_depth);
+        self.drop_pending_format_for_frame(frame_depth);
+        self.drop_pending_index_for_frame(frame_depth);
+        self.drop_pending_print_call_for_frame(frame_depth);
         self.tracer.on_return(frame_depth.saturating_sub(1));
         let frame = self.frames.pop().expect("no frame to pop");
         if let Some(init_instance) = frame.init_instance {
@@ -7913,6 +8791,7 @@ impl<'a, T: ResourceTracker, P: PrintWriter, Tr: VmTracer> VM<'a, T, P, Tr> {
         self.clear_pending_getattr_fallbacks();
         self.clear_pending_binary_dunder();
         self.pending_stringify_return.clear();
+        self.clear_pending_print_call();
         self.clear_pending_generator_action();
         self.pending_yield_from.clear();
         self.clear_pending_list_build();
@@ -8105,6 +8984,24 @@ impl<'a, T: ResourceTracker, P: PrintWriter, Tr: VmTracer> VM<'a, T, P, Tr> {
         } else {
             None
         }
+    }
+
+    /// Returns true when the active pending list-build iterator uses `__getitem__` fallback.
+    fn pending_list_build_uses_getitem(&self) -> bool {
+        let Some(pending) = self.pending_list_build.last() else {
+            return false;
+        };
+        let Value::Ref(iter_id) = pending.iterator else {
+            return false;
+        };
+        let HeapData::Instance(instance) = self.heap.get(iter_id) else {
+            return false;
+        };
+        let HeapData::ClassObject(cls) = self.heap.get(instance.class_id()) else {
+            return false;
+        };
+        !cls.mro_has_attr("__next__", instance.class_id(), self.heap, self.interns)
+            && cls.mro_has_attr("__getitem__", instance.class_id(), self.heap, self.interns)
     }
 
     /// Returns whether a suspended generator should resume by re-executing `YieldFrom`.

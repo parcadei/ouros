@@ -88,6 +88,24 @@ fn generic_alias_parameters(origin: &Value, heap: &mut Heap<impl ResourceTracker
     }
 }
 
+fn write_generic_alias_arg_repr(
+    arg: &Value,
+    f: &mut impl Write,
+    heap: &Heap<impl ResourceTracker>,
+    heap_ids: &mut AHashSet<HeapId>,
+    interns: &Interns,
+) -> std::fmt::Result {
+    match arg {
+        Value::Ellipsis => f.write_str("..."),
+        Value::Builtin(Builtins::Type(t)) => write!(f, "{t}"),
+        Value::Ref(id) if matches!(heap.builtin_type_for_class_id(*id), Some(_)) => {
+            let ty = heap.builtin_type_for_class_id(*id).expect("checked builtin class id");
+            write!(f, "{ty}")
+        }
+        _ => arg.py_repr_fmt(f, heap, heap_ids, interns),
+    }
+}
+
 /// A runtime alias capturing `Origin[Args...]` for PEP 695 generics.
 #[derive(Debug, serde::Serialize, serde::Deserialize)]
 pub(crate) struct GenericAlias {
@@ -216,7 +234,7 @@ impl PyTrait for GenericAlias {
                 f.write_str(", ")?;
             }
             first = false;
-            arg.py_repr_fmt(f, heap, heap_ids, interns)?;
+            write_generic_alias_arg_repr(arg, f, heap, heap_ids, interns)?;
         }
         f.write_char(']')
     }
