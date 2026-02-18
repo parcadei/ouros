@@ -11,8 +11,8 @@ use smallvec::SmallVec;
 use super::{
     AwaitResult, CallAttrInlineCacheEntry, CallAttrInlineCacheKind, CallFrame, PendingBinaryDunder,
     PendingBinaryDunderStage, PendingBuiltinFromList, PendingBuiltinFromListKind, PendingContextDecorator,
-    PendingContextDecoratorStage, PendingExitStack, PendingExitStackAwaiting, PendingGroupBy, PendingListSort,
-    PendingIndexCall, PendingIndexCallTarget, PendingNewCall, PendingNextDefault, PendingPrintCall, PendingReduce,
+    PendingContextDecoratorStage, PendingExitStack, PendingExitStackAwaiting, PendingGroupBy, PendingIndexCall,
+    PendingIndexCallTarget, PendingListSort, PendingNewCall, PendingNextDefault, PendingPrintCall, PendingReduce,
     PendingSliceBuild, PendingStringifyReturn, PendingSumFromList, PendingTextwrapIndent, VM,
 };
 use crate::{
@@ -6393,7 +6393,11 @@ impl<T: ResourceTracker, P: PrintWriter, Tr: VmTracer> VM<'_, T, P, Tr> {
                 let contained = list_value.py_contains(&needle, self.heap, self.interns)?;
                 list_value.drop_with_heap(self.heap);
                 needle.drop_with_heap(self.heap);
-                Ok(CallResult::Push(Value::Bool(if negate { !contained } else { contained })))
+                Ok(CallResult::Push(Value::Bool(if negate {
+                    !contained
+                } else {
+                    contained
+                })))
             }
             PendingBuiltinFromListKind::Min => {
                 let value = BuiltinsFunctions::Min.call(

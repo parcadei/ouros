@@ -991,6 +991,40 @@ impl Instance {
     ) -> std::fmt::Result {
         instance_repr_fmt(self, f, heap, heap_ids, interns, Some(py_id))
     }
+
+    /// Returns `str(instance)` while carrying the Python-visible object id.
+    ///
+    /// Mirrors `Instance::py_str` (enum / exception early-returns) but when the
+    /// default repr fallback is reached the id is forwarded to
+    /// `py_repr_fmt_with_id` so the output includes the memory address
+    /// (`<__main__.C object at 0x...>`), matching CPython behaviour.
+    pub(crate) fn py_str_with_id(
+        &self,
+        heap: &Heap<impl ResourceTracker>,
+        interns: &Interns,
+        py_id: usize,
+    ) -> Cow<'static, str> {
+        if enum_member_str_uses_value(self.class_id(), heap, interns)
+            && let Some(attrs) = self.attrs(heap)
+            && let Some(member_value) = attrs.get_by_str("value", heap, interns)
+        {
+            return member_value.py_str(heap, interns);
+        }
+        if let Some((class_name, member_name, member_value)) = enum_member_display(self, heap, interns) {
+            if enum_member_str_uses_value(self.class_id(), heap, interns) {
+                return member_value.py_str(heap, interns);
+            }
+            return Cow::Owned(format!("{class_name}.{member_name}"));
+        }
+        if let Some(exception_str) = exception_instance_str(self, heap, interns) {
+            return exception_str;
+        }
+        // Default: id-aware repr so the address is included.
+        let mut s = String::new();
+        let mut heap_ids = AHashSet::new();
+        let _ = self.py_repr_fmt_with_id(&mut s, heap, &mut heap_ids, interns, py_id);
+        Cow::Owned(s)
+    }
 }
 
 /// Returns enum-display components for an instance when it behaves like an enum member.
@@ -1279,7 +1313,7 @@ fn instance_repr_fmt(
     if let Some(py_id) = py_id {
         write!(f, "<{default_repr_name} object at 0x{py_id:x}>")
     } else {
-        write!(f, "<{class_name} object>")
+        write!(f, "<{default_repr_name} object>")
     }
 }
 

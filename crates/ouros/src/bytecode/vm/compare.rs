@@ -617,15 +617,16 @@ impl<T: ResourceTracker, P: PrintWriter, Tr: VmTracer> VM<'_, T, P, Tr> {
                         materialized.drop_with_heap(self.heap);
                         item.drop_with_heap(self.heap);
                         container.drop_with_heap(self.heap);
-                        Ok(CallResult::Push(Value::Bool(if negate { !contained } else { contained })))
+                        Ok(CallResult::Push(Value::Bool(if negate {
+                            !contained
+                        } else {
+                            contained
+                        })))
                     }
                     Ok(CallResult::FramePushed) => {
                         container.drop_with_heap(self.heap);
                         self.pending_builtin_from_list.push(super::PendingBuiltinFromList {
-                            kind: super::PendingBuiltinFromListKind::Contains {
-                                needle: item,
-                                negate,
-                            },
+                            kind: super::PendingBuiltinFromListKind::Contains { needle: item, negate },
                         });
                         Ok(CallResult::FramePushed)
                     }
@@ -651,15 +652,16 @@ impl<T: ResourceTracker, P: PrintWriter, Tr: VmTracer> VM<'_, T, P, Tr> {
                         materialized.drop_with_heap(self.heap);
                         item.drop_with_heap(self.heap);
                         container.drop_with_heap(self.heap);
-                        Ok(CallResult::Push(Value::Bool(if negate { !contained } else { contained })))
+                        Ok(CallResult::Push(Value::Bool(if negate {
+                            !contained
+                        } else {
+                            contained
+                        })))
                     }
                     Ok(CallResult::FramePushed) => {
                         container.drop_with_heap(self.heap);
                         self.pending_builtin_from_list.push(super::PendingBuiltinFromList {
-                            kind: super::PendingBuiltinFromListKind::Contains {
-                                needle: item,
-                                negate,
-                            },
+                            kind: super::PendingBuiltinFromListKind::Contains { needle: item, negate },
                         });
                         Ok(CallResult::FramePushed)
                     }

@@ -537,6 +537,13 @@ impl PyTrait for Value {
                 HeapData::StdlibObject(StdlibObject::AnextAwaitable(_)) => {
                     Cow::Owned(format!("<anext_awaitable object at 0x{:x}>", self.public_id()))
                 }
+                HeapData::Instance(instance) => {
+                    // Instance py_str may return enum/exception-specific strings.
+                    // When it falls back to default repr, it needs the Value-level
+                    // public_id for CPython-compatible output like
+                    // `<__main__.C object at 0x...>`.
+                    instance.py_str_with_id(heap, interns, self.public_id())
+                }
                 _ => heap.get(*id).py_str(heap, interns),
             },
             _ => self.py_repr(heap, interns),
