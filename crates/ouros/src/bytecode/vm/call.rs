@@ -10091,20 +10091,37 @@ impl<T: ResourceTracker, P: PrintWriter, Tr: VmTracer> VM<'_, T, P, Tr> {
             _ => return None,
         };
 
-        // `__hash__` has special class semantics:
-        // - If class defines `__hash__ = None`, instances are unhashable.
-        // - If class defines `__eq__` but omits `__hash__`, instances are unhashable.
+        // `__hash__` has special class semantics (checked via MRO, not just own namespace):
+        // - If class or any parent defines `__hash__ = None`, instances are unhashable.
+        // - If class or any parent defines `__eq__` but no class in MRO defines `__hash__`,
+        //   instances are unhashable.
         if dunder_name_id == StaticStrings::DunderHash {
-            let (has_eq, has_hash, hash_is_none) = match self.heap.get(class_id) {
-                HeapData::ClassObject(cls) => {
-                    let hash_attr = cls.namespace().get_by_str("__hash__", self.heap, self.interns);
-                    let has_hash = hash_attr.is_some();
-                    let hash_is_none = matches!(hash_attr, Some(Value::None));
-                    let has_eq = cls.namespace().get_by_str("__eq__", self.heap, self.interns).is_some();
-                    (has_eq, has_hash, hash_is_none)
-                }
-                _ => (false, false, false),
+            // Collect MRO to avoid holding a borrow on heap across lookups
+            let mro: Vec<HeapId> = match self.heap.get(class_id) {
+                HeapData::ClassObject(cls) => cls.mro().to_vec(),
+                _ => Vec::new(),
             };
+            let mut has_eq = false;
+            let mut has_hash = false;
+            let mut hash_is_none = false;
+            for &mro_id in &mro {
+                if let HeapData::ClassObject(cls) = self.heap.get(mro_id) {
+                    if !has_hash {
+                        if let Some(attr) = cls.namespace().get_by_str("__hash__", self.heap, self.interns) {
+                            has_hash = true;
+                            hash_is_none = matches!(attr, Value::None);
+                        }
+                    }
+                    if !has_eq {
+                        if cls.namespace().get_by_str("__eq__", self.heap, self.interns).is_some() {
+                            has_eq = true;
+                        }
+                    }
+                    if has_hash && has_eq {
+                        break;
+                    }
+                }
+            }
 
             if hash_is_none || (has_eq && !has_hash) {
                 return None;

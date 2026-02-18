@@ -3946,17 +3946,37 @@ impl<T: ResourceTracker> Heap<T> {
 
         // Handle Instance: check for __eq__ without __hash__ (unhashable), otherwise use identity hash.
         // Proper __hash__ dunder dispatch is done at the VM level via hash() builtin.
+        // Checks walk the MRO so inherited `__hash__ = None` is detected correctly.
         if let Some(HeapData::Instance(inst)) = &entry.data {
             let class_id = inst.class_id();
-            let (has_eq, has_hash, hash_is_none) = match self.get(class_id) {
-                HeapData::ClassObject(cls) => {
-                    let hash_attr = cls.namespace().get_by_str("__hash__", self, interns);
-                    let has_hash = hash_attr.is_some();
-                    let hash_is_none = matches!(hash_attr, Some(Value::None));
-                    let has_eq = cls.namespace().get_by_str("__eq__", self, interns).is_some();
-                    (has_eq, has_hash, hash_is_none)
+            // Collect MRO to break the borrow on self
+            let mro: Vec<HeapId> = match self.get(class_id) {
+                HeapData::ClassObject(cls) => cls.mro().to_vec(),
+                _ => Vec::new(),
+            };
+            let (has_eq, has_hash, hash_is_none) = {
+                let mut has_eq = false;
+                let mut has_hash = false;
+                let mut hash_is_none = false;
+                for &mro_id in &mro {
+                    if let HeapData::ClassObject(cls) = self.get(mro_id) {
+                        if !has_hash {
+                            if let Some(attr) = cls.namespace().get_by_str("__hash__", self, interns) {
+                                has_hash = true;
+                                hash_is_none = matches!(attr, Value::None);
+                            }
+                        }
+                        if !has_eq {
+                            if cls.namespace().get_by_str("__eq__", self, interns).is_some() {
+                                has_eq = true;
+                            }
+                        }
+                        if has_hash && has_eq {
+                            break;
+                        }
+                    }
                 }
-                _ => (false, false, false),
+                (has_eq, has_hash, hash_is_none)
             };
 
             let entry = self

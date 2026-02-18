@@ -873,6 +873,21 @@ class EqAndHash:
 
 assert hash(EqAndHash()) == 42, '__eq__ with __hash__ is hashable'
 
+# === Inherited __hash__ = None makes subclass unhashable (Finding #5) ===
+class ExplicitlyUnhashable:
+    __hash__ = None
+
+class InheritsUnhashable(ExplicitlyUnhashable):
+    pass
+
+caught = False
+try:
+    hash(InheritsUnhashable())
+except TypeError as e:
+    caught = True
+    assert 'unhashable type' in str(e), 'inherited __hash__=None raises TypeError'
+assert caught, 'inherited __hash__=None makes subclass unhashable'
+
 # === __getattribute__ called before descriptor (Finding #10) ===
 class Intercept:
     def __getattribute__(self, name):
