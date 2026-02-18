@@ -3923,6 +3923,41 @@ impl<T: ResourceTracker> Heap<T> {
         hash
     }
 
+    /// Returns `true` if the class identified by `class_id` makes its instances
+    /// unhashable, either because `__hash__ = None` in the MRO or because `__eq__`
+    /// is defined without a corresponding `__hash__`.
+    ///
+    /// Used by both the VM dunder-lookup path and the internal hash-computation
+    /// path to avoid duplicating the MRO walk logic.
+    pub(crate) fn is_unhashable_via_mro(&self, class_id: HeapId, interns: &Interns) -> bool {
+        let mro: Vec<HeapId> = match self.get(class_id) {
+            HeapData::ClassObject(cls) => cls.mro().to_vec(),
+            _ => return false,
+        };
+        let mut has_eq = false;
+        let mut has_hash = false;
+        let mut hash_is_none = false;
+        for &mro_id in &mro {
+            if let HeapData::ClassObject(cls) = self.get(mro_id) {
+                if !has_hash {
+                    if let Some(attr) = cls.namespace().get_by_str("__hash__", self, interns) {
+                        has_hash = true;
+                        hash_is_none = matches!(attr, Value::None);
+                    }
+                }
+                if !has_eq {
+                    if cls.namespace().get_by_str("__eq__", self, interns).is_some() {
+                        has_eq = true;
+                    }
+                }
+                if has_hash && has_eq {
+                    break;
+                }
+            }
+        }
+        hash_is_none || (has_eq && !has_hash)
+    }
+
     /// Inner hash computation, called after depth guard is acquired.
     ///
     /// Separated from `get_or_compute_hash` so that `data_depth_exit` is called
@@ -3949,35 +3984,8 @@ impl<T: ResourceTracker> Heap<T> {
         // Checks walk the MRO so inherited `__hash__ = None` is detected correctly.
         if let Some(HeapData::Instance(inst)) = &entry.data {
             let class_id = inst.class_id();
-            // Collect MRO to break the borrow on self
-            let mro: Vec<HeapId> = match self.get(class_id) {
-                HeapData::ClassObject(cls) => cls.mro().to_vec(),
-                _ => Vec::new(),
-            };
-            let (has_eq, has_hash, hash_is_none) = {
-                let mut has_eq = false;
-                let mut has_hash = false;
-                let mut hash_is_none = false;
-                for &mro_id in &mro {
-                    if let HeapData::ClassObject(cls) = self.get(mro_id) {
-                        if !has_hash {
-                            if let Some(attr) = cls.namespace().get_by_str("__hash__", self, interns) {
-                                has_hash = true;
-                                hash_is_none = matches!(attr, Value::None);
-                            }
-                        }
-                        if !has_eq {
-                            if cls.namespace().get_by_str("__eq__", self, interns).is_some() {
-                                has_eq = true;
-                            }
-                        }
-                        if has_hash && has_eq {
-                            break;
-                        }
-                    }
-                }
-                (has_eq, has_hash, hash_is_none)
-            };
+            // NLL: entry borrow ends here (class_id is Copy)
+            let unhashable = self.is_unhashable_via_mro(class_id, interns);
 
             let entry = self
                 .entries
@@ -3986,7 +3994,7 @@ impl<T: ResourceTracker> Heap<T> {
                 .as_mut()
                 .expect("Heap::compute_hash_inner: object freed during instance check");
 
-            if hash_is_none || (has_eq && !has_hash) {
+            if unhashable {
                 entry.hash_state = HashState::Unhashable;
                 return None;
             }
