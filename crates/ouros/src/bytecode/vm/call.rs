@@ -10385,7 +10385,25 @@ impl<T: ResourceTracker, P: PrintWriter, Tr: VmTracer> VM<'_, T, P, Tr> {
         {
             let rhs_clone = rhs.clone_with_heap(self.heap);
             let result = self.call_dunder(*lhs_id, method, ArgValues::One(rhs_clone))?;
-            return Ok(Some(result));
+            match result {
+                CallResult::FramePushed => {
+                    self.pending_binary_dunder.push(PendingBinaryDunder {
+                        lhs: lhs.clone_with_heap(self.heap),
+                        rhs: rhs.clone_with_heap(self.heap),
+                        primary_dunder_id: dunder_id,
+                        reflected_dunder_id,
+                        frame_depth: self.frames.len(),
+                        stage: PendingBinaryDunderStage::Inplace,
+                    });
+                    return Ok(Some(CallResult::FramePushed));
+                }
+                other => {
+                    if let Some(result) = self.binary_result_if_implemented(other) {
+                        return Ok(Some(result));
+                    }
+                    // __iop__ returned NotImplemented — fall through to binary dunder
+                }
+            }
         }
 
         // Fall back to binary dunder

@@ -1155,6 +1155,9 @@ struct PendingGetAttr {
 /// Stage of a pending binary dunder dispatch.
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub(super) enum PendingBinaryDunderStage {
+    /// Waiting for the inplace `lhs.__iop__(rhs)` result.
+    /// If it returns `NotImplemented`, falls back to primary binary dunder.
+    Inplace,
     /// Waiting for the primary `lhs.__op__(rhs)` result.
     Primary,
     /// Waiting for the reflected `rhs.__rop__(lhs)` result.
@@ -5099,6 +5102,75 @@ impl<'a, T: ResourceTracker, P: PrintWriter, Tr: VmTracer> VM<'a, T, P, Tr> {
                         if matches!(value, Value::NotImplemented) {
                             value.drop_with_heap(self.heap);
                             match pending.stage {
+                                PendingBinaryDunderStage::Inplace => {
+                                    // __iop__ returned NotImplemented — fall back to binary dunder protocol.
+                                    let binary_result = self.try_binary_dunder(
+                                        &pending.lhs,
+                                        &pending.rhs,
+                                        pending.primary_dunder_id,
+                                        pending.reflected_dunder_id,
+                                    );
+                                    match binary_result {
+                                        Ok(Some(CallResult::Push(v))) => {
+                                            pending.lhs.drop_with_heap(self.heap);
+                                            pending.rhs.drop_with_heap(self.heap);
+                                            self.push(v);
+                                            reload_cache!(self, cached_frame);
+                                        }
+                                        Ok(Some(CallResult::FramePushed)) => {
+                                            // try_binary_dunder already pushed a PendingBinaryDunder
+                                            pending.lhs.drop_with_heap(self.heap);
+                                            pending.rhs.drop_with_heap(self.heap);
+                                            reload_cache!(self, cached_frame);
+                                        }
+                                        Ok(Some(CallResult::External(ext_id, args))) => {
+                                            pending.lhs.drop_with_heap(self.heap);
+                                            pending.rhs.drop_with_heap(self.heap);
+                                            let call_id = self.allocate_call_id();
+                                            return Ok(FrameExit::ExternalCall {
+                                                ext_function_id: ext_id,
+                                                args,
+                                                call_id,
+                                            });
+                                        }
+                                        Ok(Some(CallResult::Proxy(proxy_id, method, args))) => {
+                                            pending.lhs.drop_with_heap(self.heap);
+                                            pending.rhs.drop_with_heap(self.heap);
+                                            let call_id = self.allocate_call_id();
+                                            return Ok(FrameExit::ProxyCall {
+                                                proxy_id,
+                                                method,
+                                                args,
+                                                call_id,
+                                            });
+                                        }
+                                        Ok(Some(CallResult::OsCall(function, args))) => {
+                                            pending.lhs.drop_with_heap(self.heap);
+                                            pending.rhs.drop_with_heap(self.heap);
+                                            let call_id = self.allocate_call_id();
+                                            return Ok(FrameExit::OsCall {
+                                                function,
+                                                args,
+                                                call_id,
+                                            });
+                                        }
+                                        Ok(None) => {
+                                            let err = self.binary_dunder_type_error(
+                                                &pending.lhs,
+                                                &pending.rhs,
+                                                pending.primary_dunder_id,
+                                            );
+                                            pending.lhs.drop_with_heap(self.heap);
+                                            pending.rhs.drop_with_heap(self.heap);
+                                            catch_sync!(self, cached_frame, err);
+                                        }
+                                        Err(err) => {
+                                            pending.lhs.drop_with_heap(self.heap);
+                                            pending.rhs.drop_with_heap(self.heap);
+                                            catch_sync!(self, cached_frame, err);
+                                        }
+                                    }
+                                }
                                 PendingBinaryDunderStage::Primary => {
                                     let reflected_result = if let Some(reflected_id) = pending.reflected_dunder_id
                                         && let Value::Ref(rhs_id) = &pending.rhs

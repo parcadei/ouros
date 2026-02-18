@@ -910,3 +910,25 @@ f = Fallback()
 assert f.anything == 'fallback', '__getattr__ called for missing attr'
 f.real = 'exists'
 assert f.real == 'exists', '__getattr__ NOT called when attr exists'
+
+# === inplace dunder falls back to binary when returning NotImplemented ===
+class InplaceVec:
+    def __init__(self, x):
+        self.x = x
+
+    def __iadd__(self, other):
+        if not isinstance(other, InplaceVec):
+            return NotImplemented
+        self.x += other.x
+        return self
+
+    def __add__(self, other):
+        return InplaceVec(self.x + other)
+
+v = InplaceVec(10)
+v += InplaceVec(5)
+assert v.x == 15, 'inplace dunder with matching type'
+
+v2 = InplaceVec(10)
+v2 += 7  # __iadd__ returns NotImplemented, falls back to __add__
+assert v2.x == 17, 'inplace dunder fallback to __add__ on NotImplemented'
