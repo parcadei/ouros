@@ -6875,7 +6875,10 @@ impl<'a, T: ResourceTracker, P: PrintWriter, Tr: VmTracer> VM<'a, T, P, Tr> {
             && matches!(self.heap.get(*class_id), HeapData::ClassObject(_))
         {
             self.heap.inc_ref(*class_id);
-            self.heap.set_cell_value(cell_id, Value::Ref(*class_id))?;
+            if let Err(err) = self.heap.set_cell_value(cell_id, Value::Ref(*class_id)) {
+                Value::Ref(cell_id).drop_with_heap(self.heap);
+                return Err(err);
+            }
         }
         Value::Ref(cell_id).drop_with_heap(self.heap);
         Ok(())
