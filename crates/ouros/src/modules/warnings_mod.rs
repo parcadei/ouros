@@ -2929,7 +2929,8 @@ fn warnings_module_id(heap: &mut Heap<impl ResourceTracker>, interns: &Interns) 
         .expect("warnings module id mutex poisoned")
         .as_ref()
         .copied()
-        && matches!(heap.get_if_live(module_id), Some(HeapData::Module(_)))
+        && let Some(HeapData::Module(module)) = heap.get_if_live(module_id)
+        && module.name() == StaticStrings::Warnings
     {
         return Ok(module_id);
     }

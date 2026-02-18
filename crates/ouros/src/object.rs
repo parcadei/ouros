@@ -1179,7 +1179,6 @@ impl Hash for Object {
             Self::Proxy(proxy_id) => proxy_id.hash(state),
             // Keep this impl total to avoid host panics when Objects are used in Rust maps.
             // Python-level hash semantics are enforced by Value::py_hash and dict/set ops.
-            Self::Cycle(_, _) => self.type_name().hash(state),
             _ => self.type_name().hash(state),
         }
     }
