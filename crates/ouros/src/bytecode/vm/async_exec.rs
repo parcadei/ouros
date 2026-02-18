@@ -700,7 +700,7 @@ impl<T: ResourceTracker, P: PrintWriter, Tr: VmTracer> VM<'_, T, P, Tr> {
             self.init_task_from_coroutine(coro_id)?;
         } else {
             // This shouldn't happen - task with no frames and no coroutine
-            panic!("task has no frames and no coroutine_id");
+            return Err(RunError::internal("task has no frames and no coroutine_id"));
         }
 
         // Push any resolved value that unblocked this task.
@@ -718,7 +718,7 @@ impl<T: ResourceTracker, P: PrintWriter, Tr: VmTracer> VM<'_, T, P, Tr> {
         // Get coroutine data
         let heap_data = self.heap.get(coroutine_id);
         let HeapData::Coroutine(coro) = heap_data else {
-            panic!("task coroutine_id doesn't point to a Coroutine")
+            return Err(RunError::internal("task coroutine_id doesn't point to a Coroutine"));
         };
 
         // Check state

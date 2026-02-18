@@ -41,8 +41,9 @@ use crate::{
 ///
 /// # Hashability
 ///
-/// Only immutable variants (`None`, `Ellipsis`, `Bool`, `Int`, `Float`, `String`, `Bytes`)
-/// implement `Hash`. Attempting to hash mutable variants (`List`, `Dict`) will panic.
+/// Only immutable variants are Python-hashable.
+/// The Rust `Hash` impl remains total (non-panicking) for API safety, while Python-level
+/// hashability checks are enforced by runtime `Value::py_hash`.
 ///
 /// # JSON Serialization
 ///
@@ -1176,8 +1177,10 @@ impl Hash for Object {
             Self::Path(path) => path.hash(state),
             Self::Type(t) => t.to_string().hash(state),
             Self::Proxy(proxy_id) => proxy_id.hash(state),
-            Self::Cycle(_, _) => panic!("cycle values are not hashable"),
-            _ => panic!("{} python values are not hashable", self.type_name()),
+            // Keep this impl total to avoid host panics when Objects are used in Rust maps.
+            // Python-level hash semantics are enforced by Value::py_hash and dict/set ops.
+            Self::Cycle(_, _) => self.type_name().hash(state),
+            _ => self.type_name().hash(state),
         }
     }
 }

@@ -799,7 +799,7 @@ fn catch_warnings_init(heap: &mut Heap<impl ResourceTracker>, interns: &Interns,
 
     let mut record = Value::Bool(false);
     let mut module = {
-        let module_id = warnings_module_id()?;
+        let module_id = warnings_module_id(heap, interns)?;
         heap.inc_ref(module_id);
         Value::Ref(module_id)
     };
@@ -1020,7 +1020,7 @@ fn catch_warnings_repr(heap: &mut Heap<impl ResourceTracker>, interns: &Interns,
         }
     }
 
-    let module_id = warnings_module_id()?;
+    let module_id = warnings_module_id(heap, interns)?;
     if let Some(module_value) = get_instance_attr_by_name(self_id, "_module", heap, interns) {
         let is_warnings_module = matches!(module_value, Value::Ref(id) if id == module_id);
         if !is_warnings_module {
@@ -2887,7 +2887,7 @@ fn set_filters_list_id(list_id: HeapId, heap: &mut Heap<impl ResourceTracker>, i
 
 /// Gets a module attribute by name.
 fn get_module_attr(name: &str, heap: &mut Heap<impl ResourceTracker>, interns: &Interns) -> RunResult<Value> {
-    let module_id = warnings_module_id()?;
+    let module_id = warnings_module_id(heap, interns)?;
     heap.with_entry_mut(module_id, |heap_inner, data| {
         let HeapData::Module(module) = data else {
             return Err(ExcType::type_error("warnings module state is invalid"));
@@ -2907,7 +2907,7 @@ fn set_module_attr(
     heap: &mut Heap<impl ResourceTracker>,
     interns: &Interns,
 ) -> RunResult<()> {
-    let module_id = warnings_module_id()?;
+    let module_id = warnings_module_id(heap, interns)?;
     heap.with_entry_mut(module_id, |heap_inner, data| {
         let HeapData::Module(module) = data else {
             value.drop_with_heap(heap_inner);
@@ -2919,14 +2919,26 @@ fn set_module_attr(
     })
 }
 
-/// Returns the current warnings module id.
-fn warnings_module_id() -> RunResult<HeapId> {
-    warnings_module_slot()
+/// Returns the warnings module id for the current heap.
+///
+/// The global slot can point at stale IDs from other heaps when tests run in parallel.
+/// If that happens, recreate the module in this heap and refresh the slot.
+fn warnings_module_id(heap: &mut Heap<impl ResourceTracker>, interns: &Interns) -> RunResult<HeapId> {
+    if let Some(module_id) = warnings_module_slot()
         .lock()
         .expect("warnings module id mutex poisoned")
         .as_ref()
         .copied()
-        .ok_or_else(|| SimpleException::new_msg(ExcType::RuntimeError, "warnings module not initialized").into())
+        && matches!(heap.get_if_live(module_id), Some(HeapData::Module(_)))
+    {
+        return Ok(module_id);
+    }
+
+    let module_id = BuiltinModule::Warnings.create(heap, interns)?;
+    *warnings_module_slot()
+        .lock()
+        .expect("warnings module id mutex poisoned") = Some(module_id);
+    Ok(module_id)
 }
 
 /// Returns the global warnings module-id storage slot.

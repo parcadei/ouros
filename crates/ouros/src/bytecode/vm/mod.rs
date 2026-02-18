@@ -2587,7 +2587,7 @@ impl<'a, T: ResourceTracker, P: PrintWriter, Tr: VmTracer> VM<'a, T, P, Tr> {
                 }
                 Opcode::StoreCell => {
                     let slot = fetch_u16!(cached_frame);
-                    self.store_cell(slot);
+                    try_catch_sync!(self, cached_frame, self.store_cell(slot));
                 }
                 // Binary Operations - use handle_call_result for dunder support
                 Opcode::BinaryAdd => {
@@ -6361,7 +6361,11 @@ impl<'a, T: ResourceTracker, P: PrintWriter, Tr: VmTracer> VM<'a, T, P, Tr> {
                                 return Err(Self::add_class_def_position(err, class_position));
                             }
                         };
-                        this.bind_class_cell_from_class_value(class_cell_id, &class_value);
+                        if let Err(err) = this.bind_class_cell_from_class_value(class_cell_id, &class_value) {
+                            this.namespaces.drop_with_heap(namespace_idx, this.heap);
+                            this.drop_class_body_info(class_info.take().expect("class body info should be present"));
+                            return Err(Self::add_class_def_position(err, class_position));
+                        }
                         if let Err(err) = this.postprocess_custom_metaclass_result(
                             &class_value,
                             class_info.as_ref().expect("class body info should be present"),
@@ -6456,7 +6460,11 @@ impl<'a, T: ResourceTracker, P: PrintWriter, Tr: VmTracer> VM<'a, T, P, Tr> {
                         return Err(Self::add_class_def_position(err, call_position));
                     }
                 };
-                self.bind_class_cell_from_class_value(class_cell_id, &value);
+                if let Err(err) = self.bind_class_cell_from_class_value(class_cell_id, &value) {
+                    self.namespaces.drop_with_heap(namespace_idx, self.heap);
+                    self.drop_class_body_info(class_info);
+                    return Err(Self::add_class_def_position(err, call_position));
+                }
                 if let Err(err) = self.postprocess_custom_metaclass_result(&value, &class_info) {
                     self.namespaces.drop_with_heap(namespace_idx, self.heap);
                     self.drop_class_body_info(class_info);
@@ -6699,17 +6707,22 @@ impl<'a, T: ResourceTracker, P: PrintWriter, Tr: VmTracer> VM<'a, T, P, Tr> {
     ///
     /// Zero-argument `super()` in class methods depends on this cell being set to the
     /// final class object. The owned cell reference is always released.
-    fn bind_class_cell_from_class_value(&mut self, class_cell_id: Option<HeapId>, class_value: &Value) {
+    fn bind_class_cell_from_class_value(
+        &mut self,
+        class_cell_id: Option<HeapId>,
+        class_value: &Value,
+    ) -> RunResult<()> {
         let Some(cell_id) = class_cell_id else {
-            return;
+            return Ok(());
         };
         if let Value::Ref(class_id) = class_value
             && matches!(self.heap.get(*class_id), HeapData::ClassObject(_))
         {
             self.heap.inc_ref(*class_id);
-            self.heap.set_cell_value(cell_id, Value::Ref(*class_id));
+            self.heap.set_cell_value(cell_id, Value::Ref(*class_id))?;
         }
         Value::Ref(cell_id).drop_with_heap(self.heap);
+        Ok(())
     }
 
     /// Completes class creation once a class dict has been built.
@@ -6930,7 +6943,10 @@ impl<'a, T: ResourceTracker, P: PrintWriter, Tr: VmTracer> VM<'a, T, P, Tr> {
 
         if let Some(cell_id) = class_cell_id {
             this.heap.inc_ref(heap_id);
-            this.heap.set_cell_value(cell_id, Value::Ref(heap_id));
+            if let Err(err) = this.heap.set_cell_value(cell_id, Value::Ref(heap_id)) {
+                Value::Ref(cell_id).drop_with_heap(this.heap);
+                return Err(err);
+            }
             Value::Ref(cell_id).drop_with_heap(this.heap);
         }
 
@@ -8814,7 +8830,7 @@ impl<'a, T: ResourceTracker, P: PrintWriter, Tr: VmTracer> VM<'a, T, P, Tr> {
             )));
         };
         // get_cell_value already clones with proper refcount via clone_with_heap
-        let value = self.heap.get_cell_value(cell_id);
+        let value = self.heap.get_cell_value(cell_id)?;
 
         // Check for undefined value - raise NameError for unbound free variable
         if matches!(value, Value::Undefined) {
@@ -8836,11 +8852,11 @@ impl<'a, T: ResourceTracker, P: PrintWriter, Tr: VmTracer> VM<'a, T, P, Tr> {
     }
 
     /// Pops the top of stack and stores it in a closure cell.
-    fn store_cell(&mut self, slot: u16) {
+    fn store_cell(&mut self, slot: u16) -> RunResult<()> {
         self.tracer.on_cell_store(slot, self.current_frame().cells.len());
         let value = self.pop();
         let cell_id = self.current_frame().cells[slot as usize];
-        self.heap.set_cell_value(cell_id, value);
+        self.heap.set_cell_value(cell_id, value)
     }
 }
 

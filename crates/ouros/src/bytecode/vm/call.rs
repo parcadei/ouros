@@ -7940,7 +7940,7 @@ impl<T: ResourceTracker, P: PrintWriter, Tr: VmTracer> VM<'_, T, P, Tr> {
             (class_cell_id, frame.namespace_idx)
         };
 
-        let class_val = self.heap.get_cell_value(class_cell_id);
+        let class_val = self.heap.get_cell_value(class_cell_id)?;
         let class_id = match class_val {
             Value::Ref(id) => {
                 class_val.drop_with_heap(self.heap);

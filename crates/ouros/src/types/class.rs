@@ -767,9 +767,21 @@ impl Instance {
                 Ok(Some(old))
             }
         } else if let Some(attrs_id) = self.attrs_id {
+            let class_name = self.class_name(heap, interns);
+            if !matches!(heap.get_if_live(attrs_id), Some(HeapData::Dict(_))) {
+                value.drop_with_heap(heap);
+                return Err(ExcType::attribute_error_no_dict_for_setting(
+                    &class_name,
+                    attr_name.as_str(),
+                ));
+            }
             heap.with_entry_mut(attrs_id, |heap, data| {
                 let HeapData::Dict(dict) = data else {
-                    panic!("Instance::set_attr: attrs_id is not a Dict");
+                    value.drop_with_heap(heap);
+                    return Err(ExcType::attribute_error_no_dict_for_setting(
+                        &class_name,
+                        attr_name.as_str(),
+                    ));
                 };
                 dict.set(name, value, heap, interns)
             })
@@ -834,9 +846,19 @@ impl Instance {
             }
             Ok(Some((name.clone_with_heap(heap), old)))
         } else if let Some(attrs_id) = self.attrs_id {
+            let class_name = self.class_name(heap, interns);
+            if !matches!(heap.get_if_live(attrs_id), Some(HeapData::Dict(_))) {
+                return Err(ExcType::attribute_error_no_dict_for_setting(
+                    &class_name,
+                    attr_name.as_str(),
+                ));
+            }
             heap.with_entry_mut(attrs_id, |heap, data| {
                 let HeapData::Dict(dict) = data else {
-                    panic!("Instance::del_attr: attrs_id is not a Dict");
+                    return Err(ExcType::attribute_error_no_dict_for_setting(
+                        &class_name,
+                        attr_name.as_str(),
+                    ));
                 };
                 dict.pop(name, heap, interns)
             })
@@ -844,7 +866,6 @@ impl Instance {
                 if opt.is_some() {
                     Ok(opt)
                 } else {
-                    let class_name = self.class_name(heap, interns);
                     Err(ExcType::attribute_error(class_name, attr_name.as_str()))
                 }
             })

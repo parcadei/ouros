@@ -18,7 +18,7 @@ use smallvec::SmallVec;
 use crate::{
     args::{ArgValues, KwargsValues},
     asyncio::{Coroutine, GatherFuture, GatherItem},
-    exception_private::{ExcType, RunResult, SimpleException},
+    exception_private::{ExcType, RunError, RunResult, SimpleException},
     intern::{FunctionId, Interns, StringId},
     py_hash::{cpython_hash_bytes_seed0, cpython_hash_str_seed0},
     resource::{LARGE_RESULT_THRESHOLD, MAX_DATA_RECURSION_DEPTH, ResourceError, ResourceTracker},
@@ -4245,15 +4245,18 @@ impl<T: ResourceTracker> Heap<T> {
     /// Uses `clone_with_heap` to properly handle all value types including closures,
     /// which need their captured cell refcounts incremented.
     ///
+    /// # Errors
+    /// Returns an internal error if the entry is not a cell.
+    ///
     /// # Panics
-    /// Panics if the ID is invalid, the value has been freed, or the entry is not a Cell.
-    pub fn get_cell_value(&mut self, id: HeapId) -> Value {
+    /// Panics if the ID is invalid or the value has been freed.
+    pub fn get_cell_value(&mut self, id: HeapId) -> RunResult<Value> {
         // Take the data out to avoid borrow conflicts when cloning
         let data = take_data!(self, id, "get_cell_value");
 
         let result = match &data {
-            HeapData::Cell(v) => v.clone_with_heap(self),
-            _ => panic!("Heap::get_cell_value: entry is not a Cell"),
+            HeapData::Cell(v) => Ok(v.clone_with_heap(self)),
+            _ => Err(RunError::internal("Heap::get_cell_value: entry is not a Cell")),
         };
 
         // Restore data before returning
@@ -4264,21 +4267,28 @@ impl<T: ResourceTracker> Heap<T> {
 
     /// Sets the value inside a cell, properly dropping the old value.
     ///
+    /// # Errors
+    /// Returns an internal error if the entry is not a cell.
+    ///
     /// # Panics
-    /// Panics if the ID is invalid, the value has been freed, or the entry is not a Cell.
-    pub fn set_cell_value(&mut self, id: HeapId, value: Value) {
+    /// Panics if the ID is invalid or the value has been freed.
+    pub fn set_cell_value(&mut self, id: HeapId, value: Value) -> RunResult<()> {
         // Take the data out to avoid borrow conflicts
         let mut data = take_data!(self, id, "set_cell_value");
 
-        match &mut data {
-            HeapData::Cell(old_value) => {
-                // Swap in the new value
-                let old = std::mem::replace(old_value, value);
-                // Restore data first, then drop old value
-                restore_data!(self, id, data, "set_cell_value");
-                old.drop_with_heap(self);
-            }
-            _ => panic!("Heap::set_cell_value: entry is not a Cell"),
+        if let HeapData::Cell(old_value) = &mut data {
+            // Swap in the new value
+            let old = std::mem::replace(old_value, value);
+            // Restore data first, then drop old value
+            restore_data!(self, id, data, "set_cell_value");
+            old.drop_with_heap(self);
+            Ok(())
+        } else {
+            // Value was moved into this function and would otherwise be dropped
+            // without heap cleanup.
+            value.drop_with_heap(self);
+            restore_data!(self, id, data, "set_cell_value");
+            Err(RunError::internal("Heap::set_cell_value: entry is not a Cell"))
         }
     }
 
