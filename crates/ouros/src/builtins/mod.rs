@@ -470,7 +470,7 @@ fn call_type_method(
 
             Ok(Value::None)
         }
-        Type::List | Type::Dict | Type::Set => {
+        Type::List | Type::Dict | Type::Set | Type::Bytearray => {
             defer_drop!(instance, heap);
             if !matches!(method, StaticStrings::DunderInit) {
                 rest_args.drop_with_heap(heap);
@@ -484,6 +484,7 @@ fn call_type_method(
                     HeapData::List(_) => ty == Type::List,
                     HeapData::Dict(_) => ty == Type::Dict,
                     HeapData::Set(_) => ty == Type::Set,
+                    HeapData::Bytearray(_) => ty == Type::Bytearray,
                     HeapData::Instance(inst) => class_is_builtin_subclass(inst.class_id(), ty, heap),
                     _ => false,
                 },
@@ -500,7 +501,7 @@ fn call_type_method(
             init_result.drop_with_heap(heap);
             Ok(Value::None)
         }
-        Type::Int | Type::Str | Type::Tuple => {
+        Type::Int | Type::Str | Type::Tuple | Type::Float | Type::Bytes | Type::FrozenSet | Type::Complex => {
             defer_drop!(instance, heap);
             if !matches!(method, StaticStrings::DunderNew) {
                 rest_args.drop_with_heap(heap);

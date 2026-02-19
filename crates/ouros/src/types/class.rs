@@ -1901,11 +1901,16 @@ pub(crate) fn builtin_super_method_for_attr(
             ty: Type::Object,
             method: StaticStrings::DunderInitSubclass,
         })),
-        (Type::List | Type::Dict | Type::Set, "__init__") => Some(Value::Builtin(Builtins::TypeMethod {
-            ty: builtin_ty,
-            method: StaticStrings::DunderInit,
-        })),
-        (Type::Int | Type::Str | Type::Tuple, "__new__") => Some(Value::Builtin(Builtins::TypeMethod {
+        (Type::List | Type::Dict | Type::Set | Type::Bytearray, "__init__") => {
+            Some(Value::Builtin(Builtins::TypeMethod {
+                ty: builtin_ty,
+                method: StaticStrings::DunderInit,
+            }))
+        }
+        (
+            Type::Int | Type::Str | Type::Tuple | Type::Float | Type::Bytes | Type::FrozenSet | Type::Complex,
+            "__new__",
+        ) => Some(Value::Builtin(Builtins::TypeMethod {
             ty: builtin_ty,
             method: StaticStrings::DunderNew,
         })),
