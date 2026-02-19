@@ -18,7 +18,7 @@ use smallvec::SmallVec;
 use crate::{
     args::{ArgValues, KwargsValues},
     asyncio::{Coroutine, GatherFuture, GatherItem},
-    exception_private::{ExcType, RunResult, SimpleException},
+    exception_private::{ExcType, RunError, RunResult, SimpleException},
     intern::{FunctionId, Interns, StringId},
     py_hash::{cpython_hash_bytes_seed0, cpython_hash_str_seed0},
     resource::{LARGE_RESULT_THRESHOLD, MAX_DATA_RECURSION_DEPTH, ResourceError, ResourceTracker},
@@ -3923,6 +3923,37 @@ impl<T: ResourceTracker> Heap<T> {
         hash
     }
 
+    /// Returns `true` if the class identified by `class_id` makes its instances
+    /// unhashable, either because `__hash__ = None` in the MRO or because `__eq__`
+    /// is defined without a corresponding `__hash__`.
+    ///
+    /// Used by both the VM dunder-lookup path and the internal hash-computation
+    /// path to avoid duplicating the MRO walk logic.
+    pub(crate) fn is_unhashable_via_mro(&self, class_id: HeapId, interns: &Interns) -> bool {
+        let mro: Vec<HeapId> = match self.get(class_id) {
+            HeapData::ClassObject(cls) => cls.mro().to_vec(),
+            _ => return false,
+        };
+        let mut has_eq = false;
+        let mut has_hash = false;
+        let mut hash_is_none = false;
+        for &mro_id in &mro {
+            if let HeapData::ClassObject(cls) = self.get(mro_id) {
+                if !has_hash && let Some(attr) = cls.namespace().get_by_str("__hash__", self, interns) {
+                    has_hash = true;
+                    hash_is_none = matches!(attr, Value::None);
+                }
+                if !has_eq && cls.namespace().get_by_str("__eq__", self, interns).is_some() {
+                    has_eq = true;
+                }
+                if has_hash && has_eq {
+                    break;
+                }
+            }
+        }
+        hash_is_none || (has_eq && !has_hash)
+    }
+
     /// Inner hash computation, called after depth guard is acquired.
     ///
     /// Separated from `get_or_compute_hash` so that `data_depth_exit` is called
@@ -3946,16 +3977,11 @@ impl<T: ResourceTracker> Heap<T> {
 
         // Handle Instance: check for __eq__ without __hash__ (unhashable), otherwise use identity hash.
         // Proper __hash__ dunder dispatch is done at the VM level via hash() builtin.
+        // Checks walk the MRO so inherited `__hash__ = None` is detected correctly.
         if let Some(HeapData::Instance(inst)) = &entry.data {
             let class_id = inst.class_id();
-            let has_eq = match self.get(class_id) {
-                HeapData::ClassObject(cls) => cls.mro_has_attr("__eq__", class_id, self, interns),
-                _ => false,
-            };
-            let has_hash = match self.get(class_id) {
-                HeapData::ClassObject(cls) => cls.mro_has_attr("__hash__", class_id, self, interns),
-                _ => false,
-            };
+            // NLL: entry borrow ends here (class_id is Copy)
+            let unhashable = self.is_unhashable_via_mro(class_id, interns);
 
             let entry = self
                 .entries
@@ -3964,7 +3990,7 @@ impl<T: ResourceTracker> Heap<T> {
                 .as_mut()
                 .expect("Heap::compute_hash_inner: object freed during instance check");
 
-            if has_eq && !has_hash {
+            if unhashable {
                 entry.hash_state = HashState::Unhashable;
                 return None;
             }
@@ -4245,15 +4271,18 @@ impl<T: ResourceTracker> Heap<T> {
     /// Uses `clone_with_heap` to properly handle all value types including closures,
     /// which need their captured cell refcounts incremented.
     ///
+    /// # Errors
+    /// Returns an internal error if the entry is not a cell.
+    ///
     /// # Panics
-    /// Panics if the ID is invalid, the value has been freed, or the entry is not a Cell.
-    pub fn get_cell_value(&mut self, id: HeapId) -> Value {
+    /// Panics if the ID is invalid or the value has been freed.
+    pub fn get_cell_value(&mut self, id: HeapId) -> RunResult<Value> {
         // Take the data out to avoid borrow conflicts when cloning
         let data = take_data!(self, id, "get_cell_value");
 
         let result = match &data {
-            HeapData::Cell(v) => v.clone_with_heap(self),
-            _ => panic!("Heap::get_cell_value: entry is not a Cell"),
+            HeapData::Cell(v) => Ok(v.clone_with_heap(self)),
+            _ => Err(RunError::internal("Heap::get_cell_value: entry is not a Cell")),
         };
 
         // Restore data before returning
@@ -4264,21 +4293,28 @@ impl<T: ResourceTracker> Heap<T> {
 
     /// Sets the value inside a cell, properly dropping the old value.
     ///
+    /// # Errors
+    /// Returns an internal error if the entry is not a cell.
+    ///
     /// # Panics
-    /// Panics if the ID is invalid, the value has been freed, or the entry is not a Cell.
-    pub fn set_cell_value(&mut self, id: HeapId, value: Value) {
+    /// Panics if the ID is invalid or the value has been freed.
+    pub fn set_cell_value(&mut self, id: HeapId, value: Value) -> RunResult<()> {
         // Take the data out to avoid borrow conflicts
         let mut data = take_data!(self, id, "set_cell_value");
 
-        match &mut data {
-            HeapData::Cell(old_value) => {
-                // Swap in the new value
-                let old = std::mem::replace(old_value, value);
-                // Restore data first, then drop old value
-                restore_data!(self, id, data, "set_cell_value");
-                old.drop_with_heap(self);
-            }
-            _ => panic!("Heap::set_cell_value: entry is not a Cell"),
+        if let HeapData::Cell(old_value) = &mut data {
+            // Swap in the new value
+            let old = std::mem::replace(old_value, value);
+            // Restore data first, then drop old value
+            restore_data!(self, id, data, "set_cell_value");
+            old.drop_with_heap(self);
+            Ok(())
+        } else {
+            // Value was moved into this function and would otherwise be dropped
+            // without heap cleanup.
+            value.drop_with_heap(self);
+            restore_data!(self, id, data, "set_cell_value");
+            Err(RunError::internal("Heap::set_cell_value: entry is not a Cell"))
         }
     }
 

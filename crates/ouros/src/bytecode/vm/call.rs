@@ -9,10 +9,11 @@ use std::{cmp::Ordering, env, fs, path::Path, ptr, str::FromStr};
 use smallvec::SmallVec;
 
 use super::{
-    AwaitResult, CallAttrInlineCacheEntry, CallAttrInlineCacheKind, CallFrame, PendingBuiltinFromList,
-    PendingBuiltinFromListKind, PendingContextDecorator, PendingContextDecoratorStage, PendingExitStack,
-    PendingExitStackAwaiting, PendingGroupBy, PendingListSort, PendingNewCall, PendingNextDefault, PendingReduce,
-    PendingStringifyReturn, PendingSumFromList, PendingTextwrapIndent, VM,
+    AwaitResult, CallAttrInlineCacheEntry, CallAttrInlineCacheKind, CallFrame, PendingBinaryDunder,
+    PendingBinaryDunderStage, PendingBuiltinFromList, PendingBuiltinFromListKind, PendingContextDecorator,
+    PendingContextDecoratorStage, PendingExitStack, PendingExitStackAwaiting, PendingGroupBy, PendingIndexCall,
+    PendingIndexCallTarget, PendingListSort, PendingNewCall, PendingNextDefault, PendingPrintCall, PendingReduce,
+    PendingSliceBuild, PendingStringifyReturn, PendingSumFromList, PendingTextwrapIndent, VM,
 };
 use crate::{
     args::{ArgValues, KwargsValues},
@@ -38,6 +39,7 @@ use crate::{
         bytes::{bytes_fromhex, bytes_maketrans, call_bytes_method},
         class::PropertyAccessorKind,
         dict::dict_fromkeys,
+        iter::advance_on_heap,
         make_generic_alias,
         str::{call_str_method, str_maketrans},
     },
@@ -62,6 +64,14 @@ pub(super) enum CallResult {
     /// OS operation call requested - VM should yield `FrameExit::OsCall` to host.
     ///
     /// The host executes the OS operation and resumes the VM with the result.
+    OsCall(OsFunction, ArgValues),
+}
+
+enum PrintStringifyStep {
+    Ready(Value),
+    AwaitFrame(PendingStringifyReturn),
+    External(ExtFunctionId, ArgValues),
+    Proxy(ProxyId, String, ArgValues),
     OsCall(OsFunction, ArgValues),
 }
 
@@ -93,6 +103,39 @@ impl BisectOperation {
             Self::InsortLeft => "insort_left",
             Self::InsortRight => "insort_right",
         }
+    }
+}
+
+/// Maps binary dunder names to user-facing operator symbols for TypeError text.
+fn binary_symbol_for_dunder(dunder_id: StringId) -> &'static str {
+    if dunder_id == StaticStrings::DunderAdd {
+        "+"
+    } else if dunder_id == StaticStrings::DunderSub {
+        "-"
+    } else if dunder_id == StaticStrings::DunderMul {
+        "*"
+    } else if dunder_id == StaticStrings::DunderTruediv {
+        "/"
+    } else if dunder_id == StaticStrings::DunderFloordiv {
+        "//"
+    } else if dunder_id == StaticStrings::DunderMod {
+        "%"
+    } else if dunder_id == StaticStrings::DunderPow {
+        "**"
+    } else if dunder_id == StaticStrings::DunderLshift {
+        "<<"
+    } else if dunder_id == StaticStrings::DunderRshift {
+        ">>"
+    } else if dunder_id == StaticStrings::DunderAnd {
+        "&"
+    } else if dunder_id == StaticStrings::DunderOr {
+        "|"
+    } else if dunder_id == StaticStrings::DunderXor {
+        "^"
+    } else if dunder_id == StaticStrings::DunderMatmul {
+        "@"
+    } else {
+        "?"
     }
 }
 
@@ -372,6 +415,10 @@ impl<T: ResourceTracker, P: PrintWriter, Tr: VmTracer> VM<'_, T, P, Tr> {
                 let result = self.call_super(args)?;
                 return Ok(CallResult::Push(result));
             }
+            if matches!(builtin, BuiltinsFunctions::Print) {
+                let args = self.pop_n_args(arg_count);
+                return self.call_print_builtin(args);
+            }
 
             // getattr/setattr/delattr/hasattr need dynamic string-name handling.
             if matches!(
@@ -452,6 +499,9 @@ impl<T: ResourceTracker, P: PrintWriter, Tr: VmTracer> VM<'_, T, P, Tr> {
                         BuiltinsFunctions::Len => Some(StaticStrings::DunderLen),
                         BuiltinsFunctions::Abs => Some(StaticStrings::DunderAbs),
                         BuiltinsFunctions::Next => Some(StaticStrings::DunderNext),
+                        BuiltinsFunctions::Bin | BuiltinsFunctions::Hex | BuiltinsFunctions::Oct => {
+                            Some(StaticStrings::DunderIndex)
+                        }
                         _ => None,
                     };
 
@@ -509,21 +559,60 @@ impl<T: ResourceTracker, P: PrintWriter, Tr: VmTracer> VM<'_, T, P, Tr> {
                             if matches!(builtin, BuiltinsFunctions::Repr) {
                                 return self.handle_stringify_call_result(result, PendingStringifyReturn::Repr);
                             }
+                            if matches!(builtin, BuiltinsFunctions::Len) {
+                                return match result {
+                                    CallResult::Push(value) => {
+                                        let len = self.normalized_len_dunder_return(&value);
+                                        value.drop_with_heap(self.heap);
+                                        len.map(|n| CallResult::Push(Value::Int(n)))
+                                    }
+                                    CallResult::FramePushed => {
+                                        self.pending_len_return.push(self.frames.len());
+                                        Ok(CallResult::FramePushed)
+                                    }
+                                    other => Ok(other),
+                                };
+                            }
+                            if matches!(
+                                builtin,
+                                BuiltinsFunctions::Bin | BuiltinsFunctions::Hex | BuiltinsFunctions::Oct
+                            ) {
+                                return match result {
+                                    CallResult::Push(index_value) => {
+                                        let normalized = self.normalize_index_dunder_return(&index_value);
+                                        index_value.drop_with_heap(self.heap);
+                                        match normalized {
+                                            Ok(index) => self.execute_pending_index_target(
+                                                PendingIndexCallTarget::BuiltinFunction(builtin),
+                                                index,
+                                            ),
+                                            Err(e) => Err(e),
+                                        }
+                                    }
+                                    CallResult::FramePushed => {
+                                        self.pending_index_call = Some(PendingIndexCall {
+                                            frame_depth: self.frames.len(),
+                                            target: PendingIndexCallTarget::BuiltinFunction(builtin),
+                                        });
+                                        Ok(CallResult::FramePushed)
+                                    }
+                                    other => Ok(other),
+                                };
+                            }
                             return Ok(result);
                         }
-                        // For hash(): if no __hash__ but has __eq__, raise TypeError
+                        // For hash(): mirror class-level unhashability rules using MRO checks.
                         if matches!(builtin, BuiltinsFunctions::Hash) {
-                            let eq_id = StaticStrings::DunderEq.into();
-                            if let Some(eq_method) = self.lookup_type_dunder(arg_id, eq_id) {
-                                // __eq__ defined without __hash__ - unhashable
-                                eq_method.drop_with_heap(self.heap);
+                            let class_id = match self.heap.get(arg_id) {
+                                HeapData::Instance(inst) => Some(inst.class_id()),
+                                _ => None,
+                            };
+                            if let Some(class_id) = class_id
+                                && self.heap.is_unhashable_via_mro(class_id, self.interns)
+                            {
                                 let arg_val = self.pop();
-                                // Get class name
-                                let class_name = match self.heap.get(arg_id) {
-                                    HeapData::Instance(inst) => match self.heap.get(inst.class_id()) {
-                                        HeapData::ClassObject(cls) => cls.name(self.interns).to_string(),
-                                        _ => "instance".to_string(),
-                                    },
+                                let class_name = match self.heap.get(class_id) {
+                                    HeapData::ClassObject(cls) => cls.name(self.interns).to_string(),
                                     _ => "instance".to_string(),
                                 };
                                 arg_val.drop_with_heap(self.heap);
@@ -558,6 +647,30 @@ impl<T: ResourceTracker, P: PrintWriter, Tr: VmTracer> VM<'_, T, P, Tr> {
     /// - `list(x)` -> `x.__iter__()` then repeatedly `__next__()` for instances with `__iter__`
     pub(super) fn exec_call_builtin_type(&mut self, type_id: u8, arg_count: usize) -> Result<CallResult, RunError> {
         if let Some(t) = Type::callable_from_u8(type_id) {
+            if t == Type::Slice && (1..=3).contains(&arg_count) {
+                let args = self.pop_n_args(arg_count);
+                let positional = match args {
+                    ArgValues::One(a) => vec![a],
+                    ArgValues::Two(a, b) => vec![a, b],
+                    ArgValues::ArgsKargs { args, kwargs } => {
+                        if !kwargs.is_empty() {
+                            kwargs.drop_with_heap(self.heap);
+                            for value in args {
+                                value.drop_with_heap(self.heap);
+                            }
+                            return Err(ExcType::type_error_no_kwargs("slice"));
+                        }
+                        args
+                    }
+                    ArgValues::Empty => return Err(ExcType::type_error_at_least("slice", 1, 0)),
+                    ArgValues::Kwargs(kwargs) => {
+                        kwargs.drop_with_heap(self.heap);
+                        return Err(ExcType::type_error_no_kwargs("slice"));
+                    }
+                };
+                return self.continue_slice_build_with_index(Vec::new(), positional);
+            }
+
             // Check if the single argument is an instance that has a relevant dunder
             if arg_count == 1 {
                 // Peek at the arg (TOS) without popping
@@ -656,6 +769,36 @@ impl<T: ResourceTracker, P: PrintWriter, Tr: VmTracer> VM<'_, T, P, Tr> {
                 if let Some(arg_id) = arg_ref_id
                     && matches!(self.heap.get(arg_id), HeapData::Instance(_))
                 {
+                    if t == Type::Range {
+                        let dunder_id: StringId = StaticStrings::DunderIndex.into();
+                        if let Some(method) = self.lookup_type_dunder(arg_id, dunder_id) {
+                            let arg_val = self.pop();
+                            let result = self.call_dunder(arg_id, method, ArgValues::Empty)?;
+                            arg_val.drop_with_heap(self.heap);
+                            return match result {
+                                CallResult::Push(index_value) => {
+                                    let normalized = self.normalize_index_dunder_return(&index_value);
+                                    index_value.drop_with_heap(self.heap);
+                                    match normalized {
+                                        Ok(index) => self.execute_pending_index_target(
+                                            PendingIndexCallTarget::BuiltinType(Type::Range),
+                                            index,
+                                        ),
+                                        Err(e) => Err(e),
+                                    }
+                                }
+                                CallResult::FramePushed => {
+                                    self.pending_index_call = Some(PendingIndexCall {
+                                        frame_depth: self.frames.len(),
+                                        target: PendingIndexCallTarget::BuiltinType(Type::Range),
+                                    });
+                                    Ok(CallResult::FramePushed)
+                                }
+                                other => Ok(other),
+                            };
+                        }
+                    }
+
                     // Check for type-specific dunders
                     let dunder = match t {
                         Type::Str => Some((StaticStrings::DunderStr, Some(StaticStrings::DunderRepr))),
@@ -673,6 +816,20 @@ impl<T: ResourceTracker, P: PrintWriter, Tr: VmTracer> VM<'_, T, P, Tr> {
                             let arg_val = self.pop();
                             let result = self.call_dunder(arg_id, method, ArgValues::Empty)?;
                             arg_val.drop_with_heap(self.heap);
+                            if t == Type::Bool {
+                                return match result {
+                                    CallResult::Push(value) => {
+                                        let b = self.truthiness_from_bool_dunder_return(&value);
+                                        value.drop_with_heap(self.heap);
+                                        b.map(|truthy| CallResult::Push(Value::Bool(truthy)))
+                                    }
+                                    CallResult::FramePushed => {
+                                        self.push_pending_truthiness_return(super::PendingTruthinessKind::Bool, false);
+                                        Ok(CallResult::FramePushed)
+                                    }
+                                    other => Ok(other),
+                                };
+                            }
                             if t == Type::Str {
                                 return self.handle_stringify_call_result(result, PendingStringifyReturn::Str);
                             }
@@ -685,6 +842,23 @@ impl<T: ResourceTracker, P: PrintWriter, Tr: VmTracer> VM<'_, T, P, Tr> {
                                 let arg_val = self.pop();
                                 let result = self.call_dunder(arg_id, method, ArgValues::Empty)?;
                                 arg_val.drop_with_heap(self.heap);
+                                if t == Type::Bool {
+                                    return match result {
+                                        CallResult::Push(value) => {
+                                            let b = self.truthiness_from_len_dunder_return(&value);
+                                            value.drop_with_heap(self.heap);
+                                            b.map(|truthy| CallResult::Push(Value::Bool(truthy)))
+                                        }
+                                        CallResult::FramePushed => {
+                                            self.push_pending_truthiness_return(
+                                                super::PendingTruthinessKind::Len,
+                                                false,
+                                            );
+                                            Ok(CallResult::FramePushed)
+                                        }
+                                        other => Ok(other),
+                                    };
+                                }
                                 if t == Type::Str {
                                     return self.handle_stringify_call_result(result, PendingStringifyReturn::Str);
                                 }
@@ -741,6 +915,12 @@ impl<T: ResourceTracker, P: PrintWriter, Tr: VmTracer> VM<'_, T, P, Tr> {
                                 }
                             }
                         }
+                        let getitem_id: StringId = StaticStrings::DunderGetitem.into();
+                        let getitem_name = self.interns.get_str(getitem_id);
+                        if self.type_mro_has_attr(arg_id, getitem_name) {
+                            let arg_val = self.pop();
+                            return self.list_build_continue(arg_val, Vec::new());
+                        }
                     }
                 }
             }
@@ -761,6 +941,24 @@ impl<T: ResourceTracker, P: PrintWriter, Tr: VmTracer> VM<'_, T, P, Tr> {
     /// `pending_list_build` and returns `FramePushed`.
     pub(super) fn list_build_from_iterator(&mut self, iterator: Value) -> Result<CallResult, RunError> {
         if let Value::Ref(iter_id) = &iterator {
+            if matches!(self.heap.get(*iter_id), HeapData::Iter(_)) {
+                let mut items = Vec::new();
+                loop {
+                    match advance_on_heap(self.heap, *iter_id, self.interns) {
+                        Ok(Some(item)) => items.push(item),
+                        Ok(None) => {
+                            iterator.drop_with_heap(self.heap);
+                            let list_id = self.heap.allocate(HeapData::List(List::new(items)))?;
+                            return Ok(CallResult::Push(Value::Ref(list_id)));
+                        }
+                        Err(e) => {
+                            iterator.drop_with_heap(self.heap);
+                            return Err(e);
+                        }
+                    }
+                }
+            }
+
             // Generators are VM-driven iterators; resume with generator_next().
             if matches!(self.heap.get(*iter_id), HeapData::Generator(_)) {
                 match self.generator_next(*iter_id) {
@@ -814,6 +1012,12 @@ impl<T: ResourceTracker, P: PrintWriter, Tr: VmTracer> VM<'_, T, P, Tr> {
                         }
                     }
                 }
+
+                let getitem_id: StringId = StaticStrings::DunderGetitem.into();
+                let getitem_name = self.interns.get_str(getitem_id);
+                if self.type_mro_has_attr(*iter_id, getitem_name) {
+                    return self.list_build_continue(iterator, Vec::new());
+                }
             }
         }
 
@@ -851,6 +1055,7 @@ impl<T: ResourceTracker, P: PrintWriter, Tr: VmTracer> VM<'_, T, P, Tr> {
         };
 
         let dunder_id: StringId = StaticStrings::DunderNext.into();
+        let getitem_id: StringId = StaticStrings::DunderGetitem.into();
 
         loop {
             if matches!(this.heap.get(iter_id), HeapData::Generator(_)) {
@@ -887,6 +1092,28 @@ impl<T: ResourceTracker, P: PrintWriter, Tr: VmTracer> VM<'_, T, P, Tr> {
                         return Ok(CallResult::FramePushed);
                     }
                     other => return Ok(other),
+                }
+            } else if let Some(method) = this.lookup_type_dunder(iter_id, getitem_id) {
+                let index = i64::try_from(items.len()).expect("getitem list build index exceeds i64::MAX");
+                match this.call_dunder(iter_id, method, ArgValues::One(Value::Int(index))) {
+                    Ok(CallResult::Push(item)) => {
+                        items.push(item);
+                    }
+                    Ok(CallResult::FramePushed) => {
+                        let (iterator, _this) = iterator_guard.into_parts();
+                        let (items, this) = items_guard.into_parts();
+                        this.pending_list_build
+                            .push(super::PendingListBuild { iterator, items });
+                        this.pending_list_build_return = true;
+                        return Ok(CallResult::FramePushed);
+                    }
+                    Ok(other) => return Ok(other),
+                    Err(e) if e.is_exception_type(ExcType::IndexError) => {
+                        let list_items = std::mem::take(items);
+                        let list_id = this.heap.allocate(HeapData::List(List::new(list_items)))?;
+                        return Ok(CallResult::Push(Value::Ref(list_id)));
+                    }
+                    Err(e) => return Err(e),
                 }
             } else {
                 let type_name = iterator.py_type(this.heap);
@@ -5288,6 +5515,140 @@ impl<T: ResourceTracker, P: PrintWriter, Tr: VmTracer> VM<'_, T, P, Tr> {
         result.map(Some)
     }
 
+    fn normalize_index_dunder_return(&self, value: &Value) -> RunResult<i64> {
+        match value {
+            Value::Int(i) => Ok(*i),
+            Value::Bool(b) => Ok(i64::from(*b)),
+            Value::Ref(id) => match self.heap.get(*id) {
+                HeapData::LongInt(li) => li.to_i64().ok_or_else(ExcType::index_error_int_too_large),
+                _ => Err(ExcType::type_error(format!(
+                    "__index__ returned non-int (type {})",
+                    value.py_type(self.heap)
+                ))),
+            },
+            _ => Err(ExcType::type_error(format!(
+                "__index__ returned non-int (type {})",
+                value.py_type(self.heap)
+            ))),
+        }
+    }
+
+    fn execute_pending_index_target(
+        &mut self,
+        target: PendingIndexCallTarget,
+        index: i64,
+    ) -> Result<CallResult, RunError> {
+        match target {
+            PendingIndexCallTarget::BuiltinFunction(builtin) => {
+                let value = builtin.call(
+                    self.heap,
+                    ArgValues::One(Value::Int(index)),
+                    self.interns,
+                    self.print_writer,
+                )?;
+                Ok(CallResult::Push(value))
+            }
+            PendingIndexCallTarget::BuiltinType(type_) => {
+                let value = type_.call(self.heap, ArgValues::One(Value::Int(index)), self.interns)?;
+                Ok(CallResult::Push(value))
+            }
+        }
+    }
+
+    fn continue_slice_build_with_index(
+        &mut self,
+        mut converted: Vec<Value>,
+        mut remaining: Vec<Value>,
+    ) -> Result<CallResult, RunError> {
+        while !remaining.is_empty() {
+            let value = remaining.remove(0);
+            match &value {
+                Value::Ref(id) if matches!(self.heap.get(*id), HeapData::Instance(_)) => {
+                    let dunder_id: StringId = StaticStrings::DunderIndex.into();
+                    if let Some(method) = self.lookup_type_dunder(*id, dunder_id) {
+                        match self.call_dunder(*id, method, ArgValues::Empty)? {
+                            CallResult::Push(index_value) => {
+                                let normalized = self.normalize_index_dunder_return(&index_value)?;
+                                index_value.drop_with_heap(self.heap);
+                                value.drop_with_heap(self.heap);
+                                converted.push(Value::Int(normalized));
+                            }
+                            CallResult::FramePushed => {
+                                value.drop_with_heap(self.heap);
+                                self.pending_slice_build = Some(PendingSliceBuild {
+                                    frame_depth: self.frames.len(),
+                                    converted,
+                                    remaining,
+                                });
+                                return Ok(CallResult::FramePushed);
+                            }
+                            other => {
+                                value.drop_with_heap(self.heap);
+                                for v in converted {
+                                    v.drop_with_heap(self.heap);
+                                }
+                                for v in remaining {
+                                    v.drop_with_heap(self.heap);
+                                }
+                                return Ok(other);
+                            }
+                        }
+                    } else {
+                        converted.push(value);
+                    }
+                }
+                _ => converted.push(value),
+            }
+        }
+
+        let result = match converted.len() {
+            1 => Type::Slice.call(
+                self.heap,
+                ArgValues::One(converted.pop().expect("len checked")),
+                self.interns,
+            )?,
+            2 => {
+                let mut iter = converted.into_iter();
+                Type::Slice.call(
+                    self.heap,
+                    ArgValues::Two(iter.next().expect("len checked"), iter.next().expect("len checked")),
+                    self.interns,
+                )?
+            }
+            3 => Type::Slice.call(
+                self.heap,
+                ArgValues::ArgsKargs {
+                    args: converted,
+                    kwargs: KwargsValues::Empty,
+                },
+                self.interns,
+            )?,
+            _ => unreachable!("slice arg count should be 1..=3"),
+        };
+        Ok(CallResult::Push(result))
+    }
+
+    pub(super) fn resume_pending_slice_build(
+        &mut self,
+        mut pending: PendingSliceBuild,
+        index_value: Value,
+    ) -> Result<CallResult, RunError> {
+        let normalized = self.normalize_index_dunder_return(&index_value)?;
+        index_value.drop_with_heap(self.heap);
+        pending.converted.push(Value::Int(normalized));
+        self.continue_slice_build_with_index(pending.converted, pending.remaining)
+    }
+
+    pub(super) fn resume_pending_index_call(
+        &mut self,
+        pending: PendingIndexCall,
+        index_value: Value,
+    ) -> Result<CallResult, RunError> {
+        let normalized = self.normalize_index_dunder_return(&index_value)?;
+        index_value.drop_with_heap(self.heap);
+        self.execute_pending_index_target(pending.target, normalized)
+    }
+
     /// Calls `min()` with generator-aware handling.
     ///
     /// For generator inputs, this first materializes values through
@@ -5837,34 +6198,45 @@ impl<T: ResourceTracker, P: PrintWriter, Tr: VmTracer> VM<'_, T, P, Tr> {
     /// Generator inputs are materialized through VM-driven iteration before
     /// building the dict so generator frames can suspend/resume correctly.
     fn call_dict_type_builtin(&mut self, args: ArgValues) -> Result<CallResult, RunError> {
-        let value = args.get_zero_one_arg("dict", self.heap)?;
-        match value {
-            None => {
-                let result = Type::Dict.call(self.heap, ArgValues::Empty, self.interns)?;
+        match args {
+            ArgValues::One(iterable) => self.call_dict_type_builtin_one(iterable),
+            ArgValues::ArgsKargs { args, kwargs } => {
+                if kwargs.is_empty() && args.len() == 1 {
+                    kwargs.drop_with_heap(self.heap);
+                    let iterable = args.into_iter().next().expect("len checked");
+                    return self.call_dict_type_builtin_one(iterable);
+                }
+                let result = Type::Dict.call(self.heap, ArgValues::ArgsKargs { args, kwargs }, self.interns)?;
                 Ok(CallResult::Push(result))
             }
-            Some(iterable) => {
-                if let Value::Ref(iter_id) = &iterable
-                    && matches!(self.heap.get(*iter_id), HeapData::Generator(_))
-                {
-                    match self.list_build_from_iterator(iterable)? {
-                        CallResult::Push(list_value) => {
-                            let dict_value = Type::Dict.call(self.heap, ArgValues::One(list_value), self.interns)?;
-                            Ok(CallResult::Push(dict_value))
-                        }
-                        CallResult::FramePushed => {
-                            self.pending_builtin_from_list.push(PendingBuiltinFromList {
-                                kind: PendingBuiltinFromListKind::Dict,
-                            });
-                            Ok(CallResult::FramePushed)
-                        }
-                        other => Ok(other),
-                    }
-                } else {
-                    let result = Type::Dict.call(self.heap, ArgValues::One(iterable), self.interns)?;
-                    Ok(CallResult::Push(result))
-                }
+            other => {
+                let result = Type::Dict.call(self.heap, other, self.interns)?;
+                Ok(CallResult::Push(result))
             }
+        }
+    }
+
+    /// Calls `dict(...)` for one positional argument, preserving generator suspension semantics.
+    fn call_dict_type_builtin_one(&mut self, iterable: Value) -> Result<CallResult, RunError> {
+        if let Value::Ref(iter_id) = &iterable
+            && matches!(self.heap.get(*iter_id), HeapData::Generator(_))
+        {
+            match self.list_build_from_iterator(iterable)? {
+                CallResult::Push(list_value) => {
+                    let dict_value = Type::Dict.call(self.heap, ArgValues::One(list_value), self.interns)?;
+                    Ok(CallResult::Push(dict_value))
+                }
+                CallResult::FramePushed => {
+                    self.pending_builtin_from_list.push(PendingBuiltinFromList {
+                        kind: PendingBuiltinFromListKind::Dict,
+                    });
+                    Ok(CallResult::FramePushed)
+                }
+                other => Ok(other),
+            }
+        } else {
+            let result = Type::Dict.call(self.heap, ArgValues::One(iterable), self.interns)?;
+            Ok(CallResult::Push(result))
         }
     }
 
@@ -5933,6 +6305,9 @@ impl<T: ResourceTracker, P: PrintWriter, Tr: VmTracer> VM<'_, T, P, Tr> {
                 | PendingBuiltinFromListKind::Min
                 | PendingBuiltinFromListKind::Max
                 | PendingBuiltinFromListKind::Join(_) => {}
+                PendingBuiltinFromListKind::Contains { needle, .. } => {
+                    needle.drop_with_heap(self.heap);
+                }
                 PendingBuiltinFromListKind::Sorted { kwargs } => {
                     kwargs.drop_with_heap(self.heap);
                 }
@@ -6025,6 +6400,16 @@ impl<T: ResourceTracker, P: PrintWriter, Tr: VmTracer> VM<'_, T, P, Tr> {
                     self.print_writer,
                 )?;
                 Ok(CallResult::Push(value))
+            }
+            PendingBuiltinFromListKind::Contains { needle, negate } => {
+                let contained = list_value.py_contains(&needle, self.heap, self.interns)?;
+                list_value.drop_with_heap(self.heap);
+                needle.drop_with_heap(self.heap);
+                Ok(CallResult::Push(Value::Bool(if negate {
+                    !contained
+                } else {
+                    contained
+                })))
             }
             PendingBuiltinFromListKind::Min => {
                 let value = BuiltinsFunctions::Min.call(
@@ -6413,6 +6798,16 @@ impl<T: ResourceTracker, P: PrintWriter, Tr: VmTracer> VM<'_, T, P, Tr> {
             return self.call_class_instantiate(heap_id, callable, args);
         }
 
+        // `csv.Sniffer` compatibility: allow calling the object like a zero-arg constructor.
+        if matches!(self.heap.get(heap_id), HeapData::StdlibObject(StdlibObject::CsvSniffer)) {
+            args.check_zero_args("Sniffer", self.heap)?;
+            callable.drop_with_heap(self.heap);
+            let sniffer_id = self
+                .heap
+                .allocate(HeapData::StdlibObject(StdlibObject::new_csv_sniffer()))?;
+            return Ok(CallResult::Push(Value::Ref(sniffer_id)));
+        }
+
         // Callable contextlib helper objects implemented as StdlibObject variants.
         if matches!(self.heap.get(heap_id), HeapData::StdlibObject(_)) {
             enum ContextlibCallable {
@@ -6593,8 +6988,10 @@ impl<T: ResourceTracker, P: PrintWriter, Tr: VmTracer> VM<'_, T, P, Tr> {
 
             let dunder_enter: StringId = StaticStrings::DunderEnter.into();
             let dunder_exit: StringId = StaticStrings::DunderExit.into();
-            let has_sync_decorator_protocol = self.lookup_type_dunder(heap_id, dunder_enter).is_some()
-                && self.lookup_type_dunder(heap_id, dunder_exit).is_some();
+            let dunder_enter_name = self.interns.get_str(dunder_enter);
+            let dunder_exit_name = self.interns.get_str(dunder_exit);
+            let has_sync_decorator_protocol =
+                self.type_mro_has_attr(heap_id, dunder_enter_name) && self.type_mro_has_attr(heap_id, dunder_exit_name);
             let has_async_decorator_protocol = if let HeapData::Instance(instance) = self.heap.get(heap_id) {
                 let class_id = instance.class_id();
                 if let HeapData::ClassObject(cls) = self.heap.get(class_id) {
@@ -7317,7 +7714,7 @@ impl<T: ResourceTracker, P: PrintWriter, Tr: VmTracer> VM<'_, T, P, Tr> {
         let init_name = self.interns.get_str(init_name_id);
 
         let type_class_id = self.heap.builtin_class_id(Type::Type)?;
-        let (new_info, init_info, class_name, is_abstract, abstract_methods, is_metaclass_class) =
+        let (new_info, init_info, class_name, is_abstract, abstract_methods, is_metaclass_class, value_ctor_fallback) =
             match self.heap.get(class_heap_id) {
                 HeapData::ClassObject(cls) => {
                     let new_val = cls
@@ -7338,6 +7735,12 @@ impl<T: ResourceTracker, P: PrintWriter, Tr: VmTracer> VM<'_, T, P, Tr> {
                         Some(Value::Bool(true))
                     );
                     let is_abstract = abstract_flag || !abstract_methods.is_empty();
+                    let value_ctor_fallback = cls.mro().iter().skip(1).find_map(|mro_id| {
+                        match self.heap.builtin_type_for_class_id(*mro_id) {
+                            Some(Type::Int) => Some(Type::Int),
+                            _ => None,
+                        }
+                    });
                     (
                         new_val,
                         init_val,
@@ -7345,6 +7748,7 @@ impl<T: ResourceTracker, P: PrintWriter, Tr: VmTracer> VM<'_, T, P, Tr> {
                         is_abstract,
                         abstract_methods,
                         cls.is_subclass_of(class_heap_id, type_class_id),
+                        value_ctor_fallback,
                     )
                 }
                 _ => unreachable!("call_class_instantiate: not a ClassObject"),
@@ -7384,6 +7788,17 @@ impl<T: ResourceTracker, P: PrintWriter, Tr: VmTracer> VM<'_, T, P, Tr> {
                 return Ok(CallResult::Push(class_value));
             }
             return Err(ExcType::type_error(format!("{class_name}() takes no arguments")));
+        }
+
+        // Subclasses of immutable numeric builtins inherit constructor argument
+        // parsing from the builtin even when they do not define __new__/__init__.
+        // For now we mirror this for `int` to preserve hash() protocol behavior.
+        if new_info.is_none()
+            && init_info.is_none()
+            && !matches!(args, ArgValues::Empty)
+            && matches!(value_ctor_fallback, Some(Type::Int))
+        {
+            return Ok(CallResult::Push(Type::Int.call(self.heap, args, self.interns)?));
         }
 
         // If the class defines __new__, call it first.
@@ -7438,6 +7853,7 @@ impl<T: ResourceTracker, P: PrintWriter, Tr: VmTracer> VM<'_, T, P, Tr> {
                         class_heap_id,
                         init_func: init_info,
                         args: init_args,
+                        frame_depth: self.frames.len(),
                     });
                     return Ok(CallResult::FramePushed);
                 }
@@ -7490,6 +7906,11 @@ impl<T: ResourceTracker, P: PrintWriter, Tr: VmTracer> VM<'_, T, P, Tr> {
             match result {
                 CallResult::Push(value) => {
                     // __init__ returned synchronously
+                    if let Err(e) = self.validate_init_return(&value) {
+                        value.drop_with_heap(self.heap);
+                        instance_value.drop_with_heap(self.heap);
+                        return Err(e);
+                    }
                     value.drop_with_heap(self.heap);
                     Ok(CallResult::Push(instance_value))
                 }
@@ -7703,6 +8124,11 @@ impl<T: ResourceTracker, P: PrintWriter, Tr: VmTracer> VM<'_, T, P, Tr> {
 
                 match result {
                     CallResult::Push(value) => {
+                        if let Err(e) = self.validate_init_return(&value) {
+                            value.drop_with_heap(self.heap);
+                            new_result.drop_with_heap(self.heap);
+                            return Err(e);
+                        }
                         value.drop_with_heap(self.heap);
                         Ok(CallResult::Push(new_result))
                     }
@@ -7736,6 +8162,17 @@ impl<T: ResourceTracker, P: PrintWriter, Tr: VmTracer> VM<'_, T, P, Tr> {
             args.drop_with_heap(self.heap);
             Ok(CallResult::Push(new_result))
         }
+    }
+
+    /// Validates that `__init__` returned `None`, per Python callable protocol.
+    pub(super) fn validate_init_return(&mut self, value: &Value) -> RunResult<()> {
+        if matches!(value, Value::None) {
+            return Ok(());
+        }
+        Err(ExcType::type_error(format!(
+            "__init__() should return None, not '{}'",
+            value.py_type(self.heap)
+        )))
     }
 
     /// Calls a PropertyAccessor, creating a new UserProperty with the appropriate
@@ -7940,7 +8377,7 @@ impl<T: ResourceTracker, P: PrintWriter, Tr: VmTracer> VM<'_, T, P, Tr> {
             (class_cell_id, frame.namespace_idx)
         };
 
-        let class_val = self.heap.get_cell_value(class_cell_id);
+        let class_val = self.heap.get_cell_value(class_cell_id)?;
         let class_id = match class_val {
             Value::Ref(id) => {
                 class_val.drop_with_heap(self.heap);
@@ -8106,7 +8543,24 @@ impl<T: ResourceTracker, P: PrintWriter, Tr: VmTracer> VM<'_, T, P, Tr> {
                 let result = self.call_dunder(*obj_id, method, ArgValues::One(spec_arg))?;
                 value.drop_with_heap(self.heap);
                 spec.drop_with_heap(self.heap);
-                return Ok(result);
+                return match result {
+                    CallResult::Push(formatted) => {
+                        if self.is_str_value(&formatted) {
+                            Ok(CallResult::Push(formatted))
+                        } else {
+                            let result_type = formatted.py_type(self.heap);
+                            formatted.drop_with_heap(self.heap);
+                            Err(ExcType::type_error(format!(
+                                "__format__ must return a str, not {result_type}"
+                            )))
+                        }
+                    }
+                    CallResult::FramePushed => {
+                        self.pending_format_return.push(self.frames.len());
+                        Ok(CallResult::FramePushed)
+                    }
+                    other => Ok(other),
+                };
             }
         }
 
@@ -8117,6 +8571,18 @@ impl<T: ResourceTracker, P: PrintWriter, Tr: VmTracer> VM<'_, T, P, Tr> {
             spec.py_str(self.heap, self.interns).into_owned()
         };
         let value_type = value.py_type(self.heap);
+        let value_type_name = if let Value::Ref(value_id) = &value {
+            if let HeapData::Instance(instance) = self.heap.get(*value_id) {
+                match self.heap.get(instance.class_id()) {
+                    HeapData::ClassObject(cls) => cls.name(self.interns).to_string(),
+                    _ => value_type.to_string(),
+                }
+            } else {
+                value_type.to_string()
+            }
+        } else {
+            value_type.to_string()
+        };
         let can_use_native_format =
             matches!(value, Value::Int(_) | Value::Float(_) | Value::Bool(_)) || self.is_str_value(&value);
 
@@ -8124,7 +8590,7 @@ impl<T: ResourceTracker, P: PrintWriter, Tr: VmTracer> VM<'_, T, P, Tr> {
             value.drop_with_heap(self.heap);
             spec.drop_with_heap(self.heap);
             return Err(ExcType::type_error(format!(
-                "unsupported format string passed to {value_type}.__format__"
+                "unsupported format string passed to {value_type_name}.__format__"
             )));
         }
 
@@ -8158,6 +8624,113 @@ impl<T: ResourceTracker, P: PrintWriter, Tr: VmTracer> VM<'_, T, P, Tr> {
         spec.drop_with_heap(self.heap);
         let formatted_id = self.heap.allocate(HeapData::Str(Str::from(formatted.as_str())))?;
         Ok(CallResult::Push(Value::Ref(formatted_id)))
+    }
+
+    fn call_print_builtin(&mut self, args: ArgValues) -> Result<CallResult, RunError> {
+        let (positional, kwargs) = args.into_parts();
+        let mut remaining_positional: Vec<Value> = positional.into_iter().collect();
+        remaining_positional.reverse();
+        let pending = PendingPrintCall {
+            remaining_positional,
+            rendered_positional: Vec::new(),
+            kwargs,
+            awaiting_kind: PendingStringifyReturn::Str,
+            frame_depth: self.frames.len(),
+        };
+        self.continue_print_call(pending)
+    }
+
+    pub(super) fn resume_pending_print_call(
+        &mut self,
+        mut pending: PendingPrintCall,
+        value: Value,
+    ) -> Result<CallResult, RunError> {
+        let string_value = self.validate_stringify_result(value, pending.awaiting_kind)?;
+        pending.rendered_positional.push(string_value);
+        self.continue_print_call(pending)
+    }
+
+    fn continue_print_call(&mut self, mut pending: PendingPrintCall) -> Result<CallResult, RunError> {
+        while let Some(value) = pending.remaining_positional.pop() {
+            match self.stringify_print_argument(value)? {
+                PrintStringifyStep::Ready(string_value) => {
+                    pending.rendered_positional.push(string_value);
+                }
+                PrintStringifyStep::AwaitFrame(kind) => {
+                    pending.awaiting_kind = kind;
+                    pending.frame_depth = self.frames.len();
+                    self.pending_print_call.push(pending);
+                    return Ok(CallResult::FramePushed);
+                }
+                PrintStringifyStep::External(_, _)
+                | PrintStringifyStep::Proxy(_, _, _)
+                | PrintStringifyStep::OsCall(_, _) => {
+                    self.drop_pending_print_call_values_in_call(pending);
+                    return Err(RunError::internal(
+                        "external/proxy print stringification is not supported in VM path",
+                    ));
+                }
+            }
+        }
+
+        let print_args = ArgValues::ArgsKargs {
+            args: pending.rendered_positional,
+            kwargs: pending.kwargs,
+        };
+        let value = BuiltinsFunctions::Print.call(self.heap, print_args, self.interns, self.print_writer)?;
+        Ok(CallResult::Push(value))
+    }
+
+    fn stringify_print_argument(&mut self, value: Value) -> Result<PrintStringifyStep, RunError> {
+        if let Value::Ref(instance_id) = &value
+            && matches!(self.heap.get(*instance_id), HeapData::Instance(_))
+        {
+            let instance_id = *instance_id;
+            let str_id: StringId = StaticStrings::DunderStr.into();
+            if let Some(method) = self.lookup_type_dunder(instance_id, str_id) {
+                let result = self.call_dunder(instance_id, method, ArgValues::Empty)?;
+                value.drop_with_heap(self.heap);
+                return Ok(match result {
+                    CallResult::Push(string_value) => PrintStringifyStep::Ready(
+                        self.validate_stringify_result(string_value, PendingStringifyReturn::Str)?,
+                    ),
+                    CallResult::FramePushed => PrintStringifyStep::AwaitFrame(PendingStringifyReturn::Str),
+                    CallResult::External(ext_id, args) => PrintStringifyStep::External(ext_id, args),
+                    CallResult::Proxy(proxy_id, method, args) => PrintStringifyStep::Proxy(proxy_id, method, args),
+                    CallResult::OsCall(function, args) => PrintStringifyStep::OsCall(function, args),
+                });
+            }
+
+            let repr_id: StringId = StaticStrings::DunderRepr.into();
+            if let Some(method) = self.lookup_type_dunder(instance_id, repr_id) {
+                let result = self.call_dunder(instance_id, method, ArgValues::Empty)?;
+                value.drop_with_heap(self.heap);
+                return Ok(match result {
+                    CallResult::Push(string_value) => PrintStringifyStep::Ready(
+                        self.validate_stringify_result(string_value, PendingStringifyReturn::Repr)?,
+                    ),
+                    CallResult::FramePushed => PrintStringifyStep::AwaitFrame(PendingStringifyReturn::Repr),
+                    CallResult::External(ext_id, args) => PrintStringifyStep::External(ext_id, args),
+                    CallResult::Proxy(proxy_id, method, args) => PrintStringifyStep::Proxy(proxy_id, method, args),
+                    CallResult::OsCall(function, args) => PrintStringifyStep::OsCall(function, args),
+                });
+            }
+        }
+
+        let text = value.py_str(self.heap, self.interns).into_owned();
+        value.drop_with_heap(self.heap);
+        let text_id = self.heap.allocate(HeapData::Str(Str::from(text.as_str())))?;
+        Ok(PrintStringifyStep::Ready(Value::Ref(text_id)))
+    }
+
+    fn drop_pending_print_call_values_in_call(&mut self, pending: PendingPrintCall) {
+        for value in pending.remaining_positional {
+            value.drop_with_heap(self.heap);
+        }
+        for value in pending.rendered_positional {
+            value.drop_with_heap(self.heap);
+        }
+        pending.kwargs.drop_with_heap(self.heap);
     }
 
     /// Normalizes a `__dir__` result to the sorted list returned by `dir()`.
@@ -8228,7 +8801,7 @@ impl<T: ResourceTracker, P: PrintWriter, Tr: VmTracer> VM<'_, T, P, Tr> {
     }
 
     /// Returns whether a value is a Python `str`.
-    fn is_str_value(&self, value: &Value) -> bool {
+    pub(super) fn is_str_value(&self, value: &Value) -> bool {
         match value {
             Value::InternString(_) => true,
             Value::Ref(id) => matches!(self.heap.get(*id), HeapData::Str(_)),
@@ -9820,6 +10393,7 @@ impl<T: ResourceTracker, P: PrintWriter, Tr: VmTracer> VM<'_, T, P, Tr> {
         // Search for method in classes after current_class_id
         let mut method_value = None;
         let init_id: StringId = StaticStrings::DunderInit.into();
+        let init_subclass_id: StringId = StaticStrings::DunderInitSubclass.into();
         for &class_id in &mro[start_idx..] {
             if let HeapData::ClassObject(cls) = self.heap.get(class_id)
                 && let Some(value) = cls.namespace().get_by_str(method_name, self.heap, self.interns)
@@ -9833,6 +10407,15 @@ impl<T: ResourceTracker, P: PrintWriter, Tr: VmTracer> VM<'_, T, P, Tr> {
                 method_value = Some(Value::Builtin(Builtins::TypeMethod {
                     ty: Type::Exception(exc_type),
                     method: StaticStrings::DunderInit,
+                }));
+                break;
+            }
+            if method_name_id == init_subclass_id
+                && matches!(self.heap.builtin_type_for_class_id(class_id), Some(Type::Object))
+            {
+                method_value = Some(Value::Builtin(Builtins::TypeMethod {
+                    ty: Type::Object,
+                    method: StaticStrings::DunderInitSubclass,
                 }));
                 break;
             }
@@ -10041,6 +10624,21 @@ impl<T: ResourceTracker, P: PrintWriter, Tr: VmTracer> VM<'_, T, P, Tr> {
     // Dunder Protocol Dispatch
     // ========================================================================
 
+    /// Returns whether an instance's class MRO provides an attribute.
+    ///
+    /// This is intended for existence checks that do not need to materialize the
+    /// method value, avoiding temporary refcount ownership from `mro_lookup_attr`.
+    pub(super) fn type_mro_has_attr(&self, instance_heap_id: HeapId, attr_name: &str) -> bool {
+        let class_id = match self.heap.get(instance_heap_id) {
+            HeapData::Instance(inst) => inst.class_id(),
+            _ => return false,
+        };
+        match self.heap.get(class_id) {
+            HeapData::ClassObject(cls) => cls.mro_has_attr(attr_name, class_id, self.heap, self.interns),
+            _ => false,
+        }
+    }
+
     /// Looks up a dunder method on an instance's TYPE (not the instance itself).
     ///
     /// This implements the Python semantic that dunder methods are looked up on the
@@ -10056,6 +10654,14 @@ impl<T: ResourceTracker, P: PrintWriter, Tr: VmTracer> VM<'_, T, P, Tr> {
             HeapData::Instance(inst) => inst.class_id(),
             _ => return None,
         };
+
+        // `__hash__` has special class semantics (checked via MRO, not just own namespace):
+        // - If class or any parent defines `__hash__ = None`, instances are unhashable.
+        // - If class or any parent defines `__eq__` but no class in MRO defines `__hash__`,
+        //   instances are unhashable.
+        if dunder_name_id == StaticStrings::DunderHash && self.heap.is_unhashable_via_mro(class_id, self.interns) {
+            return None;
+        }
 
         // Look up in the class namespace via MRO (NOT instance attrs)
         match self.heap.get(class_id) {
@@ -10246,30 +10852,143 @@ impl<T: ResourceTracker, P: PrintWriter, Tr: VmTracer> VM<'_, T, P, Tr> {
         dunder_id: StringId,
         reflected_dunder_id: Option<StringId>,
     ) -> Result<Option<CallResult>, RunError> {
-        // Try lhs.__op__(rhs) - look up on TYPE, not instance
-        if let Value::Ref(lhs_id) = lhs
-            && matches!(self.heap.get(*lhs_id), HeapData::Instance(_))
-            && let Some(method) = self.lookup_type_dunder(*lhs_id, dunder_id)
+        let lhs_candidate = self.lookup_binary_dunder_candidate(lhs, dunder_id);
+        let rhs_candidate = reflected_dunder_id.and_then(|ref_id| self.lookup_binary_dunder_candidate(rhs, ref_id));
+
+        let rhs_subclass_priority =
+            if let (Some((_, lhs_class_id, lhs_owner_id)), Some((_, rhs_class_id, rhs_owner_id))) =
+                (&lhs_candidate, &rhs_candidate)
+            {
+                rhs_class_id != lhs_class_id
+                    && self.is_strict_subclass(*rhs_class_id, *lhs_class_id)
+                    && rhs_owner_id != lhs_owner_id
+            } else {
+                false
+            };
+
+        if rhs_subclass_priority
+            && let Some((rhs_id, _, _)) = rhs_candidate
+            && let Some(ref_dunder_id) = reflected_dunder_id
+            && let Some(method) = self.lookup_type_dunder(rhs_id, ref_dunder_id)
         {
-            // Clone rhs for the call arg
-            let rhs_clone = rhs.clone_with_heap(self.heap);
-            let result = self.call_dunder(*lhs_id, method, ArgValues::One(rhs_clone))?;
-            return Ok(Some(result));
+            let lhs_clone = lhs.clone_with_heap(self.heap);
+            let result = self.call_dunder(rhs_id, method, ArgValues::One(lhs_clone))?;
+            match result {
+                CallResult::FramePushed => {
+                    self.pending_binary_dunder.push(PendingBinaryDunder {
+                        lhs: lhs.clone_with_heap(self.heap),
+                        rhs: rhs.clone_with_heap(self.heap),
+                        primary_dunder_id: dunder_id,
+                        reflected_dunder_id,
+                        frame_depth: self.frames.len(),
+                        stage: PendingBinaryDunderStage::ReflectedFirst,
+                    });
+                    return Ok(Some(CallResult::FramePushed));
+                }
+                other => {
+                    if let Some(result) = self.binary_result_if_implemented(other) {
+                        return Ok(Some(result));
+                    }
+                    // Reflected priority returned NotImplemented; continue with primary.
+                }
+            }
         }
 
-        // Try rhs.__rop__(lhs) if provided
-        if let Some(ref_dunder_id) = reflected_dunder_id
-            && let Value::Ref(rhs_id) = rhs
-            && matches!(self.heap.get(*rhs_id), HeapData::Instance(_))
-            && let Some(method) = self.lookup_type_dunder(*rhs_id, ref_dunder_id)
+        if let Some((lhs_id, _, _)) = lhs_candidate
+            && let Some(method) = self.lookup_type_dunder(lhs_id, dunder_id)
         {
-            // Clone lhs for the call arg
+            let rhs_clone = rhs.clone_with_heap(self.heap);
+            let result = self.call_dunder(lhs_id, method, ArgValues::One(rhs_clone))?;
+            match result {
+                CallResult::FramePushed => {
+                    self.pending_binary_dunder.push(PendingBinaryDunder {
+                        lhs: lhs.clone_with_heap(self.heap),
+                        rhs: rhs.clone_with_heap(self.heap),
+                        primary_dunder_id: dunder_id,
+                        reflected_dunder_id,
+                        frame_depth: self.frames.len(),
+                        stage: if rhs_subclass_priority {
+                            PendingBinaryDunderStage::PrimaryFinal
+                        } else {
+                            PendingBinaryDunderStage::Primary
+                        },
+                    });
+                    return Ok(Some(CallResult::FramePushed));
+                }
+                other => {
+                    if let Some(result) = self.binary_result_if_implemented(other) {
+                        return Ok(Some(result));
+                    }
+                    // Primary returned NotImplemented; fall through to reflected.
+                }
+            }
+        }
+
+        if !rhs_subclass_priority
+            && let Some((rhs_id, _, _)) = rhs_candidate
+            && let Some(ref_dunder_id) = reflected_dunder_id
+            && let Some(method) = self.lookup_type_dunder(rhs_id, ref_dunder_id)
+        {
             let lhs_clone = lhs.clone_with_heap(self.heap);
-            let result = self.call_dunder(*rhs_id, method, ArgValues::One(lhs_clone))?;
-            return Ok(Some(result));
+            let result = self.call_dunder(rhs_id, method, ArgValues::One(lhs_clone))?;
+            return match result {
+                CallResult::FramePushed => {
+                    self.pending_binary_dunder.push(PendingBinaryDunder {
+                        lhs: lhs.clone_with_heap(self.heap),
+                        rhs: rhs.clone_with_heap(self.heap),
+                        primary_dunder_id: dunder_id,
+                        reflected_dunder_id,
+                        frame_depth: self.frames.len(),
+                        stage: PendingBinaryDunderStage::Reflected,
+                    });
+                    Ok(Some(CallResult::FramePushed))
+                }
+                other => Ok(self.binary_result_if_implemented(other)),
+            };
         }
 
         Ok(None)
+    }
+
+    fn lookup_binary_dunder_candidate(
+        &mut self,
+        operand: &Value,
+        dunder_id: StringId,
+    ) -> Option<(HeapId, HeapId, HeapId)> {
+        let Value::Ref(instance_id) = operand else {
+            return None;
+        };
+        let HeapData::Instance(instance) = self.heap.get(*instance_id) else {
+            return None;
+        };
+        let class_id = instance.class_id();
+        let HeapData::ClassObject(class_obj) = self.heap.get(class_id) else {
+            return None;
+        };
+        let dunder_name = self.interns.get_str(dunder_id);
+        let (method, owner_id) = class_obj.mro_lookup_attr(dunder_name, class_id, self.heap, self.interns)?;
+        method.drop_with_heap(self.heap);
+        Some((*instance_id, class_id, owner_id))
+    }
+
+    /// Returns `None` when a binary dunder returned `NotImplemented`.
+    ///
+    /// This consumes and drops `NotImplemented` so callers can attempt reflected
+    /// dispatch (or eventually raise a type error).
+    fn binary_result_if_implemented(&mut self, result: CallResult) -> Option<CallResult> {
+        match result {
+            CallResult::Push(v) if matches!(v, Value::NotImplemented) => {
+                v.drop_with_heap(self.heap);
+                None
+            }
+            other => Some(other),
+        }
+    }
+
+    /// Builds a CPython-style binary type error from a dunder operation.
+    pub(super) fn binary_dunder_type_error(&self, lhs: &Value, rhs: &Value, primary_dunder_id: StringId) -> RunError {
+        let symbol = binary_symbol_for_dunder(primary_dunder_id);
+        ExcType::binary_type_error(symbol, lhs.py_type(self.heap), rhs.py_type(self.heap))
     }
 
     /// Executes an in-place dunder operation: tries `lhs.__iop__(rhs)`, falls back to `lhs.__op__(rhs)`.
@@ -10291,7 +11010,25 @@ impl<T: ResourceTracker, P: PrintWriter, Tr: VmTracer> VM<'_, T, P, Tr> {
         {
             let rhs_clone = rhs.clone_with_heap(self.heap);
             let result = self.call_dunder(*lhs_id, method, ArgValues::One(rhs_clone))?;
-            return Ok(Some(result));
+            match result {
+                CallResult::FramePushed => {
+                    self.pending_binary_dunder.push(PendingBinaryDunder {
+                        lhs: lhs.clone_with_heap(self.heap),
+                        rhs: rhs.clone_with_heap(self.heap),
+                        primary_dunder_id: dunder_id,
+                        reflected_dunder_id,
+                        frame_depth: self.frames.len(),
+                        stage: PendingBinaryDunderStage::Inplace,
+                    });
+                    return Ok(Some(CallResult::FramePushed));
+                }
+                other => {
+                    if let Some(result) = self.binary_result_if_implemented(other) {
+                        return Ok(Some(result));
+                    }
+                    // __iop__ returned NotImplemented — fall through to binary dunder
+                }
+            }
         }
 
         // Fall back to binary dunder

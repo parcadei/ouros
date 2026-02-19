@@ -1,0 +1,2758 @@
+{
+  "timestamp": "2026-02-18T16:34:57.649839+00:00",
+  "ouros_binary": "/tmp/ouro-fresh/target/release/ouros",
+  "cpython_binary": "python3",
+  "cpython_version": "3.14.0",
+  "total": 153,
+  "passed": 116,
+  "failed": 24,
+  "errors": 13,
+  "skipped": 0,
+  "timeouts": 0,
+  "bad_snippets": 0,
+  "pass_rate": 0.7582,
+  "categories": {
+    "attribute_access": {
+      "total": 8,
+      "passed": 8,
+      "failed": 0,
+      "errors": 0,
+      "skipped": 0,
+      "timeouts": 0,
+      "bad_snippets": 0
+    },
+    "binary_ops": {
+      "total": 29,
+      "passed": 26,
+      "failed": 2,
+      "errors": 1,
+      "skipped": 0,
+      "timeouts": 0,
+      "bad_snippets": 0
+    },
+    "callable_protocol": {
+      "total": 4,
+      "passed": 2,
+      "failed": 2,
+      "errors": 0,
+      "skipped": 0,
+      "timeouts": 0,
+      "bad_snippets": 0
+    },
+    "class_creation": {
+      "total": 2,
+      "passed": 0,
+      "failed": 1,
+      "errors": 1,
+      "skipped": 0,
+      "timeouts": 0,
+      "bad_snippets": 0
+    },
+    "comparison": {
+      "total": 18,
+      "passed": 11,
+      "failed": 7,
+      "errors": 0,
+      "skipped": 0,
+      "timeouts": 0,
+      "bad_snippets": 0
+    },
+    "container_protocol": {
+      "total": 17,
+      "passed": 13,
+      "failed": 2,
+      "errors": 2,
+      "skipped": 0,
+      "timeouts": 0,
+      "bad_snippets": 0
+    },
+    "context_manager": {
+      "total": 3,
+      "passed": 1,
+      "failed": 0,
+      "errors": 2,
+      "skipped": 0,
+      "timeouts": 0,
+      "bad_snippets": 0
+    },
+    "cross_protocol": {
+      "total": 11,
+      "passed": 5,
+      "failed": 3,
+      "errors": 3,
+      "skipped": 0,
+      "timeouts": 0,
+      "bad_snippets": 0
+    },
+    "descriptor_protocol": {
+      "total": 9,
+      "passed": 7,
+      "failed": 2,
+      "errors": 0,
+      "skipped": 0,
+      "timeouts": 0,
+      "bad_snippets": 0
+    },
+    "hash_protocol": {
+      "total": 13,
+      "passed": 10,
+      "failed": 1,
+      "errors": 2,
+      "skipped": 0,
+      "timeouts": 0,
+      "bad_snippets": 0
+    },
+    "inplace_ops": {
+      "total": 21,
+      "passed": 20,
+      "failed": 0,
+      "errors": 1,
+      "skipped": 0,
+      "timeouts": 0,
+      "bad_snippets": 0
+    },
+    "string_repr_format": {
+      "total": 2,
+      "passed": 0,
+      "failed": 1,
+      "errors": 1,
+      "skipped": 0,
+      "timeouts": 0,
+      "bad_snippets": 0
+    },
+    "unary_ops": {
+      "total": 16,
+      "passed": 13,
+      "failed": 3,
+      "errors": 0,
+      "skipped": 0,
+      "timeouts": 0,
+      "bad_snippets": 0
+    }
+  },
+  "results": [
+    {
+      "snippet": "attribute_access/attr_class_variable.py",
+      "category": "attribute_access",
+      "description": "Instance attr shadows class attr; class attr accessible via type",
+      "tags": [
+        "class_variable",
+        "instance",
+        "shadow"
+      ],
+      "expect": "pass",
+      "duration_cpython_ms": 23.0,
+      "cpython_exit": 0,
+      "duration_ouros_ms": 14.5,
+      "ouros_exit": 0,
+      "verdict": "PASS"
+    },
+    {
+      "snippet": "attribute_access/attr_delattr_override.py",
+      "category": "attribute_access",
+      "description": "__delattr__ intercepts attribute deletion",
+      "tags": [
+        "delattr",
+        "override"
+      ],
+      "expect": "pass",
+      "duration_cpython_ms": 22.5,
+      "cpython_exit": 0,
+      "duration_ouros_ms": 15.3,
+      "ouros_exit": 0,
+      "verdict": "PASS"
+    },
+    {
+      "snippet": "attribute_access/attr_getattr_fallback.py",
+      "category": "attribute_access",
+      "description": "__getattr__ as fallback after normal attribute lookup fails",
+      "tags": [
+        "getattr",
+        "fallback"
+      ],
+      "expect": "pass",
+      "duration_cpython_ms": 22.1,
+      "cpython_exit": 0,
+      "duration_ouros_ms": 14.6,
+      "ouros_exit": 0,
+      "verdict": "PASS"
+    },
+    {
+      "snippet": "attribute_access/attr_getattribute_override.py",
+      "category": "attribute_access",
+      "description": "__getattribute__ overrides all attribute access",
+      "tags": [
+        "getattribute",
+        "override"
+      ],
+      "expect": "pass",
+      "duration_cpython_ms": 22.1,
+      "cpython_exit": 0,
+      "duration_ouros_ms": 15.1,
+      "ouros_exit": 0,
+      "verdict": "PASS"
+    },
+    {
+      "snippet": "attribute_access/attr_getattribute_then_getattr.py",
+      "category": "attribute_access",
+      "description": "__getattribute__ raises AttributeError -> __getattr__ fallback",
+      "tags": [
+        "getattribute",
+        "getattr",
+        "fallback",
+        "attributeerror"
+      ],
+      "expect": "pass",
+      "duration_cpython_ms": 38.5,
+      "cpython_exit": 0,
+      "duration_ouros_ms": 25.3,
+      "ouros_exit": 0,
+      "verdict": "PASS"
+    },
+    {
+      "snippet": "attribute_access/attr_setattr_override.py",
+      "category": "attribute_access",
+      "description": "__setattr__ intercepts all attribute assignment",
+      "tags": [
+        "setattr",
+        "override"
+      ],
+      "expect": "pass",
+      "duration_cpython_ms": 43.4,
+      "cpython_exit": 0,
+      "duration_ouros_ms": 20.3,
+      "ouros_exit": 0,
+      "verdict": "PASS"
+    },
+    {
+      "snippet": "attribute_access/basic_attr.py",
+      "category": "attribute_access",
+      "description": "Basic attribute access on objects",
+      "tags": [
+        "attribute",
+        "getattr",
+        "setattr"
+      ],
+      "expect": "pass",
+      "duration_cpython_ms": 22.6,
+      "cpython_exit": 0,
+      "duration_ouros_ms": 15.5,
+      "ouros_exit": 0,
+      "verdict": "PASS"
+    },
+    {
+      "snippet": "attribute_access/property_attr.py",
+      "category": "attribute_access",
+      "description": "Property-based attribute access",
+      "tags": [
+        "attribute",
+        "property",
+        "descriptor"
+      ],
+      "expect": "pass",
+      "duration_cpython_ms": 22.6,
+      "cpython_exit": 0,
+      "duration_ouros_ms": 16.5,
+      "ouros_exit": 0,
+      "verdict": "PASS"
+    },
+    {
+      "snippet": "binary_ops/binary_add_both_notimplemented.py",
+      "category": "binary_ops",
+      "description": "a + b where both __add__ and __radd__ return NotImplemented -> TypeError",
+      "tags": [
+        "add",
+        "radd",
+        "notimplemented",
+        "typeerror"
+      ],
+      "expect": "pass",
+      "duration_cpython_ms": 21.9,
+      "cpython_exit": 0,
+      "duration_ouros_ms": 14.7,
+      "ouros_exit": 1,
+      "verdict": "ERROR",
+      "message": "ouros exited with code 1, CPython exited 0"
+    },
+    {
+      "snippet": "binary_ops/binary_add_exception_in_add.py",
+      "category": "binary_ops",
+      "description": "Exception inside __add__ propagates without trying __radd__",
+      "tags": [
+        "add",
+        "exception",
+        "propagation"
+      ],
+      "expect": "pass",
+      "duration_cpython_ms": 22.8,
+      "cpython_exit": 0,
+      "duration_ouros_ms": 16.1,
+      "ouros_exit": 0,
+      "verdict": "PASS"
+    },
+    {
+      "snippet": "binary_ops/binary_add_notimplemented_radd.py",
+      "category": "binary_ops",
+      "description": "a + b where a.__add__ returns NotImplemented, falls to b.__radd__",
+      "tags": [
+        "add",
+        "radd",
+        "notimplemented",
+        "fallback"
+      ],
+      "expect": "pass",
+      "duration_cpython_ms": 22.6,
+      "cpython_exit": 0,
+      "duration_ouros_ms": 14.9,
+      "ouros_exit": 0,
+      "verdict": "PASS"
+    },
+    {
+      "snippet": "binary_ops/binary_add_same_type.py",
+      "category": "binary_ops",
+      "description": "Binary add with same type, __add__ works directly",
+      "tags": [
+        "add",
+        "same_type"
+      ],
+      "expect": "pass",
+      "duration_cpython_ms": 22.7,
+      "cpython_exit": 0,
+      "duration_ouros_ms": 15.3,
+      "ouros_exit": 0,
+      "verdict": "FAIL",
+      "message": "stdout differs",
+      "diff": {
+        "stdout": "--- cpython\n+++ ouros\n@@ -1 +1 @@\n-Vec(4, 6)\n+<Vec object>"
+      }
+    },
+    {
+      "snippet": "binary_ops/binary_and_notimplemented.py",
+      "category": "binary_ops",
+      "description": "a & b where a.__and__ returns NotImplemented, falls to b.__rand__",
+      "tags": [
+        "and",
+        "rand",
+        "notimplemented",
+        "fallback"
+      ],
+      "expect": "pass",
+      "duration_cpython_ms": 22.2,
+      "cpython_exit": 0,
+      "duration_ouros_ms": 16.8,
+      "ouros_exit": 0,
+      "verdict": "PASS"
+    },
+    {
+      "snippet": "binary_ops/binary_floordiv_notimplemented.py",
+      "category": "binary_ops",
+      "description": "a // b where a.__floordiv__ returns NotImplemented, falls to b.__rfloordiv__",
+      "tags": [
+        "floordiv",
+        "rfloordiv",
+        "notimplemented",
+        "fallback"
+      ],
+      "expect": "pass",
+      "duration_cpython_ms": 23.0,
+      "cpython_exit": 0,
+      "duration_ouros_ms": 15.9,
+      "ouros_exit": 0,
+      "verdict": "PASS"
+    },
+    {
+      "snippet": "binary_ops/binary_matmul_notimplemented.py",
+      "category": "binary_ops",
+      "description": "a @ b where a.__matmul__ returns NotImplemented, falls to b.__rmatmul__",
+      "tags": [
+        "matmul",
+        "rmatmul",
+        "notimplemented",
+        "fallback"
+      ],
+      "expect": "pass",
+      "duration_cpython_ms": 22.1,
+      "cpython_exit": 0,
+      "duration_ouros_ms": 15.0,
+      "ouros_exit": 0,
+      "verdict": "PASS"
+    },
+    {
+      "snippet": "binary_ops/binary_mod_notimplemented.py",
+      "category": "binary_ops",
+      "description": "a % b where a.__mod__ returns NotImplemented, falls to b.__rmod__",
+      "tags": [
+        "mod",
+        "rmod",
+        "notimplemented",
+        "fallback"
+      ],
+      "expect": "pass",
+      "duration_cpython_ms": 22.1,
+      "cpython_exit": 0,
+      "duration_ouros_ms": 14.9,
+      "ouros_exit": 0,
+      "verdict": "PASS"
+    },
+    {
+      "snippet": "binary_ops/binary_mul_notimplemented_rmul.py",
+      "category": "binary_ops",
+      "description": "a * b where a.__mul__ returns NotImplemented, falls to b.__rmul__",
+      "tags": [
+        "mul",
+        "rmul",
+        "notimplemented",
+        "fallback"
+      ],
+      "expect": "pass",
+      "duration_cpython_ms": 22.3,
+      "cpython_exit": 0,
+      "duration_ouros_ms": 14.8,
+      "ouros_exit": 0,
+      "verdict": "PASS"
+    },
+    {
+      "snippet": "binary_ops/binary_no_dunder_typeerror.py",
+      "category": "binary_ops",
+      "description": "a + b with no __add__ or __radd__ at all raises TypeError",
+      "tags": [
+        "add",
+        "typeerror",
+        "no_dunder"
+      ],
+      "expect": "pass",
+      "duration_cpython_ms": 22.8,
+      "cpython_exit": 0,
+      "duration_ouros_ms": 15.6,
+      "ouros_exit": 0,
+      "verdict": "PASS"
+    },
+    {
+      "snippet": "binary_ops/binary_or_notimplemented.py",
+      "category": "binary_ops",
+      "description": "a | b where a.__or__ returns NotImplemented, falls to b.__ror__",
+      "tags": [
+        "or",
+        "ror",
+        "notimplemented",
+        "fallback"
+      ],
+      "expect": "pass",
+      "duration_cpython_ms": 23.4,
+      "cpython_exit": 0,
+      "duration_ouros_ms": 14.5,
+      "ouros_exit": 0,
+      "verdict": "PASS"
+    },
+    {
+      "snippet": "binary_ops/binary_pow_notimplemented.py",
+      "category": "binary_ops",
+      "description": "a ** b where a.__pow__ returns NotImplemented, falls to b.__rpow__",
+      "tags": [
+        "pow",
+        "rpow",
+        "notimplemented",
+        "fallback"
+      ],
+      "expect": "pass",
+      "duration_cpython_ms": 23.1,
+      "cpython_exit": 0,
+      "duration_ouros_ms": 15.9,
+      "ouros_exit": 0,
+      "verdict": "PASS"
+    },
+    {
+      "snippet": "binary_ops/binary_radd_only.py",
+      "category": "binary_ops",
+      "description": "Only __radd__ defined on RHS, LHS has no __add__",
+      "tags": [
+        "radd",
+        "only",
+        "no_add"
+      ],
+      "expect": "pass",
+      "duration_cpython_ms": 22.7,
+      "cpython_exit": 0,
+      "duration_ouros_ms": 16.4,
+      "ouros_exit": 0,
+      "verdict": "PASS"
+    },
+    {
+      "snippet": "binary_ops/binary_sub_notimplemented_rsub.py",
+      "category": "binary_ops",
+      "description": "a - b where a.__sub__ returns NotImplemented, falls to b.__rsub__",
+      "tags": [
+        "sub",
+        "rsub",
+        "notimplemented",
+        "fallback"
+      ],
+      "expect": "pass",
+      "duration_cpython_ms": 22.7,
+      "cpython_exit": 0,
+      "duration_ouros_ms": 14.8,
+      "ouros_exit": 0,
+      "verdict": "PASS"
+    },
+    {
+      "snippet": "binary_ops/binary_subclass_reflected_not_same.py",
+      "category": "binary_ops",
+      "description": "Reflected not called if same type (no subclass relationship)",
+      "tags": [
+        "add",
+        "radd",
+        "same_type",
+        "no_reflect"
+      ],
+      "expect": "pass",
+      "duration_cpython_ms": 23.1,
+      "cpython_exit": 0,
+      "duration_ouros_ms": 14.7,
+      "ouros_exit": 0,
+      "verdict": "PASS"
+    },
+    {
+      "snippet": "binary_ops/binary_subclass_reflected_priority.py",
+      "category": "binary_ops",
+      "description": "Subclass reflected method takes priority over parent forward method",
+      "tags": [
+        "add",
+        "radd",
+        "subclass",
+        "priority",
+        "mro"
+      ],
+      "expect": "pass",
+      "duration_cpython_ms": 23.9,
+      "cpython_exit": 0,
+      "duration_ouros_ms": 15.3,
+      "ouros_exit": 0,
+      "verdict": "FAIL",
+      "message": "stdout differs",
+      "diff": {
+        "stdout": "--- cpython\n+++ ouros\n@@ -1 +1 @@\n-Sub.__radd__\n+Base.__add__"
+      }
+    },
+    {
+      "snippet": "binary_ops/binary_subclass_same_radd_not_called.py",
+      "category": "binary_ops",
+      "description": "When both operands are the same subclass type, __radd__ is not prioritized",
+      "tags": [
+        "add",
+        "radd",
+        "subclass",
+        "same_type"
+      ],
+      "expect": "pass",
+      "duration_cpython_ms": 23.8,
+      "cpython_exit": 0,
+      "duration_ouros_ms": 16.9,
+      "ouros_exit": 0,
+      "verdict": "PASS"
+    },
+    {
+      "snippet": "binary_ops/binary_truediv_notimplemented.py",
+      "category": "binary_ops",
+      "description": "a / b where a.__truediv__ returns NotImplemented, falls to b.__rtruediv__",
+      "tags": [
+        "truediv",
+        "rtruediv",
+        "notimplemented",
+        "fallback"
+      ],
+      "expect": "pass",
+      "duration_cpython_ms": 23.4,
+      "cpython_exit": 0,
+      "duration_ouros_ms": 14.7,
+      "ouros_exit": 0,
+      "verdict": "PASS"
+    },
+    {
+      "snippet": "binary_ops/binary_xor_notimplemented.py",
+      "category": "binary_ops",
+      "description": "a ^ b where a.__xor__ returns NotImplemented, falls to b.__rxor__",
+      "tags": [
+        "xor",
+        "rxor",
+        "notimplemented",
+        "fallback"
+      ],
+      "expect": "pass",
+      "duration_cpython_ms": 23.8,
+      "cpython_exit": 0,
+      "duration_ouros_ms": 14.7,
+      "ouros_exit": 0,
+      "verdict": "PASS"
+    },
+    {
+      "snippet": "binary_ops/bitwise_ops.py",
+      "category": "binary_ops",
+      "description": "Bitwise operators (and, or, xor, shift)",
+      "tags": [
+        "int",
+        "operator",
+        "bitwise"
+      ],
+      "expect": "pass",
+      "duration_cpython_ms": 23.4,
+      "cpython_exit": 0,
+      "duration_ouros_ms": 15.4,
+      "ouros_exit": 0,
+      "verdict": "PASS"
+    },
+    {
+      "snippet": "binary_ops/float_ops.py",
+      "category": "binary_ops",
+      "description": "Float arithmetic operations",
+      "tags": [
+        "float",
+        "operator",
+        "arithmetic"
+      ],
+      "expect": "pass",
+      "duration_cpython_ms": 22.4,
+      "cpython_exit": 0,
+      "duration_ouros_ms": 15.4,
+      "ouros_exit": 0,
+      "verdict": "PASS"
+    },
+    {
+      "snippet": "binary_ops/int_add.py",
+      "category": "binary_ops",
+      "description": "Integer addition with various operand types",
+      "tags": [
+        "int",
+        "operator",
+        "addition"
+      ],
+      "expect": "pass",
+      "duration_cpython_ms": 21.8,
+      "cpython_exit": 0,
+      "duration_ouros_ms": 14.8,
+      "ouros_exit": 0,
+      "verdict": "PASS"
+    },
+    {
+      "snippet": "binary_ops/int_div.py",
+      "category": "binary_ops",
+      "description": "Integer division (true and floor)",
+      "tags": [
+        "int",
+        "operator",
+        "division"
+      ],
+      "expect": "pass",
+      "duration_cpython_ms": 21.9,
+      "cpython_exit": 0,
+      "duration_ouros_ms": 14.5,
+      "ouros_exit": 0,
+      "verdict": "PASS"
+    },
+    {
+      "snippet": "binary_ops/int_mod.py",
+      "category": "binary_ops",
+      "description": "Integer modulo operator",
+      "tags": [
+        "int",
+        "operator",
+        "modulo"
+      ],
+      "expect": "pass",
+      "duration_cpython_ms": 23.5,
+      "cpython_exit": 0,
+      "duration_ouros_ms": 15.6,
+      "ouros_exit": 0,
+      "verdict": "PASS"
+    },
+    {
+      "snippet": "binary_ops/int_mul.py",
+      "category": "binary_ops",
+      "description": "Integer multiplication",
+      "tags": [
+        "int",
+        "operator",
+        "multiplication"
+      ],
+      "expect": "pass",
+      "duration_cpython_ms": 22.1,
+      "cpython_exit": 0,
+      "duration_ouros_ms": 14.3,
+      "ouros_exit": 0,
+      "verdict": "PASS"
+    },
+    {
+      "snippet": "binary_ops/int_pow.py",
+      "category": "binary_ops",
+      "description": "Integer exponentiation",
+      "tags": [
+        "int",
+        "operator",
+        "power"
+      ],
+      "expect": "pass",
+      "duration_cpython_ms": 22.4,
+      "cpython_exit": 0,
+      "duration_ouros_ms": 14.1,
+      "ouros_exit": 0,
+      "verdict": "PASS"
+    },
+    {
+      "snippet": "binary_ops/int_sub.py",
+      "category": "binary_ops",
+      "description": "Integer subtraction",
+      "tags": [
+        "int",
+        "operator",
+        "subtraction"
+      ],
+      "expect": "pass",
+      "duration_cpython_ms": 21.7,
+      "cpython_exit": 0,
+      "duration_ouros_ms": 14.4,
+      "ouros_exit": 0,
+      "verdict": "PASS"
+    },
+    {
+      "snippet": "binary_ops/mixed_types.py",
+      "category": "binary_ops",
+      "description": "Mixed int/float arithmetic",
+      "tags": [
+        "int",
+        "float",
+        "operator",
+        "mixed"
+      ],
+      "expect": "pass",
+      "duration_cpython_ms": 22.0,
+      "cpython_exit": 0,
+      "duration_ouros_ms": 15.2,
+      "ouros_exit": 0,
+      "verdict": "PASS"
+    },
+    {
+      "snippet": "binary_ops/string_ops.py",
+      "category": "binary_ops",
+      "description": "String concatenation and repetition operators",
+      "tags": [
+        "string",
+        "operator",
+        "concat",
+        "repeat"
+      ],
+      "expect": "pass",
+      "duration_cpython_ms": 21.2,
+      "cpython_exit": 0,
+      "duration_ouros_ms": 14.8,
+      "ouros_exit": 0,
+      "verdict": "PASS"
+    },
+    {
+      "snippet": "callable_protocol/call_dunder.py",
+      "category": "callable_protocol",
+      "description": "__call__ makes instances callable; lookup is on the type, not the instance",
+      "tags": [
+        "call",
+        "callable",
+        "dunder"
+      ],
+      "expect": "pass",
+      "duration_cpython_ms": 22.3,
+      "cpython_exit": 0,
+      "duration_ouros_ms": 15.9,
+      "ouros_exit": 0,
+      "verdict": "PASS"
+    },
+    {
+      "snippet": "callable_protocol/init_returns_non_none.py",
+      "category": "callable_protocol",
+      "description": "__init__ returning non-None raises TypeError in CPython",
+      "tags": [
+        "init",
+        "return",
+        "non_none",
+        "typeerror"
+      ],
+      "expect": "pass",
+      "duration_cpython_ms": 23.5,
+      "cpython_exit": 0,
+      "duration_ouros_ms": 15.8,
+      "ouros_exit": 0,
+      "verdict": "FAIL",
+      "message": "stdout differs",
+      "diff": {
+        "stdout": "--- cpython\n+++ ouros\n@@ -1,4 +1,2 @@\n-TypeError: __init__() should return None, not 'int'\n\n GoodInit created successfully\n\n-x=1\n\n-TypeError for string return: __init__() should return None, not 'str'\n+x=1"
+      }
+    },
+    {
+      "snippet": "callable_protocol/new_init_interaction.py",
+      "category": "callable_protocol",
+      "description": "__new__ called first, creates instance; __init__ called second to initialize it",
+      "tags": [
+        "new",
+        "init",
+        "instantiation",
+        "lifecycle"
+      ],
+      "expect": "pass",
+      "duration_cpython_ms": 22.2,
+      "cpython_exit": 0,
+      "duration_ouros_ms": 15.7,
+      "ouros_exit": 0,
+      "verdict": "PASS"
+    },
+    {
+      "snippet": "callable_protocol/new_returns_wrong_type.py",
+      "category": "callable_protocol",
+      "description": "__new__ returning wrong type causes __init__ to be skipped",
+      "tags": [
+        "new",
+        "wrong_type",
+        "init_skip"
+      ],
+      "expect": "pass",
+      "duration_cpython_ms": 23.2,
+      "cpython_exit": 0,
+      "duration_ouros_ms": 15.2,
+      "ouros_exit": 0,
+      "verdict": "FAIL",
+      "message": "stdout differs",
+      "diff": {
+        "stdout": "--- cpython\n+++ ouros\n@@ -2,6 +2,6 @@\n result = 'not an instance'\n\n type = str\n\n __new__ returning Other instance\n\n-type = Other\n\n+type = NoneType\n\n __new__ returning correct type\n\n __init__ called (correct)"
+      }
+    },
+    {
+      "snippet": "class_creation/class_getitem.py",
+      "category": "class_creation",
+      "description": "__class_getitem__ enables MyClass[X] syntax (PEP 585)",
+      "tags": [
+        "class_getitem",
+        "generic",
+        "subscript",
+        "pep585"
+      ],
+      "expect": "pass",
+      "duration_cpython_ms": 23.6,
+      "cpython_exit": 0,
+      "duration_ouros_ms": 15.0,
+      "ouros_exit": 0,
+      "verdict": "FAIL",
+      "message": "stdout differs",
+      "diff": {
+        "stdout": "--- cpython\n+++ ouros\n@@ -3,8 +3,8 @@\n class_getitem: cls=MyList, item=<class 'str'>\n\n MyList[<class 'str'>]\n\n MyDict[(<class 'str'>, <class 'int'>)]\n\n-list[int]\n\n-dict[str, int]\n\n-tuple[int, ...]\n\n+list[<class 'int'>]\n\n+dict[<class 'str'>, <class 'int'>]\n\n+tuple[<class 'int'>, Ellipsis]\n\n C[42]\n\n instance[42]"
+      }
+    },
+    {
+      "snippet": "class_creation/init_subclass.py",
+      "category": "class_creation",
+      "description": "__init_subclass__ is called when a class is subclassed",
+      "tags": [
+        "init_subclass",
+        "class_creation",
+        "hook"
+      ],
+      "expect": "pass",
+      "duration_cpython_ms": 21.8,
+      "cpython_exit": 0,
+      "duration_ouros_ms": 15.8,
+      "ouros_exit": 1,
+      "verdict": "ERROR",
+      "message": "ouros exited with code 1, CPython exited 0"
+    },
+    {
+      "snippet": "comparison/chained.py",
+      "category": "comparison",
+      "description": "Chained comparison operators",
+      "tags": [
+        "comparison",
+        "chained",
+        "operator"
+      ],
+      "expect": "pass",
+      "duration_cpython_ms": 22.8,
+      "cpython_exit": 0,
+      "duration_ouros_ms": 14.6,
+      "ouros_exit": 0,
+      "verdict": "PASS"
+    },
+    {
+      "snippet": "comparison/compare_both_notimplemented.py",
+      "category": "comparison",
+      "description": "Both sides return NotImplemented for lt -> falls back to default",
+      "tags": [
+        "lt",
+        "notimplemented",
+        "both_sides"
+      ],
+      "expect": "pass",
+      "duration_cpython_ms": 22.9,
+      "cpython_exit": 0,
+      "duration_ouros_ms": 15.8,
+      "ouros_exit": 0,
+      "verdict": "FAIL",
+      "message": "stdout differs",
+      "diff": {
+        "stdout": "--- cpython\n+++ ouros\n@@ -1 +1 @@\n-TypeError raised\n+TypeError not raised"
+      }
+    },
+    {
+      "snippet": "comparison/compare_eq_ne_interaction.py",
+      "category": "comparison",
+      "description": "__ne__ defaults to not-__eq__ when __ne__ is not defined",
+      "tags": [
+        "eq",
+        "ne",
+        "default",
+        "interaction"
+      ],
+      "expect": "pass",
+      "duration_cpython_ms": 23.1,
+      "cpython_exit": 0,
+      "duration_ouros_ms": 15.2,
+      "ouros_exit": 0,
+      "verdict": "PASS"
+    },
+    {
+      "snippet": "comparison/compare_eq_notimplemented_fallback.py",
+      "category": "comparison",
+      "description": "__eq__ returns NotImplemented, falls to other's __eq__",
+      "tags": [
+        "eq",
+        "notimplemented",
+        "fallback"
+      ],
+      "expect": "pass",
+      "duration_cpython_ms": 22.4,
+      "cpython_exit": 0,
+      "duration_ouros_ms": 14.9,
+      "ouros_exit": 0,
+      "verdict": "FAIL",
+      "message": "stdout differs",
+      "diff": {
+        "stdout": "--- cpython\n+++ ouros\n@@ -1,2 +1,2 @@\n-B says equal\n\n+NotImplemented\n\n B says equal"
+      }
+    },
+    {
+      "snippet": "comparison/compare_eq_returns_nonbool.py",
+      "category": "comparison",
+      "description": "__eq__ can return non-bool values",
+      "tags": [
+        "eq",
+        "nonbool",
+        "return"
+      ],
+      "expect": "pass",
+      "duration_cpython_ms": 22.6,
+      "cpython_exit": 0,
+      "duration_ouros_ms": 15.7,
+      "ouros_exit": 0,
+      "verdict": "PASS"
+    },
+    {
+      "snippet": "comparison/compare_gt_reflection_to_lt.py",
+      "category": "comparison",
+      "description": "a > b reflects to b.__lt__(a) when a.__gt__ returns NotImplemented",
+      "tags": [
+        "gt",
+        "lt",
+        "reflection"
+      ],
+      "expect": "pass",
+      "duration_cpython_ms": 23.2,
+      "cpython_exit": 0,
+      "duration_ouros_ms": 15.0,
+      "ouros_exit": 0,
+      "verdict": "FAIL",
+      "message": "stdout differs",
+      "diff": {
+        "stdout": "--- cpython\n+++ ouros\n@@ -1 +1 @@\n-B.__lt__\n+NotImplemented"
+      }
+    },
+    {
+      "snippet": "comparison/compare_identity_vs_eq.py",
+      "category": "comparison",
+      "description": "'is' uses identity, '==' uses __eq__",
+      "tags": [
+        "is",
+        "eq",
+        "identity"
+      ],
+      "expect": "pass",
+      "duration_cpython_ms": 23.3,
+      "cpython_exit": 0,
+      "duration_ouros_ms": 15.9,
+      "ouros_exit": 0,
+      "verdict": "PASS"
+    },
+    {
+      "snippet": "comparison/compare_le_ge_reflection.py",
+      "category": "comparison",
+      "description": "__le__ reflects to __ge__ when NotImplemented",
+      "tags": [
+        "le",
+        "ge",
+        "reflection",
+        "notimplemented"
+      ],
+      "expect": "pass",
+      "duration_cpython_ms": 23.3,
+      "cpython_exit": 0,
+      "duration_ouros_ms": 14.6,
+      "ouros_exit": 0,
+      "verdict": "FAIL",
+      "message": "stdout differs",
+      "diff": {
+        "stdout": "--- cpython\n+++ ouros\n@@ -1 +1 @@\n-B.__ge__\n+NotImplemented"
+      }
+    },
+    {
+      "snippet": "comparison/compare_lt_gt_reflection.py",
+      "category": "comparison",
+      "description": "__lt__ reflects to __gt__ when NotImplemented",
+      "tags": [
+        "lt",
+        "gt",
+        "reflection",
+        "notimplemented"
+      ],
+      "expect": "pass",
+      "duration_cpython_ms": 23.5,
+      "cpython_exit": 0,
+      "duration_ouros_ms": 16.3,
+      "ouros_exit": 0,
+      "verdict": "FAIL",
+      "message": "stdout differs",
+      "diff": {
+        "stdout": "--- cpython\n+++ ouros\n@@ -1 +1 @@\n-B.__gt__\n+NotImplemented"
+      }
+    },
+    {
+      "snippet": "comparison/compare_lt_subclass_reflected_priority.py",
+      "category": "comparison",
+      "description": "Subclass reflected comparison takes priority: base < sub tries sub.__gt__ first",
+      "tags": [
+        "lt",
+        "gt",
+        "subclass",
+        "reflected",
+        "priority"
+      ],
+      "expect": "pass",
+      "duration_cpython_ms": 22.4,
+      "cpython_exit": 0,
+      "duration_ouros_ms": 14.8,
+      "ouros_exit": 0,
+      "verdict": "FAIL",
+      "message": "stdout differs",
+      "diff": {
+        "stdout": "--- cpython\n+++ ouros\n@@ -1,6 +1,6 @@\n-Sub.__gt__\n\n Base.__lt__\n\n-Sub2.__ge__\n\n+Base.__lt__\n\n Base2.__le__\n\n-Sub3.__gt__\n\n+Base2.__le__\n\n+Base.__lt__\n\n Sub3.__lt__"
+      }
+    },
+    {
+      "snippet": "comparison/compare_ne_explicit.py",
+      "category": "comparison",
+      "description": "Explicit __ne__ overrides the default not-__eq__ behavior",
+      "tags": [
+        "ne",
+        "explicit",
+        "override"
+      ],
+      "expect": "pass",
+      "duration_cpython_ms": 23.0,
+      "cpython_exit": 0,
+      "duration_ouros_ms": 15.1,
+      "ouros_exit": 0,
+      "verdict": "PASS"
+    },
+    {
+      "snippet": "comparison/compare_ne_notimplemented_falls_to_eq.py",
+      "category": "comparison",
+      "description": "__ne__ not defined, falls back to negation of __eq__",
+      "tags": [
+        "ne",
+        "eq",
+        "fallback",
+        "negation"
+      ],
+      "expect": "pass",
+      "duration_cpython_ms": 22.7,
+      "cpython_exit": 0,
+      "duration_ouros_ms": 15.4,
+      "ouros_exit": 0,
+      "verdict": "PASS"
+    },
+    {
+      "snippet": "comparison/compare_rich_all_ops.py",
+      "category": "comparison",
+      "description": "Custom class with all rich comparison operators",
+      "tags": [
+        "lt",
+        "le",
+        "gt",
+        "ge",
+        "eq",
+        "ne",
+        "rich_comparison"
+      ],
+      "expect": "pass",
+      "duration_cpython_ms": 22.6,
+      "cpython_exit": 0,
+      "duration_ouros_ms": 15.5,
+      "ouros_exit": 0,
+      "verdict": "PASS"
+    },
+    {
+      "snippet": "comparison/compare_subclass_eq_priority.py",
+      "category": "comparison",
+      "description": "Subclass __eq__ gets priority in reflected position",
+      "tags": [
+        "eq",
+        "subclass",
+        "priority",
+        "reflection"
+      ],
+      "expect": "pass",
+      "duration_cpython_ms": 22.8,
+      "cpython_exit": 0,
+      "duration_ouros_ms": 15.0,
+      "ouros_exit": 0,
+      "verdict": "FAIL",
+      "message": "stdout differs",
+      "diff": {
+        "stdout": "--- cpython\n+++ ouros\n@@ -1,2 +1,2 @@\n-Sub.__eq__\n\n+Base.__eq__\n\n Sub.__eq__"
+      }
+    },
+    {
+      "snippet": "comparison/equality.py",
+      "category": "comparison",
+      "description": "Equality and inequality operators",
+      "tags": [
+        "comparison",
+        "equality",
+        "operator"
+      ],
+      "expect": "pass",
+      "duration_cpython_ms": 22.3,
+      "cpython_exit": 0,
+      "duration_ouros_ms": 14.7,
+      "ouros_exit": 0,
+      "verdict": "PASS"
+    },
+    {
+      "snippet": "comparison/identity.py",
+      "category": "comparison",
+      "description": "Identity operators (is, is not)",
+      "tags": [
+        "comparison",
+        "identity",
+        "operator"
+      ],
+      "expect": "pass",
+      "duration_cpython_ms": 23.7,
+      "cpython_exit": 0,
+      "duration_ouros_ms": 14.4,
+      "ouros_exit": 0,
+      "verdict": "PASS"
+    },
+    {
+      "snippet": "comparison/membership.py",
+      "category": "comparison",
+      "description": "Membership operators (in, not in)",
+      "tags": [
+        "comparison",
+        "membership",
+        "operator"
+      ],
+      "expect": "pass",
+      "duration_cpython_ms": 23.3,
+      "cpython_exit": 0,
+      "duration_ouros_ms": 15.4,
+      "ouros_exit": 0,
+      "verdict": "PASS"
+    },
+    {
+      "snippet": "comparison/ordering.py",
+      "category": "comparison",
+      "description": "Ordering comparison operators",
+      "tags": [
+        "comparison",
+        "ordering",
+        "operator"
+      ],
+      "expect": "pass",
+      "duration_cpython_ms": 23.6,
+      "cpython_exit": 0,
+      "duration_ouros_ms": 15.0,
+      "ouros_exit": 0,
+      "verdict": "PASS"
+    },
+    {
+      "snippet": "container_protocol/container_contains.py",
+      "category": "container_protocol",
+      "description": "__contains__ for 'in' operator",
+      "tags": [
+        "contains",
+        "in",
+        "membership"
+      ],
+      "expect": "pass",
+      "duration_cpython_ms": 22.4,
+      "cpython_exit": 0,
+      "duration_ouros_ms": 14.3,
+      "ouros_exit": 0,
+      "verdict": "PASS"
+    },
+    {
+      "snippet": "container_protocol/container_contains_fallback_iter.py",
+      "category": "container_protocol",
+      "description": "'in' falls back to __iter__ when __contains__ is not defined",
+      "tags": [
+        "contains",
+        "iter",
+        "fallback",
+        "in"
+      ],
+      "expect": "pass",
+      "duration_cpython_ms": 21.4,
+      "cpython_exit": 0,
+      "duration_ouros_ms": 15.8,
+      "ouros_exit": 1,
+      "verdict": "ERROR",
+      "message": "ouros exited with code 1, CPython exited 0"
+    },
+    {
+      "snippet": "container_protocol/container_delitem.py",
+      "category": "container_protocol",
+      "description": "Custom __delitem__ for subscript deletion",
+      "tags": [
+        "delitem",
+        "subscript"
+      ],
+      "expect": "pass",
+      "duration_cpython_ms": 22.0,
+      "cpython_exit": 0,
+      "duration_ouros_ms": 17.3,
+      "ouros_exit": 0,
+      "verdict": "PASS"
+    },
+    {
+      "snippet": "container_protocol/container_getitem.py",
+      "category": "container_protocol",
+      "description": "Custom __getitem__ for subscript access",
+      "tags": [
+        "getitem",
+        "subscript"
+      ],
+      "expect": "pass",
+      "duration_cpython_ms": 21.1,
+      "cpython_exit": 0,
+      "duration_ouros_ms": 15.9,
+      "ouros_exit": 0,
+      "verdict": "PASS"
+    },
+    {
+      "snippet": "container_protocol/container_getitem_iteration_fallback.py",
+      "category": "container_protocol",
+      "description": "for-loop falls back to __getitem__ with sequential int indices when __iter__ is absent",
+      "tags": [
+        "getitem",
+        "iteration",
+        "fallback",
+        "old_style"
+      ],
+      "expect": "pass",
+      "duration_cpython_ms": 23.9,
+      "cpython_exit": 0,
+      "duration_ouros_ms": 16.3,
+      "ouros_exit": 1,
+      "verdict": "ERROR",
+      "message": "ouros exited with code 1, CPython exited 0"
+    },
+    {
+      "snippet": "container_protocol/container_getitem_missing.py",
+      "category": "container_protocol",
+      "description": "__getitem__ raising KeyError/IndexError",
+      "tags": [
+        "getitem",
+        "keyerror",
+        "indexerror"
+      ],
+      "expect": "pass",
+      "duration_cpython_ms": 23.2,
+      "cpython_exit": 0,
+      "duration_ouros_ms": 16.6,
+      "ouros_exit": 0,
+      "verdict": "PASS"
+    },
+    {
+      "snippet": "container_protocol/container_iter_next.py",
+      "category": "container_protocol",
+      "description": "__iter__ + __next__ protocol for custom iterator",
+      "tags": [
+        "iter",
+        "next",
+        "iterator"
+      ],
+      "expect": "pass",
+      "duration_cpython_ms": 22.9,
+      "cpython_exit": 0,
+      "duration_ouros_ms": 15.5,
+      "ouros_exit": 0,
+      "verdict": "PASS"
+    },
+    {
+      "snippet": "container_protocol/container_iter_separate.py",
+      "category": "container_protocol",
+      "description": "__iter__ returns a separate iterator object",
+      "tags": [
+        "iter",
+        "next",
+        "separate_iterator"
+      ],
+      "expect": "pass",
+      "duration_cpython_ms": 23.3,
+      "cpython_exit": 0,
+      "duration_ouros_ms": 17.1,
+      "ouros_exit": 0,
+      "verdict": "PASS"
+    },
+    {
+      "snippet": "container_protocol/container_len.py",
+      "category": "container_protocol",
+      "description": "__len__ for len() builtin",
+      "tags": [
+        "len",
+        "builtin"
+      ],
+      "expect": "pass",
+      "duration_cpython_ms": 21.7,
+      "cpython_exit": 0,
+      "duration_ouros_ms": 15.6,
+      "ouros_exit": 0,
+      "verdict": "PASS"
+    },
+    {
+      "snippet": "container_protocol/container_len_negative_raises.py",
+      "category": "container_protocol",
+      "description": "__len__ returning negative raises ValueError",
+      "tags": [
+        "len",
+        "negative",
+        "valueerror"
+      ],
+      "expect": "pass",
+      "duration_cpython_ms": 23.6,
+      "cpython_exit": 0,
+      "duration_ouros_ms": 15.7,
+      "ouros_exit": 0,
+      "verdict": "FAIL",
+      "message": "stdout differs",
+      "diff": {
+        "stdout": "--- cpython\n+++ ouros\n@@ -1 +0,0 @@\n-ValueError raised"
+      }
+    },
+    {
+      "snippet": "container_protocol/container_len_non_int_typeerror.py",
+      "category": "container_protocol",
+      "description": "__len__ must return int; non-int raises TypeError; negative raises ValueError",
+      "tags": [
+        "len",
+        "return_type",
+        "typeerror"
+      ],
+      "expect": "pass",
+      "duration_cpython_ms": 22.2,
+      "cpython_exit": 0,
+      "duration_ouros_ms": 16.2,
+      "ouros_exit": 0,
+      "verdict": "FAIL",
+      "message": "stdout differs",
+      "diff": {
+        "stdout": "--- cpython\n+++ ouros\n@@ -1,6 +1 @@\n-TypeError for str: 'str' object cannot be interpreted as an integer\n\n-TypeError for float: 'float' object cannot be interpreted as an integer\n\n-TypeError for None: 'NoneType' object cannot be interpreted as an integer\n\n-ValueError for negative: __len__() should return >= 0\n\n-len(LenBool()) = 1\n\n-TypeError in bool/len fallback: 'str' object cannot be interpreted as an integer\n+len(LenBool()) = True"
+      }
+    },
+    {
+      "snippet": "container_protocol/container_not_in.py",
+      "category": "container_protocol",
+      "description": "'not in' negates __contains__",
+      "tags": [
+        "not_in",
+        "contains",
+        "negation"
+      ],
+      "expect": "pass",
+      "duration_cpython_ms": 23.7,
+      "cpython_exit": 0,
+      "duration_ouros_ms": 14.3,
+      "ouros_exit": 0,
+      "verdict": "PASS"
+    },
+    {
+      "snippet": "container_protocol/container_setitem.py",
+      "category": "container_protocol",
+      "description": "Custom __setitem__ for subscript assignment",
+      "tags": [
+        "setitem",
+        "subscript"
+      ],
+      "expect": "pass",
+      "duration_cpython_ms": 23.4,
+      "cpython_exit": 0,
+      "duration_ouros_ms": 17.7,
+      "ouros_exit": 0,
+      "verdict": "PASS"
+    },
+    {
+      "snippet": "container_protocol/dict_basic.py",
+      "category": "container_protocol",
+      "description": "Basic dict operations",
+      "tags": [
+        "dict",
+        "container",
+        "getitem",
+        "setitem",
+        "len"
+      ],
+      "expect": "pass",
+      "duration_cpython_ms": 21.7,
+      "cpython_exit": 0,
+      "duration_ouros_ms": 16.7,
+      "ouros_exit": 0,
+      "verdict": "PASS"
+    },
+    {
+      "snippet": "container_protocol/list_basic.py",
+      "category": "container_protocol",
+      "description": "Basic list operations",
+      "tags": [
+        "list",
+        "container",
+        "getitem",
+        "setitem",
+        "len"
+      ],
+      "expect": "pass",
+      "duration_cpython_ms": 22.4,
+      "cpython_exit": 0,
+      "duration_ouros_ms": 16.2,
+      "ouros_exit": 0,
+      "verdict": "PASS"
+    },
+    {
+      "snippet": "container_protocol/set_basic.py",
+      "category": "container_protocol",
+      "description": "Basic set operations",
+      "tags": [
+        "set",
+        "container",
+        "len",
+        "membership"
+      ],
+      "expect": "pass",
+      "duration_cpython_ms": 22.3,
+      "cpython_exit": 0,
+      "duration_ouros_ms": 15.9,
+      "ouros_exit": 0,
+      "verdict": "PASS"
+    },
+    {
+      "snippet": "container_protocol/tuple_basic.py",
+      "category": "container_protocol",
+      "description": "Basic tuple operations",
+      "tags": [
+        "tuple",
+        "container",
+        "getitem",
+        "len"
+      ],
+      "expect": "pass",
+      "duration_cpython_ms": 23.2,
+      "cpython_exit": 0,
+      "duration_ouros_ms": 16.0,
+      "ouros_exit": 0,
+      "verdict": "PASS"
+    },
+    {
+      "snippet": "context_manager/basic_with.py",
+      "category": "context_manager",
+      "description": "Basic with-statement dispatches __enter__ then __exit__",
+      "tags": [
+        "enter",
+        "exit",
+        "with",
+        "context_manager"
+      ],
+      "expect": "pass",
+      "duration_cpython_ms": 23.2,
+      "cpython_exit": 0,
+      "duration_ouros_ms": 15.4,
+      "ouros_exit": 0,
+      "verdict": "PASS"
+    },
+    {
+      "snippet": "context_manager/exit_exception_args.py",
+      "category": "context_manager",
+      "description": "__exit__ receives (exc_type, exc_val, exc_tb) on exception, (None, None, None) on success",
+      "tags": [
+        "exit",
+        "exception",
+        "args",
+        "traceback",
+        "context_manager"
+      ],
+      "expect": "pass",
+      "duration_cpython_ms": 22.7,
+      "cpython_exit": 0,
+      "duration_ouros_ms": 16.8,
+      "ouros_exit": 1,
+      "verdict": "ERROR",
+      "message": "ouros exited with code 1, CPython exited 0"
+    },
+    {
+      "snippet": "context_manager/exit_suppresses_exception.py",
+      "category": "context_manager",
+      "description": "__exit__ returning True suppresses the exception",
+      "tags": [
+        "exit",
+        "suppress",
+        "exception",
+        "context_manager"
+      ],
+      "expect": "pass",
+      "duration_cpython_ms": 22.7,
+      "cpython_exit": 0,
+      "duration_ouros_ms": 15.7,
+      "ouros_exit": 1,
+      "verdict": "ERROR",
+      "message": "ouros exited with code 1, CPython exited 0"
+    },
+    {
+      "snippet": "cross_protocol/bool_exception_no_len_fallback.py",
+      "category": "cross_protocol",
+      "description": "When __bool__ raises an exception, it must NOT fall back to __len__; the exception propagates",
+      "tags": [
+        "bool",
+        "len",
+        "exception",
+        "no_fallback",
+        "cross_protocol"
+      ],
+      "expect": "pass",
+      "duration_cpython_ms": 23.5,
+      "cpython_exit": 0,
+      "duration_ouros_ms": 15.6,
+      "ouros_exit": 0,
+      "verdict": "FAIL",
+      "message": "stdout differs",
+      "diff": {
+        "stdout": "--- cpython\n+++ ouros\n@@ -2,4 +2,4 @@\n if ValueError: bool exploded\n\n while ValueError: bool exploded\n\n and ValueError: bool exploded\n\n-TypeError: __bool__ should return bool, returned NotImplementedType\n+no error (NotImplemented is truthy)"
+      }
+    },
+    {
+      "snippet": "cross_protocol/contains_exception_propagates.py",
+      "category": "cross_protocol",
+      "description": "Exception in __contains__ propagates; no fallback to __iter__ or __getitem__",
+      "tags": [
+        "contains",
+        "exception",
+        "propagation",
+        "no_fallback",
+        "cross_protocol"
+      ],
+      "expect": "pass",
+      "duration_cpython_ms": 22.9,
+      "cpython_exit": 0,
+      "duration_ouros_ms": 16.2,
+      "ouros_exit": 1,
+      "verdict": "ERROR",
+      "message": "ouros exited with code 1, CPython exited 0"
+    },
+    {
+      "snippet": "cross_protocol/contains_iter_getitem_chain.py",
+      "category": "cross_protocol",
+      "description": "Full fallback chain for 'in': __contains__ -> __iter__ -> __getitem__ (sequential integers)",
+      "tags": [
+        "contains",
+        "iter",
+        "getitem",
+        "fallback",
+        "chain",
+        "cross_protocol"
+      ],
+      "expect": "pass",
+      "duration_cpython_ms": 22.3,
+      "cpython_exit": 0,
+      "duration_ouros_ms": 16.2,
+      "ouros_exit": 1,
+      "verdict": "ERROR",
+      "message": "ouros exited with code 1, CPython exited 0"
+    },
+    {
+      "snippet": "cross_protocol/eq_affects_hash_mixin.py",
+      "category": "cross_protocol",
+      "description": "__eq__ in a mixin class makes the final class unhashable even if another parent defines __hash__",
+      "tags": [
+        "eq",
+        "hash",
+        "mixin",
+        "diamond",
+        "unhashable",
+        "cross_protocol"
+      ],
+      "expect": "pass",
+      "duration_cpython_ms": 22.9,
+      "cpython_exit": 0,
+      "duration_ouros_ms": 15.4,
+      "ouros_exit": 0,
+      "verdict": "FAIL",
+      "message": "stdout differs",
+      "diff": {
+        "stdout": "--- cpython\n+++ ouros\n@@ -1,2 +1,2 @@\n-TypeError: unhashable\n\n+hash succeeded (unexpected in CPython)\n\n hash=99"
+      }
+    },
+    {
+      "snippet": "cross_protocol/getattr_raises_non_attributeerror.py",
+      "category": "cross_protocol",
+      "description": "__getattr__ raising non-AttributeError must propagate (not be swallowed as \"attr not found\")",
+      "tags": [
+        "getattr",
+        "exception",
+        "propagation",
+        "cross_protocol"
+      ],
+      "expect": "pass",
+      "duration_cpython_ms": 22.7,
+      "cpython_exit": 0,
+      "duration_ouros_ms": 15.4,
+      "ouros_exit": 0,
+      "verdict": "PASS"
+    },
+    {
+      "snippet": "cross_protocol/iadd_exception_no_add_fallback.py",
+      "category": "cross_protocol",
+      "description": "When __iadd__ raises an exception (not NotImplemented), it must NOT fall back to __add__/__radd__",
+      "tags": [
+        "iadd",
+        "add",
+        "exception",
+        "no_fallback",
+        "cross_protocol"
+      ],
+      "expect": "pass",
+      "duration_cpython_ms": 21.5,
+      "cpython_exit": 0,
+      "duration_ouros_ms": 15.4,
+      "ouros_exit": 0,
+      "verdict": "PASS"
+    },
+    {
+      "snippet": "cross_protocol/index_in_subscript.py",
+      "category": "cross_protocol",
+      "description": "__index__ converts custom int-like objects for use as list/tuple subscript indices",
+      "tags": [
+        "index",
+        "getitem",
+        "subscript",
+        "cross_protocol"
+      ],
+      "expect": "pass",
+      "duration_cpython_ms": 23.4,
+      "cpython_exit": 0,
+      "duration_ouros_ms": 16.7,
+      "ouros_exit": 1,
+      "verdict": "ERROR",
+      "message": "ouros exited with code 1, CPython exited 0"
+    },
+    {
+      "snippet": "cross_protocol/ne_fallback_nonbool_eq.py",
+      "category": "cross_protocol",
+      "description": "__ne__ fallback negates __eq__ result; when __eq__ returns non-bool, __ne__ calls not(result) which invokes __bool__",
+      "tags": [
+        "ne",
+        "eq",
+        "fallback",
+        "nonbool",
+        "bool",
+        "cross_protocol"
+      ],
+      "expect": "pass",
+      "duration_cpython_ms": 24.0,
+      "cpython_exit": 0,
+      "duration_ouros_ms": 15.3,
+      "ouros_exit": 0,
+      "verdict": "FAIL",
+      "message": "stdout differs",
+      "diff": {
+        "stdout": "--- cpython\n+++ ouros\n@@ -5,4 +5,4 @@\n BoolResult\n\n bool\n\n False\n\n-True\n+False"
+      }
+    },
+    {
+      "snippet": "cross_protocol/next_non_stopiteration_propagates.py",
+      "category": "cross_protocol",
+      "description": "Non-StopIteration exception from __next__ propagates through for-loop",
+      "tags": [
+        "next",
+        "stopiteration",
+        "exception",
+        "for_loop",
+        "propagation",
+        "cross_protocol"
+      ],
+      "expect": "pass",
+      "duration_cpython_ms": 23.4,
+      "cpython_exit": 0,
+      "duration_ouros_ms": 16.1,
+      "ouros_exit": 0,
+      "verdict": "PASS"
+    },
+    {
+      "snippet": "cross_protocol/radd_exception_propagates.py",
+      "category": "cross_protocol",
+      "description": "Exception in __radd__ propagates; it is not swallowed after __add__ returns NotImplemented",
+      "tags": [
+        "radd",
+        "exception",
+        "propagation",
+        "cross_protocol"
+      ],
+      "expect": "pass",
+      "duration_cpython_ms": 23.8,
+      "cpython_exit": 0,
+      "duration_ouros_ms": 16.2,
+      "ouros_exit": 0,
+      "verdict": "PASS"
+    },
+    {
+      "snippet": "cross_protocol/str_repr_fallback.py",
+      "category": "cross_protocol",
+      "description": "str(x) falls back to __repr__ when __str__ is not defined",
+      "tags": [
+        "str",
+        "repr",
+        "fallback",
+        "cross_protocol"
+      ],
+      "expect": "pass",
+      "duration_cpython_ms": 25.1,
+      "cpython_exit": 0,
+      "duration_ouros_ms": 15.9,
+      "ouros_exit": 0,
+      "verdict": "PASS"
+    },
+    {
+      "snippet": "descriptor_protocol/basic_descriptor.py",
+      "category": "descriptor_protocol",
+      "description": "Basic descriptor protocol (__get__, __set__)",
+      "tags": [
+        "descriptor",
+        "protocol"
+      ],
+      "expect": "pass",
+      "duration_cpython_ms": 23.4,
+      "cpython_exit": 0,
+      "duration_ouros_ms": 15.1,
+      "ouros_exit": 0,
+      "verdict": "PASS"
+    },
+    {
+      "snippet": "descriptor_protocol/descriptor_data_vs_instance.py",
+      "category": "descriptor_protocol",
+      "description": "Data descriptor (__get__ + __set__) takes priority over instance attribute",
+      "tags": [
+        "data_descriptor",
+        "priority",
+        "instance"
+      ],
+      "expect": "pass",
+      "duration_cpython_ms": 22.0,
+      "cpython_exit": 0,
+      "duration_ouros_ms": 15.6,
+      "ouros_exit": 0,
+      "verdict": "PASS"
+    },
+    {
+      "snippet": "descriptor_protocol/descriptor_delete.py",
+      "category": "descriptor_protocol",
+      "description": "Data descriptor with __delete__ method",
+      "tags": [
+        "descriptor",
+        "delete"
+      ],
+      "expect": "pass",
+      "duration_cpython_ms": 22.0,
+      "cpython_exit": 0,
+      "duration_ouros_ms": 15.6,
+      "ouros_exit": 0,
+      "verdict": "PASS"
+    },
+    {
+      "snippet": "descriptor_protocol/descriptor_get_class_access.py",
+      "category": "descriptor_protocol",
+      "description": "Descriptor __get__ on class access receives (None, owner)",
+      "tags": [
+        "descriptor",
+        "class_access",
+        "get"
+      ],
+      "expect": "pass",
+      "duration_cpython_ms": 23.2,
+      "cpython_exit": 0,
+      "duration_ouros_ms": 14.9,
+      "ouros_exit": 0,
+      "verdict": "FAIL",
+      "message": "stdout differs",
+      "diff": {
+        "stdout": "--- cpython\n+++ ouros\n@@ -1,2 +1,2 @@\n obj=None, type=C\n\n-obj=<__main__.C object at 0xADDR>, type=C\n+obj=<C object>, type=C"
+      }
+    },
+    {
+      "snippet": "descriptor_protocol/descriptor_inheritance.py",
+      "category": "descriptor_protocol",
+      "description": "Descriptor inherited through class hierarchy",
+      "tags": [
+        "descriptor",
+        "inheritance",
+        "mro"
+      ],
+      "expect": "pass",
+      "duration_cpython_ms": 22.2,
+      "cpython_exit": 0,
+      "duration_ouros_ms": 14.8,
+      "ouros_exit": 0,
+      "verdict": "PASS"
+    },
+    {
+      "snippet": "descriptor_protocol/descriptor_method_binding.py",
+      "category": "descriptor_protocol",
+      "description": "Function as non-data descriptor for method binding",
+      "tags": [
+        "method",
+        "binding",
+        "descriptor"
+      ],
+      "expect": "pass",
+      "duration_cpython_ms": 22.1,
+      "cpython_exit": 0,
+      "duration_ouros_ms": 14.5,
+      "ouros_exit": 0,
+      "verdict": "PASS"
+    },
+    {
+      "snippet": "descriptor_protocol/descriptor_nondata_vs_instance.py",
+      "category": "descriptor_protocol",
+      "description": "Non-data descriptor (__get__ only) loses to instance attribute",
+      "tags": [
+        "nondata_descriptor",
+        "priority",
+        "instance"
+      ],
+      "expect": "pass",
+      "duration_cpython_ms": 23.1,
+      "cpython_exit": 0,
+      "duration_ouros_ms": 15.2,
+      "ouros_exit": 0,
+      "verdict": "PASS"
+    },
+    {
+      "snippet": "descriptor_protocol/descriptor_property_basic.py",
+      "category": "descriptor_protocol",
+      "description": "Built-in property descriptor behavior",
+      "tags": [
+        "property",
+        "descriptor",
+        "builtin"
+      ],
+      "expect": "pass",
+      "duration_cpython_ms": 23.0,
+      "cpython_exit": 0,
+      "duration_ouros_ms": 15.6,
+      "ouros_exit": 0,
+      "verdict": "PASS"
+    },
+    {
+      "snippet": "descriptor_protocol/descriptor_set_name.py",
+      "category": "descriptor_protocol",
+      "description": "__set_name__ called on descriptor when class is created",
+      "tags": [
+        "set_name",
+        "descriptor",
+        "class_creation"
+      ],
+      "expect": "pass",
+      "duration_cpython_ms": 21.0,
+      "cpython_exit": 0,
+      "duration_ouros_ms": 15.1,
+      "ouros_exit": 0,
+      "verdict": "FAIL",
+      "message": "stdout differs",
+      "diff": {
+        "stdout": "--- cpython\n+++ ouros\n@@ -1,3 +1,3 @@\n+set_name: owner=MyClass, name=bar\n\n set_name: owner=MyClass, name=foo\n\n-set_name: owner=MyClass, name=bar\n\n value"
+      }
+    },
+    {
+      "snippet": "hash_protocol/hash_basic.py",
+      "category": "hash_protocol",
+      "description": "Basic hash protocol - hashable types",
+      "tags": [
+        "hash",
+        "protocol"
+      ],
+      "expect": "pass",
+      "duration_cpython_ms": 24.3,
+      "cpython_exit": 0,
+      "duration_ouros_ms": 16.1,
+      "ouros_exit": 0,
+      "verdict": "PASS"
+    },
+    {
+      "snippet": "hash_protocol/hash_deep_mro_none.py",
+      "category": "hash_protocol",
+      "description": "__hash__ = None found deep in MRO chain",
+      "tags": [
+        "hash",
+        "mro",
+        "deep",
+        "unhashable"
+      ],
+      "expect": "pass",
+      "duration_cpython_ms": 23.5,
+      "cpython_exit": 0,
+      "duration_ouros_ms": 15.9,
+      "ouros_exit": 0,
+      "verdict": "PASS"
+    },
+    {
+      "snippet": "hash_protocol/hash_default_object.py",
+      "category": "hash_protocol",
+      "description": "Plain class without __eq__ or __hash__ is hashable (inherits object defaults)",
+      "tags": [
+        "hash",
+        "default",
+        "object"
+      ],
+      "expect": "pass",
+      "duration_cpython_ms": 22.5,
+      "cpython_exit": 0,
+      "duration_ouros_ms": 15.6,
+      "ouros_exit": 0,
+      "verdict": "PASS"
+    },
+    {
+      "snippet": "hash_protocol/hash_diamond_inheritance.py",
+      "category": "hash_protocol",
+      "description": "Diamond inheritance with mixed hash state",
+      "tags": [
+        "hash",
+        "diamond",
+        "mro",
+        "inheritance"
+      ],
+      "expect": "pass",
+      "duration_cpython_ms": 22.3,
+      "cpython_exit": 0,
+      "duration_ouros_ms": 14.2,
+      "ouros_exit": 0,
+      "verdict": "PASS"
+    },
+    {
+      "snippet": "hash_protocol/hash_eq_and_hash_defined.py",
+      "category": "hash_protocol",
+      "description": "Class with both __eq__ and __hash__ is hashable",
+      "tags": [
+        "hash",
+        "eq",
+        "hashable"
+      ],
+      "expect": "pass",
+      "duration_cpython_ms": 22.1,
+      "cpython_exit": 0,
+      "duration_ouros_ms": 14.8,
+      "ouros_exit": 0,
+      "verdict": "PASS"
+    },
+    {
+      "snippet": "hash_protocol/hash_eq_without_hash.py",
+      "category": "hash_protocol",
+      "description": "Class with __eq__ but no __hash__ should be unhashable",
+      "tags": [
+        "hash",
+        "eq",
+        "unhashable"
+      ],
+      "expect": "pass",
+      "duration_cpython_ms": 22.0,
+      "cpython_exit": 0,
+      "duration_ouros_ms": 15.4,
+      "ouros_exit": 0,
+      "verdict": "PASS"
+    },
+    {
+      "snippet": "hash_protocol/hash_int_return.py",
+      "category": "hash_protocol",
+      "description": "__hash__ must return an int; returning non-int raises TypeError",
+      "tags": [
+        "hash",
+        "return_type",
+        "typeerror"
+      ],
+      "expect": "pass",
+      "duration_cpython_ms": 23.0,
+      "cpython_exit": 0,
+      "duration_ouros_ms": 15.3,
+      "ouros_exit": 1,
+      "verdict": "ERROR",
+      "message": "ouros exited with code 1, CPython exited 0"
+    },
+    {
+      "snippet": "hash_protocol/hash_non_int_return_typeerror.py",
+      "category": "hash_protocol",
+      "description": "__hash__ must return int; returning non-int raises TypeError",
+      "tags": [
+        "hash",
+        "return_type",
+        "typeerror"
+      ],
+      "expect": "pass",
+      "duration_cpython_ms": 22.9,
+      "cpython_exit": 0,
+      "duration_ouros_ms": 15.7,
+      "ouros_exit": 1,
+      "verdict": "ERROR",
+      "message": "ouros exited with code 1, CPython exited 0"
+    },
+    {
+      "snippet": "hash_protocol/hash_none_inherited.py",
+      "category": "hash_protocol",
+      "description": "Subclass inherits __hash__ = None from parent, unhashable",
+      "tags": [
+        "hash",
+        "unhashable",
+        "inheritance"
+      ],
+      "expect": "pass",
+      "duration_cpython_ms": 21.8,
+      "cpython_exit": 0,
+      "duration_ouros_ms": 15.5,
+      "ouros_exit": 0,
+      "verdict": "PASS"
+    },
+    {
+      "snippet": "hash_protocol/hash_none_unhashable.py",
+      "category": "hash_protocol",
+      "description": "Class with __hash__ = None is unhashable",
+      "tags": [
+        "hash",
+        "unhashable",
+        "hash_none"
+      ],
+      "expect": "pass",
+      "duration_cpython_ms": 21.2,
+      "cpython_exit": 0,
+      "duration_ouros_ms": 14.6,
+      "ouros_exit": 0,
+      "verdict": "PASS"
+    },
+    {
+      "snippet": "hash_protocol/hash_restored_after_none.py",
+      "category": "hash_protocol",
+      "description": "Subclass restores __hash__ after parent set it to None",
+      "tags": [
+        "hash",
+        "restore",
+        "inheritance"
+      ],
+      "expect": "pass",
+      "duration_cpython_ms": 22.6,
+      "cpython_exit": 0,
+      "duration_ouros_ms": 14.7,
+      "ouros_exit": 0,
+      "verdict": "PASS"
+    },
+    {
+      "snippet": "hash_protocol/hash_subclass_eq_no_hash.py",
+      "category": "hash_protocol",
+      "description": "Subclass defines __eq__ but not __hash__, parent has __hash__ -> unhashable",
+      "tags": [
+        "hash",
+        "eq",
+        "subclass",
+        "unhashable"
+      ],
+      "expect": "pass",
+      "duration_cpython_ms": 21.8,
+      "cpython_exit": 0,
+      "duration_ouros_ms": 14.3,
+      "ouros_exit": 0,
+      "verdict": "FAIL",
+      "message": "stdout differs",
+      "diff": {
+        "stdout": "--- cpython\n+++ ouros\n@@ -1 +0,0 @@\n-TypeError"
+      }
+    },
+    {
+      "snippet": "hash_protocol/unhashable.py",
+      "category": "hash_protocol",
+      "description": "Unhashable types should raise TypeError",
+      "tags": [
+        "hash",
+        "protocol",
+        "error"
+      ],
+      "expect": "pass",
+      "duration_cpython_ms": 21.6,
+      "cpython_exit": 0,
+      "duration_ouros_ms": 16.3,
+      "ouros_exit": 0,
+      "verdict": "PASS"
+    },
+    {
+      "snippet": "inplace_ops/inplace_all_notimplemented_typeerror.py",
+      "category": "inplace_ops",
+      "description": "All inplace+binary+reflected return NotImplemented -> TypeError",
+      "tags": [
+        "iadd",
+        "notimplemented",
+        "typeerror"
+      ],
+      "expect": "pass",
+      "duration_cpython_ms": 21.7,
+      "cpython_exit": 0,
+      "duration_ouros_ms": 15.4,
+      "ouros_exit": 1,
+      "verdict": "ERROR",
+      "message": "ouros exited with code 1, CPython exited 0"
+    },
+    {
+      "snippet": "inplace_ops/inplace_iadd_notimplemented_fallback.py",
+      "category": "inplace_ops",
+      "description": "__iadd__ returns NotImplemented, should fallback to __add__",
+      "tags": [
+        "iadd",
+        "notimplemented",
+        "fallback"
+      ],
+      "expect": "pass",
+      "duration_cpython_ms": 22.9,
+      "cpython_exit": 0,
+      "duration_ouros_ms": 16.3,
+      "ouros_exit": 0,
+      "verdict": "PASS"
+    },
+    {
+      "snippet": "inplace_ops/inplace_iadd_notimplemented_radd.py",
+      "category": "inplace_ops",
+      "description": "__iadd__ returns NotImplemented, fallback to other's __radd__",
+      "tags": [
+        "iadd",
+        "radd",
+        "notimplemented",
+        "fallback",
+        "mixed_types"
+      ],
+      "expect": "pass",
+      "duration_cpython_ms": 23.0,
+      "cpython_exit": 0,
+      "duration_ouros_ms": 15.0,
+      "ouros_exit": 0,
+      "verdict": "PASS"
+    },
+    {
+      "snippet": "inplace_ops/inplace_iadd_returns_different_type.py",
+      "category": "inplace_ops",
+      "description": "__iadd__ can return a different type (variable gets rebound)",
+      "tags": [
+        "iadd",
+        "rebind",
+        "different_type"
+      ],
+      "expect": "pass",
+      "duration_cpython_ms": 23.5,
+      "cpython_exit": 0,
+      "duration_ouros_ms": 15.3,
+      "ouros_exit": 0,
+      "verdict": "PASS"
+    },
+    {
+      "snippet": "inplace_ops/inplace_iadd_works_normally.py",
+      "category": "inplace_ops",
+      "description": "__iadd__ returns a value (not NotImplemented), used directly",
+      "tags": [
+        "iadd",
+        "normal"
+      ],
+      "expect": "pass",
+      "duration_cpython_ms": 22.5,
+      "cpython_exit": 0,
+      "duration_ouros_ms": 14.1,
+      "ouros_exit": 0,
+      "verdict": "PASS"
+    },
+    {
+      "snippet": "inplace_ops/inplace_iand_notimplemented_fallback.py",
+      "category": "inplace_ops",
+      "description": "__iand__ returns NotImplemented, fallback to __and__",
+      "tags": [
+        "iand",
+        "notimplemented",
+        "fallback"
+      ],
+      "expect": "pass",
+      "duration_cpython_ms": 23.7,
+      "cpython_exit": 0,
+      "duration_ouros_ms": 15.9,
+      "ouros_exit": 0,
+      "verdict": "PASS"
+    },
+    {
+      "snippet": "inplace_ops/inplace_ifloordiv_notimplemented_fallback.py",
+      "category": "inplace_ops",
+      "description": "__ifloordiv__ returns NotImplemented, fallback to __floordiv__",
+      "tags": [
+        "ifloordiv",
+        "notimplemented",
+        "fallback"
+      ],
+      "expect": "pass",
+      "duration_cpython_ms": 22.8,
+      "cpython_exit": 0,
+      "duration_ouros_ms": 14.8,
+      "ouros_exit": 0,
+      "verdict": "PASS"
+    },
+    {
+      "snippet": "inplace_ops/inplace_imod_notimplemented_fallback.py",
+      "category": "inplace_ops",
+      "description": "__imod__ returns NotImplemented, fallback to __mod__",
+      "tags": [
+        "imod",
+        "notimplemented",
+        "fallback"
+      ],
+      "expect": "pass",
+      "duration_cpython_ms": 24.9,
+      "cpython_exit": 0,
+      "duration_ouros_ms": 16.0,
+      "ouros_exit": 0,
+      "verdict": "PASS"
+    },
+    {
+      "snippet": "inplace_ops/inplace_imul_notimplemented_fallback.py",
+      "category": "inplace_ops",
+      "description": "__imul__ returns NotImplemented, fallback to __mul__",
+      "tags": [
+        "imul",
+        "notimplemented",
+        "fallback"
+      ],
+      "expect": "pass",
+      "duration_cpython_ms": 22.9,
+      "cpython_exit": 0,
+      "duration_ouros_ms": 15.1,
+      "ouros_exit": 0,
+      "verdict": "PASS"
+    },
+    {
+      "snippet": "inplace_ops/inplace_ior_notimplemented_fallback.py",
+      "category": "inplace_ops",
+      "description": "__ior__ returns NotImplemented, fallback to __or__",
+      "tags": [
+        "ior",
+        "notimplemented",
+        "fallback"
+      ],
+      "expect": "pass",
+      "duration_cpython_ms": 23.5,
+      "cpython_exit": 0,
+      "duration_ouros_ms": 15.4,
+      "ouros_exit": 0,
+      "verdict": "PASS"
+    },
+    {
+      "snippet": "inplace_ops/inplace_ipow_notimplemented_fallback.py",
+      "category": "inplace_ops",
+      "description": "__ipow__ returns NotImplemented, fallback to __pow__",
+      "tags": [
+        "ipow",
+        "notimplemented",
+        "fallback"
+      ],
+      "expect": "pass",
+      "duration_cpython_ms": 22.2,
+      "cpython_exit": 0,
+      "duration_ouros_ms": 15.5,
+      "ouros_exit": 0,
+      "verdict": "PASS"
+    },
+    {
+      "snippet": "inplace_ops/inplace_isub_notimplemented_fallback.py",
+      "category": "inplace_ops",
+      "description": "__isub__ returns NotImplemented, should fallback to __sub__",
+      "tags": [
+        "isub",
+        "notimplemented",
+        "fallback"
+      ],
+      "expect": "pass",
+      "duration_cpython_ms": 21.8,
+      "cpython_exit": 0,
+      "duration_ouros_ms": 14.9,
+      "ouros_exit": 0,
+      "verdict": "PASS"
+    },
+    {
+      "snippet": "inplace_ops/inplace_itruediv_notimplemented_fallback.py",
+      "category": "inplace_ops",
+      "description": "__itruediv__ returns NotImplemented, fallback to __truediv__",
+      "tags": [
+        "itruediv",
+        "notimplemented",
+        "fallback"
+      ],
+      "expect": "pass",
+      "duration_cpython_ms": 22.7,
+      "cpython_exit": 0,
+      "duration_ouros_ms": 15.3,
+      "ouros_exit": 0,
+      "verdict": "PASS"
+    },
+    {
+      "snippet": "inplace_ops/inplace_ixor_notimplemented_fallback.py",
+      "category": "inplace_ops",
+      "description": "__ixor__ returns NotImplemented, fallback to __xor__",
+      "tags": [
+        "ixor",
+        "notimplemented",
+        "fallback"
+      ],
+      "expect": "pass",
+      "duration_cpython_ms": 22.9,
+      "cpython_exit": 0,
+      "duration_ouros_ms": 15.7,
+      "ouros_exit": 0,
+      "verdict": "PASS"
+    },
+    {
+      "snippet": "inplace_ops/inplace_mixed_types_iadd_notimplemented.py",
+      "category": "inplace_ops",
+      "description": "Mixed types: a += b where a.__iadd__ returns NotImplemented, a.__add__ returns NotImplemented, b.__radd__ works",
+      "tags": [
+        "iadd",
+        "radd",
+        "mixed_types",
+        "fallback_chain"
+      ],
+      "expect": "pass",
+      "duration_cpython_ms": 22.0,
+      "cpython_exit": 0,
+      "duration_ouros_ms": 16.1,
+      "ouros_exit": 0,
+      "verdict": "PASS"
+    },
+    {
+      "snippet": "inplace_ops/inplace_no_iop_falls_to_binop.py",
+      "category": "inplace_ops",
+      "description": "No __iadd__ defined at all, += falls through to __add__",
+      "tags": [
+        "iadd",
+        "fallback",
+        "no_inplace"
+      ],
+      "expect": "pass",
+      "duration_cpython_ms": 23.2,
+      "cpython_exit": 0,
+      "duration_ouros_ms": 16.2,
+      "ouros_exit": 0,
+      "verdict": "PASS"
+    },
+    {
+      "snippet": "inplace_ops/inplace_parent_iadd_notimplemented.py",
+      "category": "inplace_ops",
+      "description": "Parent __iadd__ returns NotImplemented, inherited by subclass",
+      "tags": [
+        "iadd",
+        "notimplemented",
+        "inheritance",
+        "fallback"
+      ],
+      "expect": "pass",
+      "duration_cpython_ms": 22.0,
+      "cpython_exit": 0,
+      "duration_ouros_ms": 16.0,
+      "ouros_exit": 0,
+      "verdict": "PASS"
+    },
+    {
+      "snippet": "inplace_ops/inplace_subclass_iadd_notimplemented.py",
+      "category": "inplace_ops",
+      "description": "Subclass __iadd__ returns NotImplemented, parent __add__ used",
+      "tags": [
+        "iadd",
+        "notimplemented",
+        "subclass",
+        "fallback"
+      ],
+      "expect": "pass",
+      "duration_cpython_ms": 22.4,
+      "cpython_exit": 0,
+      "duration_ouros_ms": 14.9,
+      "ouros_exit": 0,
+      "verdict": "PASS"
+    },
+    {
+      "snippet": "inplace_ops/int_inplace.py",
+      "category": "inplace_ops",
+      "description": "In-place integer operators",
+      "tags": [
+        "int",
+        "operator",
+        "inplace"
+      ],
+      "expect": "pass",
+      "duration_cpython_ms": 22.9,
+      "cpython_exit": 0,
+      "duration_ouros_ms": 15.4,
+      "ouros_exit": 0,
+      "verdict": "PASS"
+    },
+    {
+      "snippet": "inplace_ops/list_inplace.py",
+      "category": "inplace_ops",
+      "description": "In-place list operators",
+      "tags": [
+        "list",
+        "operator",
+        "inplace"
+      ],
+      "expect": "pass",
+      "duration_cpython_ms": 23.7,
+      "cpython_exit": 0,
+      "duration_ouros_ms": 14.9,
+      "ouros_exit": 0,
+      "verdict": "PASS"
+    },
+    {
+      "snippet": "inplace_ops/string_inplace.py",
+      "category": "inplace_ops",
+      "description": "In-place string operators",
+      "tags": [
+        "string",
+        "operator",
+        "inplace"
+      ],
+      "expect": "pass",
+      "duration_cpython_ms": 23.1,
+      "cpython_exit": 0,
+      "duration_ouros_ms": 14.5,
+      "ouros_exit": 0,
+      "verdict": "PASS"
+    },
+    {
+      "snippet": "string_repr_format/format_basic.py",
+      "category": "string_repr_format",
+      "description": "format() builtin calls __format__; f-strings use it for non-repr/str conversions",
+      "tags": [
+        "format",
+        "dunder",
+        "fstring"
+      ],
+      "expect": "pass",
+      "duration_cpython_ms": 23.4,
+      "cpython_exit": 0,
+      "duration_ouros_ms": 15.6,
+      "ouros_exit": 1,
+      "verdict": "ERROR",
+      "message": "ouros exited with code 1, CPython exited 0"
+    },
+    {
+      "snippet": "string_repr_format/repr_basic.py",
+      "category": "string_repr_format",
+      "description": "repr() calls __repr__ on instances; type-level lookup, not instance dict",
+      "tags": [
+        "repr",
+        "dunder",
+        "type_lookup"
+      ],
+      "expect": "pass",
+      "duration_cpython_ms": 22.0,
+      "cpython_exit": 0,
+      "duration_ouros_ms": 16.1,
+      "ouros_exit": 0,
+      "verdict": "FAIL",
+      "message": "stdout differs",
+      "diff": {
+        "stdout": "--- cpython\n+++ ouros\n@@ -2,4 +2,4 @@\n Custom()\n\n type-level\n\n TypeError: __repr__ returned non-string (type int)\n\n-OnlyRepr repr\n+<OnlyRepr object>"
+      }
+    },
+    {
+      "snippet": "unary_ops/invert.py",
+      "category": "unary_ops",
+      "description": "Bitwise invert operator",
+      "tags": [
+        "int",
+        "operator",
+        "invert",
+        "bitwise"
+      ],
+      "expect": "pass",
+      "duration_cpython_ms": 22.9,
+      "cpython_exit": 0,
+      "duration_ouros_ms": 15.0,
+      "ouros_exit": 0,
+      "verdict": "PASS"
+    },
+    {
+      "snippet": "unary_ops/negation.py",
+      "category": "unary_ops",
+      "description": "Unary negation operator",
+      "tags": [
+        "int",
+        "float",
+        "operator",
+        "negation"
+      ],
+      "expect": "pass",
+      "duration_cpython_ms": 23.7,
+      "cpython_exit": 0,
+      "duration_ouros_ms": 15.1,
+      "ouros_exit": 0,
+      "verdict": "PASS"
+    },
+    {
+      "snippet": "unary_ops/not_op.py",
+      "category": "unary_ops",
+      "description": "Logical not operator",
+      "tags": [
+        "bool",
+        "operator",
+        "not"
+      ],
+      "expect": "pass",
+      "duration_cpython_ms": 22.8,
+      "cpython_exit": 0,
+      "duration_ouros_ms": 15.6,
+      "ouros_exit": 0,
+      "verdict": "PASS"
+    },
+    {
+      "snippet": "unary_ops/positive.py",
+      "category": "unary_ops",
+      "description": "Unary positive operator",
+      "tags": [
+        "int",
+        "float",
+        "operator",
+        "positive"
+      ],
+      "expect": "pass",
+      "duration_cpython_ms": 21.9,
+      "cpython_exit": 0,
+      "duration_ouros_ms": 15.2,
+      "ouros_exit": 0,
+      "verdict": "PASS"
+    },
+    {
+      "snippet": "unary_ops/unary_abs_custom.py",
+      "category": "unary_ops",
+      "description": "Custom __abs__ for abs() builtin",
+      "tags": [
+        "abs",
+        "custom",
+        "unary"
+      ],
+      "expect": "pass",
+      "duration_cpython_ms": 22.7,
+      "cpython_exit": 0,
+      "duration_ouros_ms": 15.2,
+      "ouros_exit": 0,
+      "verdict": "PASS"
+    },
+    {
+      "snippet": "unary_ops/unary_bool_fallback_to_len.py",
+      "category": "unary_ops",
+      "description": "__bool__ fallback to __len__ when __bool__ not defined",
+      "tags": [
+        "bool",
+        "len",
+        "fallback"
+      ],
+      "expect": "pass",
+      "duration_cpython_ms": 23.5,
+      "cpython_exit": 0,
+      "duration_ouros_ms": 16.2,
+      "ouros_exit": 0,
+      "verdict": "FAIL",
+      "message": "stdout differs",
+      "diff": {
+        "stdout": "--- cpython\n+++ ouros\n@@ -1,2 +1,2 @@\n-True\n\n-False\n+5\n\n+0"
+      }
+    },
+    {
+      "snippet": "unary_ops/unary_bool_in_if.py",
+      "category": "unary_ops",
+      "description": "__bool__ used in if-statement truthiness check",
+      "tags": [
+        "bool",
+        "if",
+        "truthiness"
+      ],
+      "expect": "pass",
+      "duration_cpython_ms": 21.2,
+      "cpython_exit": 0,
+      "duration_ouros_ms": 15.5,
+      "ouros_exit": 0,
+      "verdict": "PASS"
+    },
+    {
+      "snippet": "unary_ops/unary_bool_no_bool_no_len.py",
+      "category": "unary_ops",
+      "description": "Object without __bool__ or __len__ is always True",
+      "tags": [
+        "bool",
+        "default",
+        "true"
+      ],
+      "expect": "pass",
+      "duration_cpython_ms": 22.0,
+      "cpython_exit": 0,
+      "duration_ouros_ms": 14.3,
+      "ouros_exit": 0,
+      "verdict": "PASS"
+    },
+    {
+      "snippet": "unary_ops/unary_bool_overrides_len.py",
+      "category": "unary_ops",
+      "description": "__bool__ takes priority over __len__",
+      "tags": [
+        "bool",
+        "len",
+        "priority"
+      ],
+      "expect": "pass",
+      "duration_cpython_ms": 22.2,
+      "cpython_exit": 0,
+      "duration_ouros_ms": 14.7,
+      "ouros_exit": 0,
+      "verdict": "PASS"
+    },
+    {
+      "snippet": "unary_ops/unary_bool_returns_nonbool_error.py",
+      "category": "unary_ops",
+      "description": "__bool__ must return bool, non-bool return raises TypeError",
+      "tags": [
+        "bool",
+        "return_type",
+        "typeerror"
+      ],
+      "expect": "pass",
+      "duration_cpython_ms": 22.8,
+      "cpython_exit": 0,
+      "duration_ouros_ms": 14.7,
+      "ouros_exit": 0,
+      "verdict": "FAIL",
+      "message": "stdout differs",
+      "diff": {
+        "stdout": "--- cpython\n+++ ouros\n@@ -1 +0,0 @@\n-TypeError raised"
+      }
+    },
+    {
+      "snippet": "unary_ops/unary_invert_custom.py",
+      "category": "unary_ops",
+      "description": "Custom __invert__ on a class",
+      "tags": [
+        "invert",
+        "unary",
+        "custom"
+      ],
+      "expect": "pass",
+      "duration_cpython_ms": 22.1,
+      "cpython_exit": 0,
+      "duration_ouros_ms": 14.1,
+      "ouros_exit": 0,
+      "verdict": "PASS"
+    },
+    {
+      "snippet": "unary_ops/unary_len_truthiness_in_if.py",
+      "category": "unary_ops",
+      "description": "__len__ fallback used in if-statement truthiness (no __bool__)",
+      "tags": [
+        "len",
+        "if",
+        "truthiness",
+        "fallback"
+      ],
+      "expect": "pass",
+      "duration_cpython_ms": 22.0,
+      "cpython_exit": 0,
+      "duration_ouros_ms": 15.2,
+      "ouros_exit": 0,
+      "verdict": "PASS"
+    },
+    {
+      "snippet": "unary_ops/unary_neg_custom.py",
+      "category": "unary_ops",
+      "description": "Custom __neg__ on a class",
+      "tags": [
+        "neg",
+        "unary",
+        "custom"
+      ],
+      "expect": "pass",
+      "duration_cpython_ms": 23.1,
+      "cpython_exit": 0,
+      "duration_ouros_ms": 15.1,
+      "ouros_exit": 0,
+      "verdict": "FAIL",
+      "message": "stdout differs",
+      "diff": {
+        "stdout": "--- cpython\n+++ ouros\n@@ -1 +1 @@\n-Vec(-3, 4)\n+<Vec object>"
+      }
+    },
+    {
+      "snippet": "unary_ops/unary_neg_missing.py",
+      "category": "unary_ops",
+      "description": "Missing __neg__ raises TypeError",
+      "tags": [
+        "neg",
+        "missing",
+        "typeerror"
+      ],
+      "expect": "pass",
+      "duration_cpython_ms": 22.1,
+      "cpython_exit": 0,
+      "duration_ouros_ms": 15.5,
+      "ouros_exit": 0,
+      "verdict": "PASS"
+    },
+    {
+      "snippet": "unary_ops/unary_not_custom_bool.py",
+      "category": "unary_ops",
+      "description": "not operator with custom __bool__",
+      "tags": [
+        "not",
+        "bool",
+        "custom"
+      ],
+      "expect": "pass",
+      "duration_cpython_ms": 22.4,
+      "cpython_exit": 0,
+      "duration_ouros_ms": 14.8,
+      "ouros_exit": 0,
+      "verdict": "PASS"
+    },
+    {
+      "snippet": "unary_ops/unary_pos_custom.py",
+      "category": "unary_ops",
+      "description": "Custom __pos__ on a class",
+      "tags": [
+        "pos",
+        "unary",
+        "custom"
+      ],
+      "expect": "pass",
+      "duration_cpython_ms": 22.2,
+      "cpython_exit": 0,
+      "duration_ouros_ms": 15.7,
+      "ouros_exit": 0,
+      "verdict": "PASS"
+    }
+  ]
+}

@@ -2761,6 +2761,7 @@ impl<'i> Prepare<'i> {
                 let prepared_expr = Box::new(self.prepare_expression(*expr)?);
                 let prepared_spec = match format_spec {
                     Some(FormatSpec::Static { parsed, raw }) => Some(FormatSpec::Static { parsed, raw }),
+                    Some(FormatSpec::Raw(raw)) => Some(FormatSpec::Raw(raw)),
                     Some(FormatSpec::Dynamic(parts)) => {
                         let prepared = parts
                             .into_iter()

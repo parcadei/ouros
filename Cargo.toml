@@ -22,7 +22,7 @@ categories = ["compilers", "emulators", "development-tools"]
 keywords = ["python", "interpreter", "sandbox", "embedded"]
 homepage = "https://github.com/parcadei/ouros/"
 repository = "https://github.com/parcadei/ouros/"
-documentation = "https://github.com/parcadei/ouros/"
+documentation = "https://docs.rs/ouros/"
 
 [profile.release]
 lto = "fat"

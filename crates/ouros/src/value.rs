@@ -537,6 +537,13 @@ impl PyTrait for Value {
                 HeapData::StdlibObject(StdlibObject::AnextAwaitable(_)) => {
                     Cow::Owned(format!("<anext_awaitable object at 0x{:x}>", self.public_id()))
                 }
+                HeapData::Instance(instance) => {
+                    // Instance py_str may return enum/exception-specific strings.
+                    // When it falls back to default repr, it needs the Value-level
+                    // public_id for CPython-compatible output like
+                    // `<__main__.C object at 0x...>`.
+                    instance.py_str_with_id(heap, interns, self.public_id())
+                }
                 _ => heap.get(*id).py_str(heap, interns),
             },
             _ => self.py_repr(heap, interns),
@@ -3064,6 +3071,12 @@ impl Value {
                 let class_value = Self::Ref(class_id);
                 defer_drop!(class_value, heap);
                 return class_value.py_getattr(name_id, heap, interns);
+            }
+            Self::Builtin(Builtins::ExcType(exc_type)) => {
+                // Expose exception class attributes (`__name__`, etc.) the same
+                // way as other builtin type objects.
+                let exception_type_value = Self::Builtin(Builtins::Type(Type::Exception(*exc_type)));
+                return exception_type_value.py_getattr(name_id, heap, interns);
             }
             Self::ModuleFunction(module_function) => {
                 if matches!(module_function, ModuleFunctions::Itertools(ItertoolsFunctions::Chain))

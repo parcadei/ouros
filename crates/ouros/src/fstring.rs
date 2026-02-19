@@ -88,6 +88,11 @@ pub enum FormatSpec {
         /// Interned original format spec text as written in source.
         raw: StringId,
     },
+    /// Static format spec text that is intentionally not pre-parsed.
+    ///
+    /// This keeps f-string parsing permissive for custom user specs like
+    /// `f"{obj:dollars}"` where runtime `__format__` should decide meaning.
+    Raw(StringId),
     /// Dynamic format spec with nested f-string parts
     ///
     /// These must be evaluated at runtime, then parsed into a `ParsedFormatSpec`.

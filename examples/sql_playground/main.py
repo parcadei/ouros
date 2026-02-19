@@ -47,7 +47,7 @@ async def main():
     external_funcs = ExternalFunctions(fs)
 
     # Create the Ouros runner with type checking enabled
-    m = ouros.Ouros(
+    m = ouros.Sandbox(
         SANDBOX_CODE_PATH.read_text(),
         script_name='sql_playground.py',
         external_functions=['query_csv', 'read_json', 'analyze_sentiment'],
@@ -56,7 +56,7 @@ async def main():
     )
 
     # Run the analysis with external functions and OS access
-    results = await ouros.run_ouros_async(
+    results = await ouros.run_async(
         m,
         external_functions={
             'query_csv': external_funcs.query_csv,

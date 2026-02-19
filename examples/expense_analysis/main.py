@@ -87,7 +87,7 @@ for member in team_members:
 """
 
 
-m = ouros.Ouros(
+m = ouros.Sandbox(
     code,
     inputs=['prompt'],
     external_functions=['get_team_members', 'get_expenses', 'get_custom_budget'],
@@ -98,7 +98,7 @@ m = ouros.Ouros(
 
 
 async def main():
-    output = await ouros.run_ouros_async(
+    output = await ouros.run_async(
         m,
         inputs={'prompt': 'testing'},
         external_functions={

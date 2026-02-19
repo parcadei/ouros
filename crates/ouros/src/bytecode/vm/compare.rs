@@ -3,11 +3,14 @@
 //! Comparisons support dunder protocols: when comparing instances, the VM looks
 //! up `__eq__`/`__ne__`/`__lt__`/`__le__`/`__gt__`/`__ge__` on the type.
 
-use super::{VM, call::CallResult};
+use super::{
+    PendingCompareDispatch, PendingCompareDunder, PendingCompareKind, PendingCompareSide, PendingCompareStep,
+    PendingTruthinessKind, VM, call::CallResult,
+};
 use crate::{
     args::ArgValues,
     exception_private::{ExcType, RunError},
-    heap::HeapData,
+    heap::{HeapData, HeapId},
     intern::{StaticStrings, StringId},
     io::PrintWriter,
     resource::ResourceTracker,
@@ -15,6 +18,13 @@ use crate::{
     types::{LongInt, PyTrait},
     value::Value,
 };
+
+#[derive(Clone, Copy)]
+struct CompareDispatchCandidate {
+    step: PendingCompareStep,
+    class_id: HeapId,
+    owner_id: HeapId,
+}
 
 impl<T: ResourceTracker, P: PrintWriter, Tr: VmTracer> VM<'_, T, P, Tr> {
     /// Equality comparison with dunder support.
@@ -30,10 +40,14 @@ impl<T: ResourceTracker, P: PrintWriter, Tr: VmTracer> VM<'_, T, P, Tr> {
             return Ok(CallResult::Push(Value::Bool(*a == *b)));
         }
 
-        // Try rich comparison dunder dispatch first: lhs.__eq__(rhs), then rhs.__eq__(lhs).
-        if let Some(result) =
-            self.try_instance_compare_dunder(&lhs, &rhs, StaticStrings::DunderEq, Some(StaticStrings::DunderEq))?
-        {
+        // Try rich comparison dunder dispatch first.
+        if let Some(result) = self.try_instance_compare_dunder(
+            &lhs,
+            &rhs,
+            PendingCompareKind::Eq,
+            StaticStrings::DunderEq,
+            Some(StaticStrings::DunderEq),
+        )? {
             lhs.drop_with_heap(self.heap);
             rhs.drop_with_heap(self.heap);
             return Ok(result);
@@ -59,33 +73,31 @@ impl<T: ResourceTracker, P: PrintWriter, Tr: VmTracer> VM<'_, T, P, Tr> {
             return Ok(CallResult::Push(Value::Bool(*a != *b)));
         }
 
-        // Try rich comparison dunder dispatch first: lhs.__ne__(rhs), then rhs.__ne__(lhs).
-        if let Some(result) =
-            self.try_instance_compare_dunder(&lhs, &rhs, StaticStrings::DunderNe, Some(StaticStrings::DunderNe))?
-        {
+        // Try __ne__ first.
+        if let Some(result) = self.try_instance_compare_dunder(
+            &lhs,
+            &rhs,
+            PendingCompareKind::NePrimary,
+            StaticStrings::DunderNe,
+            Some(StaticStrings::DunderNe),
+        )? {
             lhs.drop_with_heap(self.heap);
             rhs.drop_with_heap(self.heap);
             return Ok(result);
         }
 
         // CPython fallback for `!=`: if __ne__ is not implemented, negate __eq__.
-        if let Some(result) =
-            self.try_instance_compare_dunder(&lhs, &rhs, StaticStrings::DunderEq, Some(StaticStrings::DunderEq))?
-        {
+        if let Some(result) = self.try_instance_compare_dunder(
+            &lhs,
+            &rhs,
+            PendingCompareKind::NeEqFallback,
+            StaticStrings::DunderEq,
+            Some(StaticStrings::DunderEq),
+        )? {
+            let final_result = self.finish_compare_result(PendingCompareKind::NeEqFallback, result)?;
             lhs.drop_with_heap(self.heap);
             rhs.drop_with_heap(self.heap);
-            return match result {
-                CallResult::Push(v) => {
-                    let bool_val = v.py_bool(self.heap, self.interns);
-                    v.drop_with_heap(self.heap);
-                    Ok(CallResult::Push(Value::Bool(!bool_val)))
-                }
-                CallResult::FramePushed => {
-                    self.pending_negate_bool = true;
-                    Ok(CallResult::FramePushed)
-                }
-                other => Ok(other),
-            };
+            return Ok(final_result);
         }
 
         // Fast path: native comparison
@@ -98,6 +110,7 @@ impl<T: ResourceTracker, P: PrintWriter, Tr: VmTracer> VM<'_, T, P, Tr> {
     /// Ordering comparison with dunder support.
     pub(super) fn compare_lt(&mut self) -> Result<CallResult, RunError> {
         self.compare_ord_dunder(
+            PendingCompareKind::Lt,
             StaticStrings::DunderLt,
             Some(StaticStrings::DunderGt),
             std::cmp::Ordering::is_lt,
@@ -106,6 +119,7 @@ impl<T: ResourceTracker, P: PrintWriter, Tr: VmTracer> VM<'_, T, P, Tr> {
 
     pub(super) fn compare_le(&mut self) -> Result<CallResult, RunError> {
         self.compare_ord_dunder(
+            PendingCompareKind::Le,
             StaticStrings::DunderLe,
             Some(StaticStrings::DunderGe),
             std::cmp::Ordering::is_le,
@@ -114,6 +128,7 @@ impl<T: ResourceTracker, P: PrintWriter, Tr: VmTracer> VM<'_, T, P, Tr> {
 
     pub(super) fn compare_gt(&mut self) -> Result<CallResult, RunError> {
         self.compare_ord_dunder(
+            PendingCompareKind::Gt,
             StaticStrings::DunderGt,
             Some(StaticStrings::DunderLt),
             std::cmp::Ordering::is_gt,
@@ -122,6 +137,7 @@ impl<T: ResourceTracker, P: PrintWriter, Tr: VmTracer> VM<'_, T, P, Tr> {
 
     pub(super) fn compare_ge(&mut self) -> Result<CallResult, RunError> {
         self.compare_ord_dunder(
+            PendingCompareKind::Ge,
             StaticStrings::DunderGe,
             Some(StaticStrings::DunderLe),
             std::cmp::Ordering::is_ge,
@@ -135,6 +151,7 @@ impl<T: ResourceTracker, P: PrintWriter, Tr: VmTracer> VM<'_, T, P, Tr> {
     /// custom comparison dunders.
     fn compare_ord_dunder(
         &mut self,
+        kind: PendingCompareKind,
         lhs_dunder: StaticStrings,
         rhs_dunder: Option<StaticStrings>,
         check: fn(std::cmp::Ordering) -> bool,
@@ -151,7 +168,7 @@ impl<T: ResourceTracker, P: PrintWriter, Tr: VmTracer> VM<'_, T, P, Tr> {
 
         // Try rich comparison dunder dispatch first:
         // lhs.__op__(rhs), then rhs.__rop__(lhs).
-        if let Some(result) = self.try_instance_compare_dunder(&lhs, &rhs, lhs_dunder, rhs_dunder)? {
+        if let Some(result) = self.try_instance_compare_dunder(&lhs, &rhs, kind, lhs_dunder, rhs_dunder)? {
             lhs.drop_with_heap(self.heap);
             rhs.drop_with_heap(self.heap);
             return Ok(result);
@@ -186,39 +203,304 @@ impl<T: ResourceTracker, P: PrintWriter, Tr: VmTracer> VM<'_, T, P, Tr> {
         &mut self,
         lhs: &Value,
         rhs: &Value,
+        kind: PendingCompareKind,
         lhs_dunder: StaticStrings,
         rhs_dunder: Option<StaticStrings>,
     ) -> Result<Option<CallResult>, RunError> {
-        let lhs_dunder_id = lhs_dunder.into();
+        let Some(mut dispatch) = self.build_compare_dispatch(lhs, rhs, kind, lhs_dunder, rhs_dunder) else {
+            return Ok(None);
+        };
 
-        // Try lhs.__op__(rhs).
-        if let Value::Ref(lhs_id) = lhs
-            && matches!(self.heap.get(*lhs_id), HeapData::Instance(_))
-            && let Some(method) = self.lookup_type_dunder(*lhs_id, lhs_dunder_id)
-        {
-            let rhs_clone = rhs.clone_with_heap(self.heap);
-            let result = self.call_dunder(*lhs_id, method, ArgValues::One(rhs_clone))?;
-            if let Some(result) = self.comparison_result_if_implemented(result) {
-                return Ok(Some(result));
+        let first_step = dispatch.first.expect("compare dispatch missing first step");
+        let first_result = self.call_compare_step(lhs, rhs, first_step)?;
+        match first_result {
+            CallResult::FramePushed => {
+                dispatch.next_step = 1;
+                self.pending_compare_dunder.push(PendingCompareDunder {
+                    lhs: lhs.clone_with_heap(self.heap),
+                    rhs: rhs.clone_with_heap(self.heap),
+                    dispatch,
+                    frame_depth: self.frames.len(),
+                });
+                Ok(Some(CallResult::FramePushed))
+            }
+            other => {
+                if let Some(result) = self.comparison_result_if_implemented(other) {
+                    return Ok(Some(result));
+                }
+                if let Some(second_step) = dispatch.second {
+                    let second_result = self.call_compare_step(lhs, rhs, second_step)?;
+                    return match second_result {
+                        CallResult::FramePushed => {
+                            dispatch.next_step = 2;
+                            self.pending_compare_dunder.push(PendingCompareDunder {
+                                lhs: lhs.clone_with_heap(self.heap),
+                                rhs: rhs.clone_with_heap(self.heap),
+                                dispatch,
+                                frame_depth: self.frames.len(),
+                            });
+                            Ok(Some(CallResult::FramePushed))
+                        }
+                        other => Ok(self.comparison_result_if_implemented(other)),
+                    };
+                }
+                Ok(None)
             }
         }
+    }
 
-        // Try rhs.__rop__(lhs) when provided.
-        if let Some(rhs_dunder) = rhs_dunder {
-            let rhs_dunder_id = rhs_dunder.into();
-            if let Value::Ref(rhs_id) = rhs
-                && matches!(self.heap.get(*rhs_id), HeapData::Instance(_))
-                && let Some(method) = self.lookup_type_dunder(*rhs_id, rhs_dunder_id)
-            {
-                let lhs_clone = lhs.clone_with_heap(self.heap);
-                let result = self.call_dunder(*rhs_id, method, ArgValues::One(lhs_clone))?;
-                if let Some(result) = self.comparison_result_if_implemented(result) {
-                    return Ok(Some(result));
+    /// Resumes comparison protocol after a frame-pushed dunder returned.
+    pub(super) fn resume_pending_compare_dunder(
+        &mut self,
+        mut pending: PendingCompareDunder,
+        value: Value,
+    ) -> Result<CallResult, RunError> {
+        let mut result = if matches!(value, Value::NotImplemented) {
+            value.drop_with_heap(self.heap);
+            None
+        } else {
+            Some(CallResult::Push(value))
+        };
+
+        if result.is_none()
+            && pending.dispatch.next_step == 1
+            && let Some(second_step) = pending.dispatch.second
+        {
+            let second_result = self.call_compare_step(&pending.lhs, &pending.rhs, second_step)?;
+            match second_result {
+                CallResult::FramePushed => {
+                    pending.dispatch.next_step = 2;
+                    pending.frame_depth = self.frames.len();
+                    self.pending_compare_dunder.push(pending);
+                    return Ok(CallResult::FramePushed);
+                }
+                other => {
+                    result = self.comparison_result_if_implemented(other);
                 }
             }
         }
 
-        Ok(None)
+        let final_result = if let Some(result) = result {
+            self.finish_compare_result(pending.dispatch.kind, result)?
+        } else {
+            self.compare_notimplemented_fallback(pending.dispatch.kind, &pending.lhs, &pending.rhs)?
+        };
+
+        pending.lhs.drop_with_heap(self.heap);
+        pending.rhs.drop_with_heap(self.heap);
+        Ok(final_result)
+    }
+
+    fn compare_notimplemented_fallback(
+        &mut self,
+        kind: PendingCompareKind,
+        lhs: &Value,
+        rhs: &Value,
+    ) -> Result<CallResult, RunError> {
+        match kind {
+            PendingCompareKind::Eq => Ok(CallResult::Push(Value::Bool(lhs.py_eq(rhs, self.heap, self.interns)))),
+            PendingCompareKind::NePrimary => {
+                if let Some(result) = self.try_instance_compare_dunder(
+                    lhs,
+                    rhs,
+                    PendingCompareKind::NeEqFallback,
+                    StaticStrings::DunderEq,
+                    Some(StaticStrings::DunderEq),
+                )? {
+                    return self.finish_compare_result(PendingCompareKind::NeEqFallback, result);
+                }
+                Ok(CallResult::Push(Value::Bool(!lhs.py_eq(rhs, self.heap, self.interns))))
+            }
+            PendingCompareKind::NeEqFallback => {
+                Ok(CallResult::Push(Value::Bool(!lhs.py_eq(rhs, self.heap, self.interns))))
+            }
+            PendingCompareKind::Lt | PendingCompareKind::Le | PendingCompareKind::Gt | PendingCompareKind::Ge => {
+                Err(Self::compare_type_error(
+                    Self::compare_symbol_for_kind(kind),
+                    lhs.py_type(self.heap),
+                    rhs.py_type(self.heap),
+                ))
+            }
+        }
+    }
+
+    fn finish_compare_result(&mut self, kind: PendingCompareKind, result: CallResult) -> Result<CallResult, RunError> {
+        match kind {
+            PendingCompareKind::NeEqFallback => self.negate_compare_result(result),
+            _ => Ok(result),
+        }
+    }
+
+    fn negate_compare_result(&mut self, result: CallResult) -> Result<CallResult, RunError> {
+        match result {
+            CallResult::Push(value) => self.negate_truthiness_value(value),
+            other => Ok(other),
+        }
+    }
+
+    fn negate_truthiness_value(&mut self, value: Value) -> Result<CallResult, RunError> {
+        if let Value::Ref(id) = &value
+            && matches!(self.heap.get(*id), HeapData::Instance(_))
+        {
+            let id = *id;
+            let bool_id: StringId = StaticStrings::DunderBool.into();
+            if let Some(method) = self.lookup_type_dunder(id, bool_id) {
+                let result = self.call_dunder(id, method, ArgValues::Empty)?;
+                value.drop_with_heap(self.heap);
+                return match result {
+                    CallResult::Push(bool_value) => {
+                        let truthy = self.truthiness_from_bool_dunder_return(&bool_value)?;
+                        bool_value.drop_with_heap(self.heap);
+                        Ok(CallResult::Push(Value::Bool(!truthy)))
+                    }
+                    CallResult::FramePushed => {
+                        self.push_pending_truthiness_return(PendingTruthinessKind::Bool, true);
+                        Ok(CallResult::FramePushed)
+                    }
+                    other => Ok(other),
+                };
+            }
+
+            let len_id: StringId = StaticStrings::DunderLen.into();
+            if let Some(method) = self.lookup_type_dunder(id, len_id) {
+                let result = self.call_dunder(id, method, ArgValues::Empty)?;
+                value.drop_with_heap(self.heap);
+                return match result {
+                    CallResult::Push(len_value) => {
+                        let truthy = self.truthiness_from_len_dunder_return(&len_value)?;
+                        len_value.drop_with_heap(self.heap);
+                        Ok(CallResult::Push(Value::Bool(!truthy)))
+                    }
+                    CallResult::FramePushed => {
+                        self.push_pending_truthiness_return(PendingTruthinessKind::Len, true);
+                        Ok(CallResult::FramePushed)
+                    }
+                    other => Ok(other),
+                };
+            }
+        }
+
+        let truthy = value.py_bool(self.heap, self.interns);
+        value.drop_with_heap(self.heap);
+        Ok(CallResult::Push(Value::Bool(!truthy)))
+    }
+
+    fn build_compare_dispatch(
+        &mut self,
+        lhs: &Value,
+        rhs: &Value,
+        kind: PendingCompareKind,
+        lhs_dunder: StaticStrings,
+        rhs_dunder: Option<StaticStrings>,
+    ) -> Option<PendingCompareDispatch> {
+        let lhs_candidate = self.lookup_compare_dispatch_candidate(lhs, PendingCompareSide::Lhs, lhs_dunder);
+        let rhs_candidate =
+            rhs_dunder.and_then(|dunder| self.lookup_compare_dispatch_candidate(rhs, PendingCompareSide::Rhs, dunder));
+
+        let (first, second) = match (lhs_candidate, rhs_candidate) {
+            (None, None) => return None,
+            (Some(lhs_cand), None) => (Some(lhs_cand.step), None),
+            (None, Some(rhs_cand)) => (Some(rhs_cand.step), None),
+            (Some(lhs_cand), Some(rhs_cand)) => {
+                let rhs_subclass_priority = self.is_strict_subclass(rhs_cand.class_id, lhs_cand.class_id)
+                    && rhs_cand.owner_id != lhs_cand.owner_id;
+                if rhs_subclass_priority {
+                    (Some(rhs_cand.step), Some(lhs_cand.step))
+                } else if lhs_cand.class_id == rhs_cand.class_id
+                    && matches!(
+                        kind,
+                        PendingCompareKind::Eq | PendingCompareKind::NePrimary | PendingCompareKind::NeEqFallback
+                    )
+                {
+                    (Some(lhs_cand.step), None)
+                } else {
+                    (Some(lhs_cand.step), Some(rhs_cand.step))
+                }
+            }
+        };
+
+        Some(PendingCompareDispatch {
+            kind,
+            first,
+            second,
+            next_step: 0,
+        })
+    }
+
+    fn lookup_compare_dispatch_candidate(
+        &mut self,
+        operand: &Value,
+        side: PendingCompareSide,
+        dunder: StaticStrings,
+    ) -> Option<CompareDispatchCandidate> {
+        let Value::Ref(instance_id) = operand else {
+            return None;
+        };
+        let HeapData::Instance(instance) = self.heap.get(*instance_id) else {
+            return None;
+        };
+        let class_id = instance.class_id();
+        let HeapData::ClassObject(class_obj) = self.heap.get(class_id) else {
+            return None;
+        };
+        let dunder_name_id: StringId = dunder.into();
+        let dunder_name = self.interns.get_str(dunder_name_id);
+        let (method, owner_id) = class_obj.mro_lookup_attr(dunder_name, class_id, self.heap, self.interns)?;
+        method.drop_with_heap(self.heap);
+
+        Some(CompareDispatchCandidate {
+            step: PendingCompareStep { side, dunder },
+            class_id,
+            owner_id,
+        })
+    }
+
+    fn call_compare_step(
+        &mut self,
+        lhs: &Value,
+        rhs: &Value,
+        step: PendingCompareStep,
+    ) -> Result<CallResult, RunError> {
+        match step.side {
+            PendingCompareSide::Lhs => {
+                let Value::Ref(lhs_id) = lhs else {
+                    return Ok(CallResult::Push(Value::NotImplemented));
+                };
+                if !matches!(self.heap.get(*lhs_id), HeapData::Instance(_)) {
+                    return Ok(CallResult::Push(Value::NotImplemented));
+                }
+                let dunder_id: StringId = step.dunder.into();
+                let Some(method) = self.lookup_type_dunder(*lhs_id, dunder_id) else {
+                    return Ok(CallResult::Push(Value::NotImplemented));
+                };
+                let rhs_clone = rhs.clone_with_heap(self.heap);
+                self.call_dunder(*lhs_id, method, ArgValues::One(rhs_clone))
+            }
+            PendingCompareSide::Rhs => {
+                let Value::Ref(rhs_id) = rhs else {
+                    return Ok(CallResult::Push(Value::NotImplemented));
+                };
+                if !matches!(self.heap.get(*rhs_id), HeapData::Instance(_)) {
+                    return Ok(CallResult::Push(Value::NotImplemented));
+                }
+                let dunder_id: StringId = step.dunder.into();
+                let Some(method) = self.lookup_type_dunder(*rhs_id, dunder_id) else {
+                    return Ok(CallResult::Push(Value::NotImplemented));
+                };
+                let lhs_clone = lhs.clone_with_heap(self.heap);
+                self.call_dunder(*rhs_id, method, ArgValues::One(lhs_clone))
+            }
+        }
+    }
+
+    pub(super) fn is_strict_subclass(&self, candidate_subclass: HeapId, candidate_base: HeapId) -> bool {
+        if candidate_subclass == candidate_base {
+            return false;
+        }
+        match self.heap.get(candidate_subclass) {
+            HeapData::ClassObject(cls) => cls.is_subclass_of(candidate_subclass, candidate_base),
+            _ => false,
+        }
     }
 
     /// Returns `None` when a comparison dunder returned `NotImplemented`.
@@ -242,6 +524,16 @@ impl<T: ResourceTracker, P: PrintWriter, Tr: VmTracer> VM<'_, T, P, Tr> {
             StaticStrings::DunderLe => "<=",
             StaticStrings::DunderGt => ">",
             StaticStrings::DunderGe => ">=",
+            _ => "<",
+        }
+    }
+
+    fn compare_symbol_for_kind(kind: PendingCompareKind) -> &'static str {
+        match kind {
+            PendingCompareKind::Lt => "<",
+            PendingCompareKind::Le => "<=",
+            PendingCompareKind::Gt => ">",
+            PendingCompareKind::Ge => ">=",
             _ => "<",
         }
     }
@@ -306,6 +598,90 @@ impl<T: ResourceTracker, P: PrintWriter, Tr: VmTracer> VM<'_, T, P, Tr> {
                 }
 
                 return Ok(result);
+            }
+        }
+
+        // CPython fallback for instances: __iter__ first, then __getitem__ sequence protocol.
+        if let Value::Ref(container_id) = &container
+            && matches!(self.heap.get(*container_id), HeapData::Instance(_))
+        {
+            let iter_id: StringId = StaticStrings::DunderIter.into();
+            if let Some(iter_method) = self.lookup_type_dunder(*container_id, iter_id) {
+                let list_result = match self.call_dunder(*container_id, iter_method, ArgValues::Empty) {
+                    Ok(CallResult::Push(iterator)) => self.list_build_from_iterator(iterator),
+                    Ok(CallResult::FramePushed) => {
+                        self.pending_list_iter_return = true;
+                        Ok(CallResult::FramePushed)
+                    }
+                    Ok(other) => Ok(other),
+                    Err(e) => Err(e),
+                };
+                return match list_result {
+                    Ok(CallResult::Push(materialized)) => {
+                        let contained = materialized.py_contains(&item, self.heap, self.interns)?;
+                        materialized.drop_with_heap(self.heap);
+                        item.drop_with_heap(self.heap);
+                        container.drop_with_heap(self.heap);
+                        Ok(CallResult::Push(Value::Bool(if negate {
+                            !contained
+                        } else {
+                            contained
+                        })))
+                    }
+                    Ok(CallResult::FramePushed) => {
+                        container.drop_with_heap(self.heap);
+                        self.pending_builtin_from_list.push(super::PendingBuiltinFromList {
+                            kind: super::PendingBuiltinFromListKind::Contains { needle: item, negate },
+                        });
+                        Ok(CallResult::FramePushed)
+                    }
+                    Ok(other) => {
+                        item.drop_with_heap(self.heap);
+                        container.drop_with_heap(self.heap);
+                        Ok(other)
+                    }
+                    Err(e) => {
+                        item.drop_with_heap(self.heap);
+                        container.drop_with_heap(self.heap);
+                        Err(e)
+                    }
+                };
+            }
+
+            let getitem_id: StringId = StaticStrings::DunderGetitem.into();
+            let getitem_name = self.interns.get_str(getitem_id);
+            if self.type_mro_has_attr(*container_id, getitem_name) {
+                let list_result = self.list_build_from_iterator(container.clone_with_heap(self.heap));
+                return match list_result {
+                    Ok(CallResult::Push(materialized)) => {
+                        let contained = materialized.py_contains(&item, self.heap, self.interns)?;
+                        materialized.drop_with_heap(self.heap);
+                        item.drop_with_heap(self.heap);
+                        container.drop_with_heap(self.heap);
+                        Ok(CallResult::Push(Value::Bool(if negate {
+                            !contained
+                        } else {
+                            contained
+                        })))
+                    }
+                    Ok(CallResult::FramePushed) => {
+                        container.drop_with_heap(self.heap);
+                        self.pending_builtin_from_list.push(super::PendingBuiltinFromList {
+                            kind: super::PendingBuiltinFromListKind::Contains { needle: item, negate },
+                        });
+                        Ok(CallResult::FramePushed)
+                    }
+                    Ok(other) => {
+                        item.drop_with_heap(self.heap);
+                        container.drop_with_heap(self.heap);
+                        Ok(other)
+                    }
+                    Err(e) => {
+                        item.drop_with_heap(self.heap);
+                        container.drop_with_heap(self.heap);
+                        Err(e)
+                    }
+                };
             }
         }
 

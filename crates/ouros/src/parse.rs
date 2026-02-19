@@ -2666,6 +2666,12 @@ impl<'a> Parser<'a> {
                     Some(spec) => Some(self.parse_format_spec(spec)?),
                     None => None,
                 };
+                if let (Expr::Literal(_), Some(FormatSpec::Raw(raw))) = (&expr.expr, &format_spec) {
+                    return Err(ParseError::syntax(
+                        format!("Invalid format specifier '{}'", self.interner.get_str(*raw)),
+                        self.convert_range(interp.expression.range()),
+                    ));
+                }
                 // Extract debug prefix for `=` specifier (e.g., f'{a=}' -> "a=")
                 let debug_prefix = interp.debug_text.as_ref().map(|dt| {
                     let expr_text = &self.code[interp.expression.range()];
@@ -2728,14 +2734,11 @@ impl<'a> Parser<'a> {
                     }
                 })
                 .collect();
-            let parsed = static_spec.parse().map_err(|spec_str| {
-                ParseError::syntax(
-                    format!("Invalid format specifier '{spec_str}'"),
-                    self.convert_range(spec.range),
-                )
-            })?;
             let raw = self.interner.intern(&static_spec);
-            Ok(FormatSpec::Static { parsed, raw })
+            match static_spec.parse() {
+                Ok(parsed) => Ok(FormatSpec::Static { parsed, raw }),
+                Err(_) => Ok(FormatSpec::Raw(raw)),
+            }
         }
     }
 

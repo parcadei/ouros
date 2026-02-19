@@ -539,7 +539,7 @@ impl OurosIter {
                 len.unwrap_or_else(|| match heap.get(*heap_id) {
                     HeapData::List(list) => list.len(),
                     HeapData::Deque(deque) => deque.len(),
-                    _ => panic!("HeapRef with len=None should only be List or Deque"),
+                    _ => 0,
                 })
             }
             IterValue::Tee { tee_id, .. } => {
@@ -627,11 +627,17 @@ pub(crate) fn advance_on_heap(
         return result;
     }
 
+    if !matches!(heap.get(iter_id), HeapData::Iter(_)) {
+        return Err(ExcType::type_error_not_iterable(heap.get(iter_id).py_type(heap)));
+    }
+
     // Fast path: Range and InternBytes don't need additional heap access,
     // so we can handle them with a single mutable borrow.
     {
         let HeapData::Iter(iter) = heap.get_mut(iter_id) else {
-            panic!("advance_on_heap: expected Iterator on heap");
+            return Err(
+                SimpleException::new_msg(ExcType::RuntimeError, "advance_on_heap: expected Iterator on heap").into(),
+            );
         };
         if let Some(result) = iter.try_advance_simple(interns) {
             return result;
@@ -642,7 +648,9 @@ pub(crate) fn advance_on_heap(
     // Multi-phase approach for IterStr and HeapRef (need heap access during value retrieval)
     // Phase 1: Get iterator state (immutable borrow ends after this block)
     let HeapData::Iter(iter) = heap.get(iter_id) else {
-        panic!("advance_on_heap: expected Iterator on heap");
+        return Err(
+            SimpleException::new_msg(ExcType::RuntimeError, "advance_on_heap: expected Iterator on heap").into(),
+        );
     };
     let Some(state) = iter.iter_state() else {
         return Ok(None); // Iterator exhausted
@@ -674,7 +682,9 @@ pub(crate) fn advance_on_heap(
 
     // Phase 3: Advance the iterator
     let HeapData::Iter(iter) = heap.get_mut(iter_id) else {
-        panic!("advance_on_heap: expected Iterator on heap");
+        return Err(
+            SimpleException::new_msg(ExcType::RuntimeError, "advance_on_heap: expected Iterator on heap").into(),
+        );
     };
     iter.advance(string_char_len);
 
@@ -850,7 +860,7 @@ fn get_heap_item(
             let tuple_val = crate::types::allocate_tuple(smallvec::smallvec![key_copy, value_copy], heap)?;
             Ok(Some(tuple_val))
         }
-        _ => panic!("get_heap_item: unexpected heap data type"),
+        other => Err(ExcType::type_error_not_iterable(other.py_type(heap))),
     }
 }
 

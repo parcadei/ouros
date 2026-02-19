@@ -811,14 +811,15 @@ class BoolOverLen:
 assert not bool(BoolOverLen()), '__bool__ takes precedence over __len__'
 
 # === Dunder lookup on TYPE not instance (Finding #1) ===
-# TODO: Requires __dict__ attribute support on instances
-# class DunderOnType:
-#     def __add__(self, other):
-#         return 'class __add__'
-# dot = DunderOnType()
-# dot.__dict__['__add__'] = lambda self, other: 'instance __add__'
-# assert (dot + 1) == 'class __add__', 'dunder looked up on type not instance'
-# assert dot.__add__(dot, 1) == 'instance __add__', 'direct access sees instance __dict__'
+class DunderOnType:
+    def __add__(self, other):
+        return 'class __add__'
+
+
+dot = DunderOnType()
+dot.__dict__['__add__'] = lambda self, other: 'instance __add__'
+assert (dot + 1) == 'class __add__', 'dunder looked up on type not instance'
+assert dot.__add__(dot, 1) == 'instance __add__', 'direct access sees instance __dict__'
 
 
 # === Reflected operator order (Finding #2) ===
@@ -835,54 +836,198 @@ class HasReflect:
 assert (NoReflect() + HasReflect()) == 'left wins', '__radd__ not called when __add__ succeeds'
 
 # === Reflected operator called when __add__ returns NotImplemented ===
-# TODO: Requires NotImplemented singleton support
-# class ReturnsNotImpl:
-#     def __add__(self, other):
-#         return NotImplemented
-# class UseReflect:
-#     def __radd__(self, other):
-#         return 'right called'
-# assert (ReturnsNotImpl() + UseReflect()) == 'right called', '__radd__ called when __add__ returns NotImplemented'
+class ReturnsNotImpl:
+    def __add__(self, other):
+        return NotImplemented
+
+
+class UseReflect:
+    def __radd__(self, other):
+        return 'right called'
+
+
+assert (ReturnsNotImpl() + UseReflect()) == 'right called', '__radd__ called when __add__ returns NotImplemented'
 
 # === __eq__ without __hash__ makes unhashable (Finding #3) ===
-# TODO: Requires hash() builtin and __eq__-without-__hash__ detection
-# class EqOnly:
-#     def __eq__(self, other):
-#         return True
-# caught = False
-# try:
-#     hash(EqOnly())
-# except TypeError as e:
-#     caught = True
-#     assert 'unhashable type' in str(e), '__eq__ without __hash__ raises TypeError'
-# assert caught, '__eq__ without __hash__ is unhashable'
+class EqOnly:
+    def __eq__(self, other):
+        return True
+
+
+caught = False
+try:
+    hash(EqOnly())
+except TypeError as e:
+    caught = True
+    assert 'unhashable type' in str(e), '__eq__ without __hash__ raises TypeError'
+assert caught, '__eq__ without __hash__ is unhashable'
 
 # === __eq__ with explicit __hash__ is hashable ===
-# TODO: Requires hash() builtin
-# class EqAndHash:
-#     def __eq__(self, other):
-#         return True
-#     def __hash__(self):
-#         return 42
-# assert hash(EqAndHash()) == 42, '__eq__ with __hash__ is hashable'
+class EqAndHash:
+    def __eq__(self, other):
+        return True
+
+    def __hash__(self):
+        return 42
+
+
+assert hash(EqAndHash()) == 42, '__eq__ with __hash__ is hashable'
+
+# === Inherited __hash__ = None ===
+class Unhashable:
+    __hash__ = None
+
+
+class Child(Unhashable):
+    pass
+
+try:
+    hash(Child())
+    assert False, 'inherited __hash__=None should be unhashable'
+except TypeError as e:
+    assert str(e) == "unhashable type: 'Child'"
 
 # === __getattribute__ called before descriptor (Finding #10) ===
-# TODO: Requires __getattribute__/__getattr__ and __dict__ support
-# class Intercept:
-#     def __getattribute__(self, name):
-#         if name == 'secret':
-#             return 'intercepted'
-#         return super().__getattribute__(name)
-# i = Intercept()
-# i.__dict__['secret'] = 'original'
-# assert i.secret == 'intercepted', '__getattribute__ called before instance dict'
+class Intercept:
+    def __getattribute__(self, name):
+        if name == 'secret':
+            return 'intercepted'
+        return object.__getattribute__(self, name)
+
+
+i = Intercept()
+i.__dict__['secret'] = 'original'
+assert i.secret == 'intercepted', '__getattribute__ called before instance dict'
 
 # === __getattr__ only called when __getattribute__ raises AttributeError ===
-# TODO: Requires __getattr__ support
-# class Fallback:
-#     def __getattr__(self, name):
-#         return 'fallback'
-# f = Fallback()
-# assert f.anything == 'fallback', '__getattr__ called for missing attr'
-# f.real = 'exists'
-# assert f.real == 'exists', '__getattr__ NOT called when attr exists'
+class Fallback:
+    def __getattr__(self, name):
+        return 'fallback'
+
+
+f = Fallback()
+assert f.anything == 'fallback', '__getattr__ called for missing attr'
+f.real = 'exists'
+assert f.real == 'exists', '__getattr__ NOT called when attr exists'
+
+# === inplace dunder falls back to binary when returning NotImplemented ===
+class InplaceVec:
+    def __init__(self, x):
+        self.x = x
+
+    def __iadd__(self, other):
+        if not isinstance(other, InplaceVec):
+            return NotImplemented
+        self.x += other.x
+        return self
+
+    def __add__(self, other):
+        return InplaceVec(self.x + other)
+
+v = InplaceVec(10)
+v += InplaceVec(5)
+assert v.x == 15, 'inplace dunder with matching type'
+
+v2 = InplaceVec(10)
+v2 += 7  # __iadd__ returns NotImplemented, falls back to __add__
+assert v2.x == 17, 'inplace dunder fallback to __add__ on NotImplemented'
+
+# === Inplace dunder NotImplemented fallback ===
+class A:
+    def __init__(self, val):
+        self.val = val
+
+    def __iadd__(self, other):
+        if not isinstance(other, A):
+            return NotImplemented
+        self.val += other.val
+        return self
+
+    def __add__(self, other):
+        return A(self.val + other.val)
+
+
+class B:
+    def __init__(self, val):
+        self.val = val
+
+    def __radd__(self, other):
+        if isinstance(other, A):
+            return A(other.val + self.val)
+        return NotImplemented
+
+
+a = A(10)
+b = B(5)
+a += b  # __iadd__ returns NotImplemented, should fall back to B.__radd__
+assert a.val == 15, f'Expected 15, got {a.val}'
+
+# === Ref-count: class-cell assignment still supports zero-arg super() ===
+class _ClassCellBase:
+    def method(self):
+        return 'base'
+
+
+class ClassCellAssigned(_ClassCellBase):
+    __classcell__ = []
+
+    def method(self):
+        return super().method()
+
+
+assert ClassCellAssigned().method() == 'base', 'zero-arg super should still work with __classcell__ attr'
+
+# === Ref-count: custom metaclass class-cell path ===
+class MetaForCellBind(type):
+    def __new__(mcls, name, bases, ns):
+        ns['__classcell__'] = []
+        return super().__new__(mcls, name, bases, ns)
+
+
+meta_tamper_error = None
+try:
+    class ClassCellMeta(_ClassCellBase, metaclass=MetaForCellBind):
+        def method(self):
+            return super().method()
+except Exception as e:
+    meta_tamper_error = str(e)
+    assert meta_tamper_error, 'class-cell metaclass failure should include an error message'
+else:
+    assert ClassCellMeta().method() == 'base', 'class should stay callable when metaclass accepts class-cell tamper'
+
+# === Ref-count: binary dunder cleanup during __init__ return handling ===
+class InitBinaryLhs:
+    def __add__(self, other):
+        return NotImplemented
+
+
+class InitBinaryRhs:
+    def __radd__(self, other):
+        return 99
+
+
+class InitBinaryCleanup:
+    def __init__(self):
+        self.value = InitBinaryLhs() + InitBinaryRhs()
+        return 1
+
+
+caught = False
+try:
+    InitBinaryCleanup()
+except TypeError as e:
+    caught = True
+    assert '__init__' in str(e), '__init__ must return None'
+assert caught, '__init__ non-None return should raise TypeError after binary dunder usage'
+
+# === Ref-count: binary dunder during class-body finalization ===
+class ClassBodyAdder:
+    def __add__(self, other):
+        return 7
+
+
+class BinaryInClassBodyCleanup:
+    marker = ClassBodyAdder() + 5
+
+
+assert BinaryInClassBodyCleanup.marker == 7, 'class-body binary dunder should resolve cleanly'

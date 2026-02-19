@@ -368,20 +368,26 @@ impl<T: ResourceTracker, P: PrintWriter, Tr: VmTracer> VM<'_, T, P, Tr> {
         // iterator from the caller's stack, and jump to the end of the for-loop body.
         // This must happen before the normal exception handler search because ForIter
         // doesn't generate exception table entries -- it catches StopIteration internally.
-        if let Some(offset) = self.pending_for_iter_jump.pop()
-            && error.is_stop_iteration()
-        {
-            // Pop the __next__ dunder frame
-            self.pop_frame();
-            // Now in the caller frame: pop the iterator from TOS
-            let iter = self.pop();
-            iter.drop_with_heap(self.heap);
-            // Jump forward by the ForIter offset (relative to caller's IP)
-            let frame = self.current_frame_mut();
-            let ip_i64 = i64::try_from(frame.ip).expect("IP exceeds i64");
-            let new_ip = ip_i64 + i64::from(offset);
-            frame.ip = usize::try_from(new_ip).expect("jump resulted in negative or overflowing IP");
-            return None; // Exception caught - continue execution after for-loop
+        if let Some(&offset) = self.pending_for_iter_jump.last() {
+            let for_iter_getitem = self.pending_for_iter_getitem.last().copied().unwrap_or(false);
+            if error.is_stop_iteration() || (for_iter_getitem && error.is_exception_type(ExcType::IndexError)) {
+                self.pending_for_iter_jump.pop();
+                self.pending_for_iter_getitem.pop();
+                // Pop the __next__ dunder frame
+                self.pop_frame();
+                // Now in the caller frame: pop the iterator from TOS
+                let iter = self.pop();
+                if let Value::Ref(iter_id) = iter {
+                    self.getitem_for_iter_indices.remove(&iter_id);
+                }
+                iter.drop_with_heap(self.heap);
+                // Jump forward by the ForIter offset (relative to caller's IP)
+                let frame = self.current_frame_mut();
+                let ip_i64 = i64::try_from(frame.ip).expect("IP exceeds i64");
+                let new_ip = ip_i64 + i64::from(offset);
+                frame.ip = usize::try_from(new_ip).expect("jump resulted in negative or overflowing IP");
+                return None; // Exception caught - continue execution after for-loop
+            }
         }
 
         // Check if this is StopIteration from a __next__ dunder called for list construction.
@@ -390,7 +396,8 @@ impl<T: ResourceTracker, P: PrintWriter, Tr: VmTracer> VM<'_, T, P, Tr> {
         // we finish the list construction and push the list.
         if self.pending_list_build_return
             && self.pending_list_build_generator_id().is_none()
-            && error.is_stop_iteration()
+            && (error.is_stop_iteration()
+                || (self.pending_list_build_uses_getitem() && error.is_exception_type(ExcType::IndexError)))
         {
             self.pop_frame();
             let result = self.handle_list_build_stop_iteration();
