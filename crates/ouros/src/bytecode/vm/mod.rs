@@ -5303,6 +5303,7 @@ impl<'a, T: ResourceTracker, P: PrintWriter, Tr: VmTracer> VM<'a, T, P, Tr> {
                         let frame_depth = self.frames.len();
                         self.drop_pending_getattr_for_frame(frame_depth);
                         self.drop_pending_binary_dunder_for_frame(frame_depth);
+                        self.drop_pending_compare_dunder_for_frame(frame_depth);
                         self.drop_pending_len_for_frame(frame_depth);
                         self.drop_pending_format_for_frame(frame_depth);
                         self.drop_pending_index_for_frame(frame_depth);
@@ -7160,6 +7161,7 @@ impl<'a, T: ResourceTracker, P: PrintWriter, Tr: VmTracer> VM<'a, T, P, Tr> {
         let frame_depth = self.frames.len();
         self.drop_pending_getattr_for_frame(frame_depth);
         self.drop_pending_binary_dunder_for_frame(frame_depth);
+        self.drop_pending_compare_dunder_for_frame(frame_depth);
         self.drop_pending_len_for_frame(frame_depth);
         self.drop_pending_format_for_frame(frame_depth);
         self.drop_pending_index_for_frame(frame_depth);
@@ -8688,6 +8690,28 @@ impl<'a, T: ResourceTracker, P: PrintWriter, Tr: VmTracer> VM<'a, T, P, Tr> {
         }
     }
 
+    /// Drops pending compare dunder state for a specific frame depth.
+    ///
+    /// This releases held operand references when a compare dunder frame exits via
+    /// exception unwinding before the protocol completes.
+    fn drop_pending_compare_dunder_for_frame(&mut self, frame_depth: usize) {
+        if let Some(pending) = self.pending_compare_dunder.last()
+            && pending.frame_depth == frame_depth
+        {
+            let pending = self.pending_compare_dunder.pop().expect("checked pending compare dunder");
+            pending.lhs.drop_with_heap(self.heap);
+            pending.rhs.drop_with_heap(self.heap);
+        }
+    }
+
+    /// Clears all pending compare dunder state, dropping held operand references.
+    fn clear_pending_compare_dunder(&mut self) {
+        for pending in self.pending_compare_dunder.drain(..) {
+            pending.lhs.drop_with_heap(self.heap);
+            pending.rhs.drop_with_heap(self.heap);
+        }
+    }
+
     fn drop_pending_print_call_values(&mut self, pending: PendingPrintCall) {
         for value in pending.remaining_positional {
             value.drop_with_heap(self.heap);
@@ -8739,6 +8763,7 @@ impl<'a, T: ResourceTracker, P: PrintWriter, Tr: VmTracer> VM<'a, T, P, Tr> {
         let frame_depth = self.frames.len();
         self.drop_pending_getattr_for_frame(frame_depth);
         self.drop_pending_binary_dunder_for_frame(frame_depth);
+        self.drop_pending_compare_dunder_for_frame(frame_depth);
         self.drop_pending_len_for_frame(frame_depth);
         self.drop_pending_format_for_frame(frame_depth);
         self.drop_pending_index_for_frame(frame_depth);
@@ -8789,6 +8814,7 @@ impl<'a, T: ResourceTracker, P: PrintWriter, Tr: VmTracer> VM<'a, T, P, Tr> {
     pub(super) fn cleanup_current_frames(&mut self) {
         self.clear_pending_getattr_fallbacks();
         self.clear_pending_binary_dunder();
+        self.clear_pending_compare_dunder();
         self.pending_stringify_return.clear();
         self.clear_pending_print_call();
         self.clear_pending_generator_action();
