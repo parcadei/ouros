@@ -346,15 +346,14 @@ Benchmarks comparing Ouros vs CPython 3.14 (`make bench`):
 
 | Benchmark | Ouros | CPython | Ratio |
 |-----------|------|---------|-------|
-| End-to-end (parse + run) | 1.2 µs | 8.3 µs | **6.9x faster** |
-| Loop + modulo (1k iter) | 42 µs | 27 µs | 1.5x slower |
-| List comprehension | 47 µs | 27 µs | 1.7x slower |
-| Dict comprehension | 100 µs | 45 µs | 2.2x slower |
-| Fibonacci (recursive) | 21.7 ms | 9.8 ms | 2.2x slower |
-| List append (10k strings) | 13.9 ms | 6.1 ms | 2.3x slower |
-| Tuple creation (10k pairs) | 11.2 ms | 8.9 ms | 1.3x slower |
+| End-to-end (parse + run) | 1.2 µs | 8.2 µs | **6.9x faster** |
+| Loop + modulo (1k iter) | 38 µs | 27 µs | 1.4x slower |
+| Kitchen sink (mixed ops) | 5.0 µs | 1.5 µs | 3.4x slower |
+| List append (100k ints) | 3.9 ms | 2.7 ms | 1.4x slower |
+| List append (100k strings) | 13.3 ms | 6.0 ms | 2.2x slower |
+| Fibonacci (recursive, n=25) | 20.5 ms | 9.7 ms | 2.1x slower |
 
-End-to-end startup is where Ouros shines — no interpreter boot, no module imports, just parse and go. Runtime is typically 1.3–2.3x slower than CPython, which is fast enough for agent-generated code where the bottleneck is the LLM call, not the computation.
+End-to-end startup is where Ouros shines — no interpreter boot, no module imports, just parse and go. Runtime is typically 1.4–3.4x slower than CPython, which is fast enough for agent-generated code where the bottleneck is the LLM call, not the computation.
 
 ## Concepts
 
