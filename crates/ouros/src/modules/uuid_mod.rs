@@ -368,21 +368,21 @@ fn uuid7(heap: &mut Heap<impl ResourceTracker>, args: ArgValues) -> RunResult<At
     let mut rng = OsRng;
     let (counter, tail) = {
         let mut state = UUID7_STATE.lock().expect("uuid7 state lock poisoned");
-        let (counter, tail) = if state.last_timestamp_ms.is_none()
-            || timestamp_ms > state.last_timestamp_ms.expect("timestamp checked")
-        {
-            uuid7_counter_and_tail(&mut rng)
-        } else {
-            if timestamp_ms < state.last_timestamp_ms.expect("timestamp checked") {
-                timestamp_ms = state.last_timestamp_ms.expect("timestamp checked") + 1;
-            }
-            let new_counter = state.last_counter + 1;
-            if new_counter > 0x3ff_ffff_ffff {
-                timestamp_ms += 1;
-                uuid7_counter_and_tail(&mut rng)
-            } else {
-                let new_tail = rng.next_u32();
-                (new_counter, new_tail)
+        let (counter, tail) = match state.last_timestamp_ms {
+            None => uuid7_counter_and_tail(&mut rng),
+            Some(last_ts) if timestamp_ms > last_ts => uuid7_counter_and_tail(&mut rng),
+            Some(last_ts) => {
+                if timestamp_ms < last_ts {
+                    timestamp_ms = last_ts + 1;
+                }
+                let new_counter = state.last_counter + 1;
+                if new_counter > 0x3ff_ffff_ffff {
+                    timestamp_ms += 1;
+                    uuid7_counter_and_tail(&mut rng)
+                } else {
+                    let new_tail = rng.next_u32();
+                    (new_counter, new_tail)
+                }
             }
         };
 

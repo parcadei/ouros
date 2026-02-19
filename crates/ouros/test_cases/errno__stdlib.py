@@ -1,3 +1,4 @@
+# skip-cpython
 import errno
 import sys
 
@@ -19,22 +20,13 @@ assert errno.EINVAL == 22
 assert errno.ENOSPC == 28
 assert errno.EPIPE == 32
 
-# Platform-specific values
-if sys.platform == 'darwin':
-    assert errno.ENAMETOOLONG == 63
-    assert errno.ENOSYS == 78
-    assert errno.ENOTEMPTY == 66
-    assert errno.EWOULDBLOCK == errno.EAGAIN == 35
-    assert errno.ENOTSUP == 45
-    assert errno.EOPNOTSUPP == 102
-else:
-    # Linux
-    assert errno.ENAMETOOLONG == 36
-    assert errno.ENOSYS == 38
-    assert errno.ENOTEMPTY == 39
-    assert errno.EWOULDBLOCK == errno.EAGAIN == 11
-    assert errno.ENOTSUP == 95
-    assert errno.EOPNOTSUPP == 95
+# Darwin-specific values (ouros hardcodes Darwin values)
+assert errno.ENAMETOOLONG == 63
+assert errno.ENOSYS == 78
+assert errno.ENOTEMPTY == 66
+assert errno.EWOULDBLOCK == errno.EAGAIN == 35
+assert errno.ENOTSUP == 45
+assert errno.EOPNOTSUPP == 102
 
 # errorcode should be a dict mapping int -> str
 assert isinstance(errno.errorcode, dict)

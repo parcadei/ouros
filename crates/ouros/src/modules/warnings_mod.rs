@@ -2689,9 +2689,7 @@ fn is_warning_subclass(value: &Value, heap: &mut Heap<impl ResourceTracker>, int
 
 /// Returns a base warning class value.
 fn warning_base_class_value() -> Value {
-    Builtins::from_str("Warning")
-        .map(Value::Builtin)
-        .unwrap_or(Value::Builtin(Builtins::ExcType(ExcType::Exception)))
+    Builtins::from_str("Warning").map_or(Value::Builtin(Builtins::ExcType(ExcType::Exception)), Value::Builtin)
 }
 
 /// Returns a warning-class builtin by name, falling back to `Warning`.

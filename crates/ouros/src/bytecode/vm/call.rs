@@ -8425,10 +8425,7 @@ impl<T: ResourceTracker, P: PrintWriter, Tr: VmTracer> VM<'_, T, P, Tr> {
 
         let mut names = Vec::new();
         let mut slot_idx: usize = 0;
-        loop {
-            let Ok(slot) = u16::try_from(slot_idx) else {
-                break;
-            };
+        while let Ok(slot) = u16::try_from(slot_idx) {
             let Some(name_id) = code.local_name(slot) else {
                 break;
             };

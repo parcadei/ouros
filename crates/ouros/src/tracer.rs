@@ -404,7 +404,7 @@ impl ProfilingTracer {
     #[must_use]
     pub fn report(&self) -> ProfilingReport {
         let mut opcode_counts: Vec<_> = self.opcode_counts.iter().map(|(&k, &v)| (k, v)).collect();
-        opcode_counts.sort_by(|a, b| b.1.cmp(&a.1));
+        opcode_counts.sort_by_key(|b| std::cmp::Reverse(b.1));
         ProfilingReport {
             opcode_counts,
             total_instructions: self.total_instructions,

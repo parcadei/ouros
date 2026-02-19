@@ -1188,7 +1188,7 @@ fn queue_put(heap: &mut Heap<impl ResourceTracker>, interns: &Interns, args: Arg
     let state = queue_state(instance_id, heap, interns)?;
     if state.maxsize > 0 {
         let len = queue_len(state.items_id, heap)?;
-        if i64::try_from(len).map(|n| n >= state.maxsize).unwrap_or(true) {
+        if i64::try_from(len).map_or(true, |n| n >= state.maxsize) {
             item.drop_with_heap(heap);
             return Err(queue_full_error());
         }
@@ -1220,7 +1220,7 @@ fn queue_put_nowait(
     let state = queue_state(instance_id, heap, interns)?;
     if state.maxsize > 0 {
         let len = queue_len(state.items_id, heap)?;
-        if i64::try_from(len).map(|n| n >= state.maxsize).unwrap_or(true) {
+        if i64::try_from(len).map_or(true, |n| n >= state.maxsize) {
             item.drop_with_heap(heap);
             return Err(queue_full_error());
         }
@@ -1271,7 +1271,7 @@ fn queue_full(heap: &mut Heap<impl ResourceTracker>, interns: &Interns, args: Ar
         return Ok(AttrCallResult::Value(Value::Bool(false)));
     }
     let len = queue_len(state.items_id, heap)?;
-    let is_full = i64::try_from(len).map(|n| n >= state.maxsize).unwrap_or(true);
+    let is_full = i64::try_from(len).map_or(true, |n| n >= state.maxsize);
     Ok(AttrCallResult::Value(Value::Bool(is_full)))
 }
 

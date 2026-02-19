@@ -886,7 +886,7 @@ fn counter_most_common(
     });
 
     // Sort by count descending, then by insertion order for stability
-    items.sort_by(|a, b| b.1.cmp(&a.1));
+    items.sort_by_key(|b| std::cmp::Reverse(b.1));
 
     // Truncate if n provided
     if let Some(n_val) = n_val {

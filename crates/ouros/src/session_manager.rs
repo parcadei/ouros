@@ -264,7 +264,7 @@ impl StorageBackend for FsBackend {
                 if path.extension().and_then(|e| e.to_str()) == Some("bin")
                     && let Some(name) = path.file_stem().and_then(|s| s.to_str())
                 {
-                    let size = entry.metadata().map(|m| m.len()).unwrap_or(0);
+                    let size = entry.metadata().map_or(0, |m| m.len());
                     sessions.push(SavedSessionInfo {
                         name: name.to_owned(),
                         size_bytes: size,

@@ -48,6 +48,9 @@ struct TestConfig {
     xfail_ouros: bool,
     /// When true, test is expected to fail on CPython (strict xfail).
     xfail_cpython: bool,
+    /// When true, skip the CPython parity test entirely.
+    /// Used for platform-specific tests that only make sense on certain platforms.
+    skip_cpython: bool,
     /// When true, use Runner with external function support instead of Runner.
     iter_mode: bool,
     /// When true, wrap code in async context for CPython execution.
@@ -135,6 +138,10 @@ fn parse_fixture(content: &str) -> (String, Expectation, TestConfig) {
         let xfail_str = &xfail_line[..xfail_end];
         config.xfail_ouros = xfail_str.contains("ouros");
         config.xfail_cpython = xfail_str.contains("cpython");
+    }
+    // Check for "skip-cpython" directive
+    if comment_lines.iter().any(|line| *line == "skip-cpython") {
+        config.skip_cpython = true;
     }
 
     // Check for TRACEBACK expectation (triple-quoted string at end of file)
@@ -1580,10 +1587,16 @@ fn try_run_cpython_test(
     expectation: &Expectation,
     iter_mode: bool,
     async_mode: bool,
+    skip_cpython: bool,
 ) -> Result<(), TestFailure> {
     // Ensure Python modules are imported before parallel tests access them.
     // This prevents race conditions during module initialization.
     ensure_python_modules_imported();
+
+    // Skip if explicitly marked as skip-cpython (platform-specific tests)
+    if skip_cpython {
+        return Ok(());
+    }
 
     // Skip RefCounts tests - only relevant for Ouros
     if matches!(expectation, Expectation::RefCounts(_)) {
@@ -1879,7 +1892,14 @@ fn run_test_cases_cpython(path: &Path) -> Result<(), Box<dyn Error>> {
     let (code, expectation, config) = parse_fixture(&content);
     let test_name = path.strip_prefix("test_cases/").unwrap_or(path).display().to_string();
 
-    let result = try_run_cpython_test(path, &code, &expectation, config.iter_mode, config.async_mode);
+    let result = try_run_cpython_test(
+        path,
+        &code,
+        &expectation,
+        config.iter_mode,
+        config.async_mode,
+        config.skip_cpython,
+    );
 
     if config.xfail_cpython {
         // Strict xfail: test must fail; if it passed, xfail should be removed

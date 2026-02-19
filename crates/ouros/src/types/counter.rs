@@ -286,7 +286,7 @@ impl Counter {
     /// Returns a list of (element, count) tuples sorted by count descending.
     fn most_common_list(&self, n: Option<i64>, heap: &mut Heap<impl ResourceTracker>) -> RunResult<Value> {
         let mut items = self.iter_counts(heap);
-        items.sort_by(|a, b| b.1.cmp(&a.1));
+        items.sort_by_key(|b| std::cmp::Reverse(b.1));
 
         if let Some(n) = n {
             if n >= 0 {

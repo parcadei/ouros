@@ -838,11 +838,7 @@ fn queue_put(heap: &mut Heap<impl ResourceTracker>, args: ArgValues) -> RunResul
         let HeapData::List(list) = data else {
             return Err(ExcType::type_error("queue state must be a list"));
         };
-        if maxsize > 0
-            && i64::try_from(list.len())
-                .map(|length| length >= maxsize)
-                .unwrap_or(false)
-        {
+        if maxsize > 0 && i64::try_from(list.len()).is_ok_and(|length| length >= maxsize) {
             return Err(SimpleException::new_msg(ExcType::RuntimeError, "Queue is full").into());
         }
         let item = std::mem::replace(item, Value::None);
