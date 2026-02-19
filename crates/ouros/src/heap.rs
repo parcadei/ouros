@@ -1702,6 +1702,10 @@ impl PyTrait for HeapData {
             (Self::Time(a), Self::Time(b)) => a.py_cmp(b, heap, interns),
             (Self::Timezone(a), Self::Timezone(b)) => a.py_cmp(b, heap, interns),
             (Self::Fraction(a), Self::Fraction(b)) => a.py_cmp(b, heap, interns),
+            (Self::Set(a), Self::Set(b)) => a.py_cmp(b, heap, interns),
+            (Self::Set(a), Self::FrozenSet(b)) => a.py_cmp_storage(b.storage(), heap, interns),
+            (Self::FrozenSet(a), Self::Set(b)) => a.py_cmp_storage(b.storage(), heap, interns),
+            (Self::FrozenSet(a), Self::FrozenSet(b)) => a.py_cmp(b, heap, interns),
             _ => None,
         }
     }

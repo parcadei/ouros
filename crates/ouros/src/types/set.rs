@@ -1,4 +1,4 @@
-use std::fmt::Write;
+use std::{cmp::Ordering, fmt::Write};
 
 use ahash::AHashSet;
 use hashbrown::HashTable;
@@ -530,6 +530,37 @@ impl SetStorage {
         true
     }
 
+    /// Returns partial ordering between sets using Python subset/superset semantics.
+    ///
+    /// - `Some(Less)` when `self` is a strict subset of `other`
+    /// - `Some(Equal)` when both sets contain the same elements
+    /// - `Some(Greater)` when `self` is a strict superset of `other`
+    /// - `None` when sets are incomparable (neither subset nor superset)
+    pub(crate) fn partial_cmp(
+        &self,
+        other: &Self,
+        heap: &mut Heap<impl ResourceTracker>,
+        interns: &Interns,
+    ) -> Option<Ordering> {
+        if self.len() == other.len() {
+            return if self.eq(other, heap, interns) {
+                Some(Ordering::Equal)
+            } else {
+                None
+            };
+        }
+        if self.len() < other.len() {
+            return match self.is_subset(other, heap, interns) {
+                Ok(true) => Some(Ordering::Less),
+                Ok(false) | Err(_) => None,
+            };
+        }
+        match self.is_superset(other, heap, interns) {
+            Ok(true) => Some(Ordering::Greater),
+            Ok(false) | Err(_) => None,
+        }
+    }
+
     /// Returns true if this set is a subset of other.
     fn is_subset(&self, other: &Self, heap: &mut Heap<impl ResourceTracker>, interns: &Interns) -> RunResult<bool> {
         for entry in &self.entries {
@@ -810,6 +841,16 @@ impl Set {
         &self.0
     }
 
+    /// Compares this set with another set-like storage using subset/superset semantics.
+    pub(crate) fn py_cmp_storage(
+        &self,
+        other: &SetStorage,
+        heap: &mut Heap<impl ResourceTracker>,
+        interns: &Interns,
+    ) -> Option<Ordering> {
+        self.0.partial_cmp(other, heap, interns)
+    }
+
     /// Creates a set from the `set()` constructor call.
     ///
     /// - `set()` with no args returns an empty set
@@ -863,6 +904,10 @@ impl PyTrait for Set {
 
     fn py_eq(&self, other: &Self, heap: &mut Heap<impl ResourceTracker>, interns: &Interns) -> bool {
         self.0.eq(&other.0, heap, interns)
+    }
+
+    fn py_cmp(&self, other: &Self, heap: &mut Heap<impl ResourceTracker>, interns: &Interns) -> Option<Ordering> {
+        self.0.partial_cmp(&other.0, heap, interns)
     }
 
     fn py_dec_ref_ids(&mut self, stack: &mut Vec<HeapId>) {
@@ -1406,6 +1451,16 @@ impl FrozenSet {
         &self.0
     }
 
+    /// Compares this frozenset with another set-like storage using subset/superset semantics.
+    pub(crate) fn py_cmp_storage(
+        &self,
+        other: &SetStorage,
+        heap: &mut Heap<impl ResourceTracker>,
+        interns: &Interns,
+    ) -> Option<Ordering> {
+        self.0.partial_cmp(other, heap, interns)
+    }
+
     /// Checks if the frozenset contains a value.
     pub fn contains(&self, value: &Value, heap: &mut Heap<impl ResourceTracker>, interns: &Interns) -> RunResult<bool> {
         self.0.contains(value, heap, interns)
@@ -1502,6 +1557,10 @@ impl PyTrait for FrozenSet {
 
     fn py_eq(&self, other: &Self, heap: &mut Heap<impl ResourceTracker>, interns: &Interns) -> bool {
         self.0.eq(&other.0, heap, interns)
+    }
+
+    fn py_cmp(&self, other: &Self, heap: &mut Heap<impl ResourceTracker>, interns: &Interns) -> Option<Ordering> {
+        self.0.partial_cmp(&other.0, heap, interns)
     }
 
     fn py_dec_ref_ids(&mut self, stack: &mut Vec<HeapId>) {

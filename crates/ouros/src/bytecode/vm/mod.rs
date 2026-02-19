@@ -1447,6 +1447,16 @@ pub(super) enum PendingStringifyReturn {
 }
 
 /// Pending state for VM-managed `print(...)` argument stringification.
+#[derive(Debug, Clone)]
+pub(super) enum PendingReprContainer {
+    /// Container repr for lists: `[item0, item1, ...]`.
+    List,
+    /// Container repr for tuples: `(item0, ...)`.
+    Tuple { singleton: bool },
+    /// Container repr for dicts, with pre-rendered key representations.
+    Dict { key_reprs: Vec<String> },
+}
+
 pub(super) struct PendingPrintCall {
     /// Remaining positional args to stringify, stored in reverse order.
     pub(super) remaining_positional: Vec<Value>,
@@ -1458,6 +1468,8 @@ pub(super) struct PendingPrintCall {
     pub(super) awaiting_kind: PendingStringifyReturn,
     /// Frame depth of the in-flight stringify dunder call.
     pub(super) frame_depth: usize,
+    /// Optional container-repr mode (`repr(list/tuple/dict)`).
+    pub(super) repr_container: Option<PendingReprContainer>,
 }
 
 /// Truthiness protocol dunder currently being finalized.
@@ -3525,6 +3537,60 @@ impl<'a, T: ResourceTracker, P: PrintWriter, Tr: VmTracer> VM<'a, T, P, Tr> {
                 }
                 Opcode::BuildSet => {
                     let count = fetch_u16!(cached_frame) as usize;
+                    // Pre-hash any instance items before building the set so native
+                    // set insertion sees Python-level __hash__ values.
+                    let stack_len = self.stack.len();
+                    let mut needs_hash = None;
+                    for i in 0..count {
+                        let item_pos = stack_len - count + i;
+                        if let Value::Ref(item_id) = &self.stack[item_pos] {
+                            let item_id = *item_id;
+                            if matches!(self.heap.get(item_id), HeapData::Instance(_))
+                                && !self.heap.has_cached_hash(item_id)
+                            {
+                                let dunder_id: StringId = StaticStrings::DunderHash.into();
+                                if let Some(method) = self.lookup_type_dunder(item_id, dunder_id) {
+                                    needs_hash = Some((item_id, method));
+                                    break;
+                                }
+                            }
+                        }
+                    }
+                    if let Some((item_id, method)) = needs_hash {
+                        self.pending_hash_target = Some(item_id);
+                        self.current_frame_mut().ip = self.instruction_ip;
+                        cached_frame.ip = self.instruction_ip;
+                        match self.call_dunder(item_id, method, ArgValues::Empty) {
+                            Ok(CallResult::FramePushed) => {
+                                reload_cache!(self, cached_frame);
+                            }
+                            Ok(CallResult::Push(hash_val)) => {
+                                self.pending_hash_target = None;
+                                #[expect(clippy::cast_sign_loss)]
+                                let hash = if let Value::Int(i) = &hash_val {
+                                    *i as u64
+                                } else {
+                                    hash_val.drop_with_heap(self.heap);
+                                    catch_sync!(
+                                        self,
+                                        cached_frame,
+                                        ExcType::type_error("__hash__ method should return an integer")
+                                    );
+                                    continue;
+                                };
+                                hash_val.drop_with_heap(self.heap);
+                                self.heap.set_cached_hash(item_id, hash);
+                            }
+                            Ok(_) => {
+                                self.pending_hash_target = None;
+                            }
+                            Err(e) => {
+                                self.pending_hash_target = None;
+                                catch_sync!(self, cached_frame, e);
+                            }
+                        }
+                        continue;
+                    }
                     try_catch_sync!(self, cached_frame, self.build_set(count));
                 }
                 Opcode::FormatValue => {
@@ -3558,6 +3624,51 @@ impl<'a, T: ResourceTracker, P: PrintWriter, Tr: VmTracer> VM<'a, T, P, Tr> {
                 }
                 Opcode::SetAdd => {
                     let depth = fetch_u8!(cached_frame) as usize;
+                    // Pre-hash instance values before insertion to preserve set dedup
+                    // semantics when __hash__ is user-defined.
+                    if let Some(Value::Ref(item_id)) = self.stack.last() {
+                        let item_id = *item_id;
+                        if matches!(self.heap.get(item_id), HeapData::Instance(_))
+                            && !self.heap.has_cached_hash(item_id)
+                        {
+                            let dunder_id: StringId = StaticStrings::DunderHash.into();
+                            if let Some(method) = self.lookup_type_dunder(item_id, dunder_id) {
+                                self.pending_hash_target = Some(item_id);
+                                self.current_frame_mut().ip = self.instruction_ip;
+                                cached_frame.ip = self.instruction_ip;
+                                match self.call_dunder(item_id, method, ArgValues::Empty) {
+                                    Ok(CallResult::FramePushed) => {
+                                        reload_cache!(self, cached_frame);
+                                    }
+                                    Ok(CallResult::Push(hash_val)) => {
+                                        self.pending_hash_target = None;
+                                        #[expect(clippy::cast_sign_loss)]
+                                        let hash = if let Value::Int(i) = &hash_val {
+                                            *i as u64
+                                        } else {
+                                            hash_val.drop_with_heap(self.heap);
+                                            catch_sync!(
+                                                self,
+                                                cached_frame,
+                                                ExcType::type_error("__hash__ method should return an integer")
+                                            );
+                                            continue;
+                                        };
+                                        hash_val.drop_with_heap(self.heap);
+                                        self.heap.set_cached_hash(item_id, hash);
+                                    }
+                                    Ok(_) => {
+                                        self.pending_hash_target = None;
+                                    }
+                                    Err(e) => {
+                                        self.pending_hash_target = None;
+                                        catch_sync!(self, cached_frame, e);
+                                    }
+                                }
+                                continue;
+                            }
+                        }
+                    }
                     try_catch_sync!(self, cached_frame, self.set_add(depth));
                 }
                 Opcode::DictSetItem => {
@@ -8698,7 +8809,10 @@ impl<'a, T: ResourceTracker, P: PrintWriter, Tr: VmTracer> VM<'a, T, P, Tr> {
         if let Some(pending) = self.pending_compare_dunder.last()
             && pending.frame_depth == frame_depth
         {
-            let pending = self.pending_compare_dunder.pop().expect("checked pending compare dunder");
+            let pending = self
+                .pending_compare_dunder
+                .pop()
+                .expect("checked pending compare dunder");
             pending.lhs.drop_with_heap(self.heap);
             pending.rhs.drop_with_heap(self.heap);
         }
