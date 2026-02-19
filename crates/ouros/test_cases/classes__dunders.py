@@ -873,20 +873,19 @@ class EqAndHash:
 
 assert hash(EqAndHash()) == 42, '__eq__ with __hash__ is hashable'
 
-# === Inherited __hash__ = None makes subclass unhashable (Finding #5) ===
-class ExplicitlyUnhashable:
+# === Inherited __hash__ = None ===
+class Unhashable:
     __hash__ = None
 
-class InheritsUnhashable(ExplicitlyUnhashable):
+
+class Child(Unhashable):
     pass
 
-caught = False
 try:
-    hash(InheritsUnhashable())
+    hash(Child())
+    assert False, 'inherited __hash__=None should be unhashable'
 except TypeError as e:
-    caught = True
-    assert 'unhashable type' in str(e), 'inherited __hash__=None raises TypeError'
-assert caught, 'inherited __hash__=None makes subclass unhashable'
+    assert str(e) == "unhashable type: 'Child'"
 
 # === __getattribute__ called before descriptor (Finding #10) ===
 class Intercept:
@@ -932,3 +931,103 @@ assert v.x == 15, 'inplace dunder with matching type'
 v2 = InplaceVec(10)
 v2 += 7  # __iadd__ returns NotImplemented, falls back to __add__
 assert v2.x == 17, 'inplace dunder fallback to __add__ on NotImplemented'
+
+# === Inplace dunder NotImplemented fallback ===
+class A:
+    def __init__(self, val):
+        self.val = val
+
+    def __iadd__(self, other):
+        if not isinstance(other, A):
+            return NotImplemented
+        self.val += other.val
+        return self
+
+    def __add__(self, other):
+        return A(self.val + other.val)
+
+
+class B:
+    def __init__(self, val):
+        self.val = val
+
+    def __radd__(self, other):
+        if isinstance(other, A):
+            return A(other.val + self.val)
+        return NotImplemented
+
+
+a = A(10)
+b = B(5)
+a += b  # __iadd__ returns NotImplemented, should fall back to B.__radd__
+assert a.val == 15, f'Expected 15, got {a.val}'
+
+# === Ref-count: class-cell assignment still supports zero-arg super() ===
+class _ClassCellBase:
+    def method(self):
+        return 'base'
+
+
+class ClassCellAssigned(_ClassCellBase):
+    __classcell__ = []
+
+    def method(self):
+        return super().method()
+
+
+assert ClassCellAssigned().method() == 'base', 'zero-arg super should still work with __classcell__ attr'
+
+# === Ref-count: custom metaclass class-cell path ===
+class MetaForCellBind(type):
+    def __new__(mcls, name, bases, ns):
+        ns['__classcell__'] = []
+        return super().__new__(mcls, name, bases, ns)
+
+
+meta_tamper_error = None
+try:
+    class ClassCellMeta(_ClassCellBase, metaclass=MetaForCellBind):
+        def method(self):
+            return super().method()
+except Exception as e:
+    meta_tamper_error = str(e)
+    assert meta_tamper_error, 'class-cell metaclass failure should include an error message'
+else:
+    assert ClassCellMeta().method() == 'base', 'class should stay callable when metaclass accepts class-cell tamper'
+
+# === Ref-count: binary dunder cleanup during __init__ return handling ===
+class InitBinaryLhs:
+    def __add__(self, other):
+        return NotImplemented
+
+
+class InitBinaryRhs:
+    def __radd__(self, other):
+        return 99
+
+
+class InitBinaryCleanup:
+    def __init__(self):
+        self.value = InitBinaryLhs() + InitBinaryRhs()
+        return 1
+
+
+caught = False
+try:
+    InitBinaryCleanup()
+except TypeError as e:
+    caught = True
+    assert '__init__' in str(e), '__init__ must return None'
+assert caught, '__init__ non-None return should raise TypeError after binary dunder usage'
+
+# === Ref-count: binary dunder during class-body finalization ===
+class ClassBodyAdder:
+    def __add__(self, other):
+        return 7
+
+
+class BinaryInClassBodyCleanup:
+    marker = ClassBodyAdder() + 5
+
+
+assert BinaryInClassBodyCleanup.marker == 7, 'class-body binary dunder should resolve cleanly'

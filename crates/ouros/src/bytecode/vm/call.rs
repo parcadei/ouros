@@ -601,19 +601,18 @@ impl<T: ResourceTracker, P: PrintWriter, Tr: VmTracer> VM<'_, T, P, Tr> {
                             }
                             return Ok(result);
                         }
-                        // For hash(): if no __hash__ but has __eq__, raise TypeError
+                        // For hash(): mirror class-level unhashability rules using MRO checks.
                         if matches!(builtin, BuiltinsFunctions::Hash) {
-                            let eq_id = StaticStrings::DunderEq.into();
-                            if let Some(eq_method) = self.lookup_type_dunder(arg_id, eq_id) {
-                                // __eq__ defined without __hash__ - unhashable
-                                eq_method.drop_with_heap(self.heap);
+                            let class_id = match self.heap.get(arg_id) {
+                                HeapData::Instance(inst) => Some(inst.class_id()),
+                                _ => None,
+                            };
+                            if let Some(class_id) = class_id
+                                && self.heap.is_unhashable_via_mro(class_id, self.interns)
+                            {
                                 let arg_val = self.pop();
-                                // Get class name
-                                let class_name = match self.heap.get(arg_id) {
-                                    HeapData::Instance(inst) => match self.heap.get(inst.class_id()) {
-                                        HeapData::ClassObject(cls) => cls.name(self.interns).to_string(),
-                                        _ => "instance".to_string(),
-                                    },
+                                let class_name = match self.heap.get(class_id) {
+                                    HeapData::ClassObject(cls) => cls.name(self.interns).to_string(),
                                     _ => "instance".to_string(),
                                 };
                                 arg_val.drop_with_heap(self.heap);

@@ -8527,18 +8527,17 @@ impl<'a, T: ResourceTracker, P: PrintWriter, Tr: VmTracer> VM<'a, T, P, Tr> {
     /// `__bool__` must return `bool`; any other type is a `TypeError`.
     #[inline]
     fn truthiness_from_bool_dunder_return(&self, value: &Value) -> RunResult<bool> {
-        match value {
-            Value::Bool(b) => Ok(*b),
-            _ => {
-                let returned = if matches!(value, Value::NotImplemented) {
-                    "NotImplementedType".to_owned()
-                } else {
-                    value.py_type(self.heap).to_string()
-                };
-                Err(ExcType::type_error(format!(
-                    "__bool__ should return bool, returned {returned}"
-                )))
-            }
+        if let Value::Bool(b) = value {
+            Ok(*b)
+        } else {
+            let returned = if matches!(value, Value::NotImplemented) {
+                "NotImplementedType".to_owned()
+            } else {
+                value.py_type(self.heap).to_string()
+            };
+            Err(ExcType::type_error(format!(
+                "__bool__ should return bool, returned {returned}"
+            )))
         }
     }
 

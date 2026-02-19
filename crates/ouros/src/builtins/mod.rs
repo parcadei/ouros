@@ -294,15 +294,16 @@ fn call_type_method(
 
             if method == StaticStrings::DunderInitSubclass {
                 let class_name = match &instance {
-                    Value::Ref(class_id) => match heap.get(*class_id) {
-                        HeapData::ClassObject(cls) => cls.name(interns).to_string(),
-                        _ => {
+                    Value::Ref(class_id) => {
+                        if let HeapData::ClassObject(cls) = heap.get(*class_id) {
+                            cls.name(interns).to_string()
+                        } else {
                             rest_args.drop_with_heap(heap);
                             return Err(ExcType::type_error(
                                 "object.__init_subclass__() requires a type object".to_string(),
                             ));
                         }
-                    },
+                    }
                     Value::Builtin(Builtins::Type(ty)) => ty.to_string(),
                     _ => {
                         rest_args.drop_with_heap(heap);

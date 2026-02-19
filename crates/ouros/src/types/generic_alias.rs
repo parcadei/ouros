@@ -98,7 +98,7 @@ fn write_generic_alias_arg_repr(
     match arg {
         Value::Ellipsis => f.write_str("..."),
         Value::Builtin(Builtins::Type(t)) => write!(f, "{t}"),
-        Value::Ref(id) if matches!(heap.builtin_type_for_class_id(*id), Some(_)) => {
+        Value::Ref(id) if heap.builtin_type_for_class_id(*id).is_some() => {
             let ty = heap.builtin_type_for_class_id(*id).expect("checked builtin class id");
             write!(f, "{ty}")
         }

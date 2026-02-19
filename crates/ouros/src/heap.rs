@@ -3939,16 +3939,12 @@ impl<T: ResourceTracker> Heap<T> {
         let mut hash_is_none = false;
         for &mro_id in &mro {
             if let HeapData::ClassObject(cls) = self.get(mro_id) {
-                if !has_hash {
-                    if let Some(attr) = cls.namespace().get_by_str("__hash__", self, interns) {
-                        has_hash = true;
-                        hash_is_none = matches!(attr, Value::None);
-                    }
+                if !has_hash && let Some(attr) = cls.namespace().get_by_str("__hash__", self, interns) {
+                    has_hash = true;
+                    hash_is_none = matches!(attr, Value::None);
                 }
-                if !has_eq {
-                    if cls.namespace().get_by_str("__eq__", self, interns).is_some() {
-                        has_eq = true;
-                    }
+                if !has_eq && cls.namespace().get_by_str("__eq__", self, interns).is_some() {
+                    has_eq = true;
                 }
                 if has_hash && has_eq {
                     break;
