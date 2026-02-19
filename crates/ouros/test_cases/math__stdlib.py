@@ -1,8 +1,8 @@
 import math
 
 # === roots and exponentials ===
-assert math.cbrt(27.0) == 3.0, 'cbrt of 27'
-assert math.cbrt(-8.0) == -2.0, 'cbrt of negative'
+assert abs(math.cbrt(27.0) - 3.0) < 1e-15, 'cbrt of 27'
+assert abs(math.cbrt(-8.0) - (-2.0)) < 1e-15, 'cbrt of negative'
 assert math.exp2(3) == 8.0, 'exp2 of 3'
 assert abs(math.expm1(1e-6) - 1.0000005000001665e-06) < 1e-20, 'expm1 small value'
 

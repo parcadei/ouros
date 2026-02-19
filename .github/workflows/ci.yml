@@ -28,7 +28,7 @@ jobs:
         run: cargo +nightly fmt --all -- --check
 
       - name: Run clippy
-        run: cargo clippy --all-targets --all-features -- -D warnings
+        run: cargo +nightly clippy --all-targets --all-features -- -D warnings
 
   test:
     runs-on: ubuntu-latest
@@ -45,6 +45,7 @@ jobs:
         with:
           python-version: "3.14"
       - run: rm .cargo/config.toml
+      - run: pip install typing_extensions
 
       # Core tests (no features)
       - name: Test (no features)

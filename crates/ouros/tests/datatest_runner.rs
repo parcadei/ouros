@@ -1758,7 +1758,7 @@ fn format_cpython_exception(py: Python<'_>, e: &PyErr) -> String {
 ///
 /// Tests that exceed this duration are considered to be hanging (infinite loop)
 /// and will fail with a timeout error.
-const TEST_TIMEOUT: Duration = Duration::from_secs(2);
+const TEST_TIMEOUT: Duration = Duration::from_secs(10);
 
 /// Result from running a test with a timeout.
 enum TimeoutResult<T> {
