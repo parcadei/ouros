@@ -34,13 +34,14 @@ jobs:
       - uses: actions/checkout@v4
 
       - uses: actions/setup-python@v5
+        if: matrix.target != 'aarch64' || matrix.os != 'ubuntu-latest'
         with:
           python-version: ${{ env.PYTHON_VERSION }}
 
       - uses: PyO3/maturin-action@v1
         with:
           target: ${{ matrix.target }}
-          args: --release --out dist
+          args: --release --out dist -i python${{ env.PYTHON_VERSION }}
           manylinux: auto
           working-directory: crates/ouros-python
 
