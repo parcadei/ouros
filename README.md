@@ -373,7 +373,7 @@ End-to-end startup is where Ouros shines — no interpreter boot, no module impo
 
 ## Acknowledgments
 
-Ouros is forked from [Monty](https://github.com/pydantic/monty) by [Pydantic](https://pydantic.dev), originally created by [Samuel Colvin](https://github.com/samuelcolvin). The core interpreter, bytecode VM, and parser integration were developed as part of that project. Ouros extends the original with persistent sessions, session forking, rewind/history, heap introspection, cross-session variable transfer, and session serialization.
+Ouros is forked from [Monty](https://github.com/pydantic/monty) by [Pydantic](https://pydantic.dev), originally created by [Samuel Colvin](https://github.com/samuelcolvin).
 
 ## License
 
