@@ -11,7 +11,7 @@
 use super::{VM, call::CallResult};
 use crate::{
     exception_private::{ExcType, RunError},
-    heap::HeapGuard,
+    heap::{HeapData, HeapGuard},
     intern::StaticStrings,
     io::PrintWriter,
     resource::ResourceTracker,
@@ -528,6 +528,64 @@ impl<T: ResourceTracker, P: PrintWriter, Tr: VmTracer> VM<'_, T, P, Tr> {
     pub(super) fn inplace_bitwise(&mut self, op: BitwiseOp) -> Result<CallResult, RunError> {
         let rhs = self.pop();
         let lhs = self.pop();
+
+        // Native dict in-place merge (`dict |= dict`) mutates lhs in place.
+        if matches!(op, BitwiseOp::Or)
+            && let (Value::Ref(lhs_id), Value::Ref(rhs_id)) = (&lhs, &rhs)
+            && matches!(self.heap.get(*lhs_id), HeapData::Dict(_))
+            && matches!(self.heap.get(*rhs_id), HeapData::Dict(_))
+        {
+            let interns = self.interns;
+            let rhs_items = match self.heap.with_entry_mut(*rhs_id, |heap_inner, data| match data {
+                HeapData::Dict(dict) => Ok(dict.items(heap_inner)),
+                _ => Err(RunError::internal("inplace_bitwise: rhs expected dict")),
+            }) {
+                Ok(items) => items,
+                Err(err) => {
+                    lhs.drop_with_heap(self.heap);
+                    rhs.drop_with_heap(self.heap);
+                    return Err(err);
+                }
+            };
+
+            let replaced_values = match self.heap.with_entry_mut(*lhs_id, |heap_inner, data| match data {
+                HeapData::Dict(dict) => {
+                    let mut replaced = Vec::new();
+                    let mut incoming = rhs_items.into_iter();
+                    while let Some((key, value)) = incoming.next() {
+                        match dict.set(key, value, heap_inner, interns) {
+                            Ok(Some(old)) => replaced.push(old),
+                            Ok(None) => {}
+                            Err(err) => {
+                                for old in replaced {
+                                    old.drop_with_heap(heap_inner);
+                                }
+                                for (pending_key, pending_value) in incoming {
+                                    pending_key.drop_with_heap(heap_inner);
+                                    pending_value.drop_with_heap(heap_inner);
+                                }
+                                return Err(err);
+                            }
+                        }
+                    }
+                    Ok(replaced)
+                }
+                _ => Err(RunError::internal("inplace_bitwise: lhs expected dict")),
+            }) {
+                Ok(values) => values,
+                Err(err) => {
+                    lhs.drop_with_heap(self.heap);
+                    rhs.drop_with_heap(self.heap);
+                    return Err(err);
+                }
+            };
+
+            for old in replaced_values {
+                old.drop_with_heap(self.heap);
+            }
+            rhs.drop_with_heap(self.heap);
+            return Ok(CallResult::Push(lhs));
+        }
 
         match lhs.py_bitwise(&rhs, op, self.heap, self.interns) {
             Ok(v) => {

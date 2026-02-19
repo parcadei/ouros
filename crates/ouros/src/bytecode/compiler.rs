@@ -3333,9 +3333,26 @@ impl<'a> Compiler<'a> {
             None
         };
 
+        // === Else block (runs if no exception) ===
+        self.code.patch_jump(after_try_jump);
+        // Normal path from try body, stack = stack_depth
+        self.code.set_stack_depth(stack_depth);
+        let else_start = self.code.current_offset();
+        if has_else {
+            self.compile_block(&try_block.or_else)?;
+        }
+        let else_end = self.code.current_offset();
+
+        // Normal flow should skip the specialized finally control-flow paths below.
+        let skip_special_finally_jump = if has_finally {
+            Some(self.code.emit_jump(Opcode::Jump))
+        } else {
+            None
+        };
+
         // === Finally with return/break/continue paths ===
-        // Pop finally target and get all the jumps that need to go through finally
-        let finally_with_return_start = if has_finally {
+        // Pop finally target after compiling else so returns in else also route via finally.
+        let finally_with_return_range = if has_finally {
             let finally_target = self.finally_targets.pop().expect("finally_targets should not be empty");
 
             // === Finally with return path ===
@@ -3382,20 +3399,14 @@ impl<'a> Compiler<'a> {
                 self.compile_control_flow_after_finally(&finally_target.continue_jumps, false);
             }
 
-            return_start
+            return_start.map(|start| (start, self.code.current_offset()))
         } else {
             None
         };
 
-        // === Else block (runs if no exception) ===
-        self.code.patch_jump(after_try_jump);
-        // Normal path from try body, stack = stack_depth
-        self.code.set_stack_depth(stack_depth);
-        let else_start = self.code.current_offset();
-        if has_else {
-            self.compile_block(&try_block.or_else)?;
+        if let Some(skip_jump) = skip_special_finally_jump {
+            self.code.patch_jump(skip_jump);
         }
-        let else_end = self.code.current_offset();
 
         // === Normal finally path (no exception pending, no return) ===
         // Patch all jumps from handlers to go here
@@ -3435,10 +3446,12 @@ impl<'a> Compiler<'a> {
 
         // Entry 3: Finally with return -> finally cleanup
         // If an exception occurs while running finally (in the return path), catch it
-        if let (Some(return_start), Some(cleanup_start)) = (finally_with_return_start, finally_cleanup_start) {
+        if let (Some((return_start, return_end)), Some(cleanup_start)) =
+            (finally_with_return_range, finally_cleanup_start)
+        {
             self.code.add_exception_entry(ExceptionEntry::new(
                 u32::try_from(return_start).expect("bytecode offset exceeds u32"),
-                u32::try_from(else_start).expect("bytecode offset exceeds u32"), // End at else_start (before else block)
+                u32::try_from(return_end).expect("bytecode offset exceeds u32"),
                 u32::try_from(cleanup_start).expect("bytecode offset exceeds u32"),
                 stack_depth,
             ));

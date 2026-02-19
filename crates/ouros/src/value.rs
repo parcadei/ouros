@@ -3869,6 +3869,9 @@ impl Value {
 
         // Check for set operations first (| & ^)
         if matches!(op, BitwiseOp::Or | BitwiseOp::And | BitwiseOp::Xor) {
+            if let Some(result) = py_dict_bitwise(self, other, op, heap, interns)? {
+                return Ok(result);
+            }
             if let Some(result) = py_set_bitwise(self, other, op, heap, interns)? {
                 return Ok(result);
             }
@@ -4905,6 +4908,50 @@ fn either_str_matches(value: &EitherStr, expected: &str) -> bool {
             .ok()
             .is_some_and(|s| *id == crate::intern::StringId::from(s)),
     }
+}
+
+/// Helper for dict merge operations (`dict | dict`).
+///
+/// Returns `Ok(Some(value))` when both operands are dicts and `op` is `|`,
+/// otherwise returns `Ok(None)`.
+fn py_dict_bitwise(
+    lhs: &Value,
+    rhs: &Value,
+    op: BitwiseOp,
+    heap: &mut Heap<impl ResourceTracker>,
+    interns: &Interns,
+) -> RunResult<Option<Value>> {
+    if !matches!(op, BitwiseOp::Or) {
+        return Ok(None);
+    }
+
+    let (Value::Ref(lhs_id), Value::Ref(rhs_id)) = (lhs, rhs) else {
+        return Ok(None);
+    };
+    if !matches!(heap.get(*lhs_id), HeapData::Dict(_)) || !matches!(heap.get(*rhs_id), HeapData::Dict(_)) {
+        return Ok(None);
+    }
+
+    let mut result = heap.with_entry_mut(*lhs_id, |heap_inner, data| match data {
+        HeapData::Dict(dict) => dict.clone_with_heap(heap_inner, interns),
+        _ => unreachable!("checked Dict above"),
+    })?;
+
+    let rhs_items = heap.with_entry_mut(*rhs_id, |heap_inner, data| -> RunResult<Vec<(Value, Value)>> {
+        match data {
+            HeapData::Dict(dict) => Ok(dict.items(heap_inner)),
+            _ => unreachable!("checked Dict above"),
+        }
+    })?;
+
+    for (key, value) in rhs_items {
+        if let Some(old) = result.set(key, value, heap, interns)? {
+            old.drop_with_heap(heap);
+        }
+    }
+
+    let result_id = heap.allocate(HeapData::Dict(result))?;
+    Ok(Some(Value::Ref(result_id)))
 }
 
 /// Helper for set bitwise operations (| & ^).

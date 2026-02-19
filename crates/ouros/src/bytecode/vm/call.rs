@@ -13,7 +13,7 @@ use super::{
     PendingBinaryDunderStage, PendingBuiltinFromList, PendingBuiltinFromListKind, PendingContextDecorator,
     PendingContextDecoratorStage, PendingExitStack, PendingExitStackAwaiting, PendingGroupBy, PendingIndexCall,
     PendingIndexCallTarget, PendingListSort, PendingNewCall, PendingNextDefault, PendingPrintCall, PendingReduce,
-    PendingSliceBuild, PendingStringifyReturn, PendingSumFromList, PendingTextwrapIndent, VM,
+    PendingReprContainer, PendingSliceBuild, PendingStringifyReturn, PendingSumFromList, PendingTextwrapIndent, VM,
 };
 use crate::{
     args::{ArgValues, KwargsValues},
@@ -472,6 +472,11 @@ impl<T: ResourceTracker, P: PrintWriter, Tr: VmTracer> VM<'_, T, P, Tr> {
                         }
                     };
                 }
+            }
+
+            if arg_count == 1 && matches!(builtin, BuiltinsFunctions::Repr) {
+                let value = self.pop();
+                return self.call_repr_builtin(value);
             }
 
             // Check for instance dunder dispatch on single-arg builtins
@@ -8636,8 +8641,197 @@ impl<T: ResourceTracker, P: PrintWriter, Tr: VmTracer> VM<'_, T, P, Tr> {
             kwargs,
             awaiting_kind: PendingStringifyReturn::Str,
             frame_depth: self.frames.len(),
+            repr_container: None,
         };
         self.continue_print_call(pending)
+    }
+
+    fn call_repr_builtin(&mut self, value: Value) -> Result<CallResult, RunError> {
+        if let Value::Ref(id) = &value {
+            let id = *id;
+            if matches!(self.heap.get(id), HeapData::List(_)) {
+                let has_nested_container = match self.heap.get(id) {
+                    HeapData::List(list) => list.as_vec().iter().any(|item| {
+                        if let Value::Ref(item_id) = item {
+                            *item_id == id
+                                || matches!(
+                                    self.heap.get(*item_id),
+                                    HeapData::List(_) | HeapData::Tuple(_) | HeapData::Dict(_)
+                                )
+                        } else {
+                            false
+                        }
+                    }),
+                    _ => false,
+                };
+                if has_nested_container {
+                    // Keep the legacy formatter path for recursive/nested containers to
+                    // preserve cycle detection output semantics.
+                    return match self.stringify_repr_argument(value)? {
+                        PrintStringifyStep::Ready(string_value) => Ok(CallResult::Push(string_value)),
+                        PrintStringifyStep::AwaitFrame(kind) => {
+                            self.pending_stringify_return.push((kind, self.frames.len()));
+                            Ok(CallResult::FramePushed)
+                        }
+                        PrintStringifyStep::External(ext_id, args) => Ok(CallResult::External(ext_id, args)),
+                        PrintStringifyStep::Proxy(proxy_id, method, args) => {
+                            Ok(CallResult::Proxy(proxy_id, method, args))
+                        }
+                        PrintStringifyStep::OsCall(function, args) => Ok(CallResult::OsCall(function, args)),
+                    };
+                }
+                let mut items = self.heap.with_entry_mut(id, |heap_inner, data| match data {
+                    HeapData::List(list) => {
+                        let copied = list.as_vec().iter().map(Value::copy_for_extend).collect::<Vec<_>>();
+                        for item in &copied {
+                            if let Value::Ref(item_id) = item {
+                                heap_inner.inc_ref(*item_id);
+                            }
+                        }
+                        Ok(copied)
+                    }
+                    _ => Err(RunError::internal("repr(list): target was not list")),
+                })?;
+                value.drop_with_heap(self.heap);
+                items.reverse();
+                let pending = PendingPrintCall {
+                    remaining_positional: items,
+                    rendered_positional: Vec::new(),
+                    kwargs: KwargsValues::Empty,
+                    awaiting_kind: PendingStringifyReturn::Repr,
+                    frame_depth: self.frames.len(),
+                    repr_container: Some(PendingReprContainer::List),
+                };
+                return self.continue_repr_container(pending);
+            }
+            if matches!(self.heap.get(id), HeapData::Tuple(_)) {
+                let has_nested_container = match self.heap.get(id) {
+                    HeapData::Tuple(tuple) => tuple.as_vec().iter().any(|item| {
+                        if let Value::Ref(item_id) = item {
+                            *item_id == id
+                                || matches!(
+                                    self.heap.get(*item_id),
+                                    HeapData::List(_) | HeapData::Tuple(_) | HeapData::Dict(_)
+                                )
+                        } else {
+                            false
+                        }
+                    }),
+                    _ => false,
+                };
+                if has_nested_container {
+                    return match self.stringify_repr_argument(value)? {
+                        PrintStringifyStep::Ready(string_value) => Ok(CallResult::Push(string_value)),
+                        PrintStringifyStep::AwaitFrame(kind) => {
+                            self.pending_stringify_return.push((kind, self.frames.len()));
+                            Ok(CallResult::FramePushed)
+                        }
+                        PrintStringifyStep::External(ext_id, args) => Ok(CallResult::External(ext_id, args)),
+                        PrintStringifyStep::Proxy(proxy_id, method, args) => {
+                            Ok(CallResult::Proxy(proxy_id, method, args))
+                        }
+                        PrintStringifyStep::OsCall(function, args) => Ok(CallResult::OsCall(function, args)),
+                    };
+                }
+                let (mut items, singleton) = self.heap.with_entry_mut(id, |heap_inner, data| match data {
+                    HeapData::Tuple(tuple) => {
+                        let copied = tuple.as_vec().iter().map(Value::copy_for_extend).collect::<Vec<_>>();
+                        for item in &copied {
+                            if let Value::Ref(item_id) = item {
+                                heap_inner.inc_ref(*item_id);
+                            }
+                        }
+                        Ok((copied, tuple.as_vec().len() == 1))
+                    }
+                    _ => Err(RunError::internal("repr(tuple): target was not tuple")),
+                })?;
+                value.drop_with_heap(self.heap);
+                items.reverse();
+                let pending = PendingPrintCall {
+                    remaining_positional: items,
+                    rendered_positional: Vec::new(),
+                    kwargs: KwargsValues::Empty,
+                    awaiting_kind: PendingStringifyReturn::Repr,
+                    frame_depth: self.frames.len(),
+                    repr_container: Some(PendingReprContainer::Tuple { singleton }),
+                };
+                return self.continue_repr_container(pending);
+            }
+            if matches!(self.heap.get(id), HeapData::Dict(_)) {
+                let has_nested_container = match self.heap.get(id) {
+                    HeapData::Dict(dict) => dict.iter().any(|(key, value)| {
+                        let key_is_nested = if let Value::Ref(key_id) = key {
+                            *key_id == id
+                                || matches!(
+                                    self.heap.get(*key_id),
+                                    HeapData::List(_) | HeapData::Tuple(_) | HeapData::Dict(_)
+                                )
+                        } else {
+                            false
+                        };
+                        let value_is_nested = if let Value::Ref(value_id) = value {
+                            *value_id == id
+                                || matches!(
+                                    self.heap.get(*value_id),
+                                    HeapData::List(_) | HeapData::Tuple(_) | HeapData::Dict(_)
+                                )
+                        } else {
+                            false
+                        };
+                        key_is_nested || value_is_nested
+                    }),
+                    _ => false,
+                };
+                if has_nested_container {
+                    return match self.stringify_repr_argument(value)? {
+                        PrintStringifyStep::Ready(string_value) => Ok(CallResult::Push(string_value)),
+                        PrintStringifyStep::AwaitFrame(kind) => {
+                            self.pending_stringify_return.push((kind, self.frames.len()));
+                            Ok(CallResult::FramePushed)
+                        }
+                        PrintStringifyStep::External(ext_id, args) => Ok(CallResult::External(ext_id, args)),
+                        PrintStringifyStep::Proxy(proxy_id, method, args) => {
+                            Ok(CallResult::Proxy(proxy_id, method, args))
+                        }
+                        PrintStringifyStep::OsCall(function, args) => Ok(CallResult::OsCall(function, args)),
+                    };
+                }
+                let items = self.heap.with_entry_mut(id, |heap_inner, data| match data {
+                    HeapData::Dict(dict) => Ok(dict.items(heap_inner)),
+                    _ => Err(RunError::internal("repr(dict): target was not dict")),
+                })?;
+                value.drop_with_heap(self.heap);
+                let mut key_reprs = Vec::with_capacity(items.len());
+                let mut values = Vec::with_capacity(items.len());
+                for (key, value) in items {
+                    key_reprs.push(key.py_repr(self.heap, self.interns).into_owned());
+                    key.drop_with_heap(self.heap);
+                    values.push(value);
+                }
+                values.reverse();
+                let pending = PendingPrintCall {
+                    remaining_positional: values,
+                    rendered_positional: Vec::new(),
+                    kwargs: KwargsValues::Empty,
+                    awaiting_kind: PendingStringifyReturn::Repr,
+                    frame_depth: self.frames.len(),
+                    repr_container: Some(PendingReprContainer::Dict { key_reprs }),
+                };
+                return self.continue_repr_container(pending);
+            }
+        }
+
+        // Non-container path: preserve normal repr() dunder dispatch behavior.
+        match self.stringify_repr_argument(value)? {
+            PrintStringifyStep::Ready(string_value) => Ok(CallResult::Push(string_value)),
+            PrintStringifyStep::AwaitFrame(kind) => {
+                self.pending_stringify_return.push((kind, self.frames.len()));
+                Ok(CallResult::FramePushed)
+            }
+            PrintStringifyStep::External(ext_id, args) => Ok(CallResult::External(ext_id, args)),
+            PrintStringifyStep::Proxy(proxy_id, method, args) => Ok(CallResult::Proxy(proxy_id, method, args)),
+            PrintStringifyStep::OsCall(function, args) => Ok(CallResult::OsCall(function, args)),
+        }
     }
 
     pub(super) fn resume_pending_print_call(
@@ -8647,6 +8841,9 @@ impl<T: ResourceTracker, P: PrintWriter, Tr: VmTracer> VM<'_, T, P, Tr> {
     ) -> Result<CallResult, RunError> {
         let string_value = self.validate_stringify_result(value, pending.awaiting_kind)?;
         pending.rendered_positional.push(string_value);
+        if pending.repr_container.is_some() {
+            return self.continue_repr_container(pending);
+        }
         self.continue_print_call(pending)
     }
 
@@ -8679,6 +8876,82 @@ impl<T: ResourceTracker, P: PrintWriter, Tr: VmTracer> VM<'_, T, P, Tr> {
         };
         let value = BuiltinsFunctions::Print.call(self.heap, print_args, self.interns, self.print_writer)?;
         Ok(CallResult::Push(value))
+    }
+
+    fn continue_repr_container(&mut self, mut pending: PendingPrintCall) -> Result<CallResult, RunError> {
+        while let Some(value) = pending.remaining_positional.pop() {
+            match self.stringify_repr_argument(value)? {
+                PrintStringifyStep::Ready(string_value) => {
+                    pending.rendered_positional.push(string_value);
+                }
+                PrintStringifyStep::AwaitFrame(kind) => {
+                    pending.awaiting_kind = kind;
+                    pending.frame_depth = self.frames.len();
+                    self.pending_print_call.push(pending);
+                    return Ok(CallResult::FramePushed);
+                }
+                PrintStringifyStep::External(_, _)
+                | PrintStringifyStep::Proxy(_, _, _)
+                | PrintStringifyStep::OsCall(_, _) => {
+                    self.drop_pending_print_call_values_in_call(pending);
+                    return Err(RunError::internal(
+                        "external/proxy repr stringification is not supported in VM path",
+                    ));
+                }
+            }
+        }
+
+        self.finish_repr_container(pending)
+    }
+
+    fn finish_repr_container(&mut self, mut pending: PendingPrintCall) -> Result<CallResult, RunError> {
+        let Some(container) = pending.repr_container.take() else {
+            return Err(RunError::internal(
+                "finish_repr_container called without repr container state",
+            ));
+        };
+
+        let rendered: Vec<String> = pending
+            .rendered_positional
+            .iter()
+            .map(|value| value.py_str(self.heap, self.interns).into_owned())
+            .collect();
+
+        for value in pending.rendered_positional {
+            value.drop_with_heap(self.heap);
+        }
+        pending.kwargs.drop_with_heap(self.heap);
+
+        let repr = match container {
+            PendingReprContainer::List => format!("[{}]", rendered.join(", ")),
+            PendingReprContainer::Tuple { singleton } => {
+                if singleton {
+                    if let Some(item) = rendered.first() {
+                        format!("({item},)")
+                    } else {
+                        "()".to_string()
+                    }
+                } else {
+                    format!("({})", rendered.join(", "))
+                }
+            }
+            PendingReprContainer::Dict { key_reprs } => {
+                let mut out = String::from("{");
+                for (idx, (key_repr, value_repr)) in key_reprs.iter().zip(rendered.iter()).enumerate() {
+                    if idx > 0 {
+                        out.push_str(", ");
+                    }
+                    out.push_str(key_repr);
+                    out.push_str(": ");
+                    out.push_str(value_repr);
+                }
+                out.push('}');
+                out
+            }
+        };
+
+        let repr_id = self.heap.allocate(HeapData::Str(Str::from(repr.as_str())))?;
+        Ok(CallResult::Push(Value::Ref(repr_id)))
     }
 
     fn stringify_print_argument(&mut self, value: Value) -> Result<PrintStringifyStep, RunError> {
@@ -8718,6 +8991,33 @@ impl<T: ResourceTracker, P: PrintWriter, Tr: VmTracer> VM<'_, T, P, Tr> {
         }
 
         let text = value.py_str(self.heap, self.interns).into_owned();
+        value.drop_with_heap(self.heap);
+        let text_id = self.heap.allocate(HeapData::Str(Str::from(text.as_str())))?;
+        Ok(PrintStringifyStep::Ready(Value::Ref(text_id)))
+    }
+
+    fn stringify_repr_argument(&mut self, value: Value) -> Result<PrintStringifyStep, RunError> {
+        if let Value::Ref(instance_id) = &value
+            && matches!(self.heap.get(*instance_id), HeapData::Instance(_))
+        {
+            let instance_id = *instance_id;
+            let repr_id: StringId = StaticStrings::DunderRepr.into();
+            if let Some(method) = self.lookup_type_dunder(instance_id, repr_id) {
+                let result = self.call_dunder(instance_id, method, ArgValues::Empty)?;
+                value.drop_with_heap(self.heap);
+                return Ok(match result {
+                    CallResult::Push(string_value) => PrintStringifyStep::Ready(
+                        self.validate_stringify_result(string_value, PendingStringifyReturn::Repr)?,
+                    ),
+                    CallResult::FramePushed => PrintStringifyStep::AwaitFrame(PendingStringifyReturn::Repr),
+                    CallResult::External(ext_id, args) => PrintStringifyStep::External(ext_id, args),
+                    CallResult::Proxy(proxy_id, method, args) => PrintStringifyStep::Proxy(proxy_id, method, args),
+                    CallResult::OsCall(function, args) => PrintStringifyStep::OsCall(function, args),
+                });
+            }
+        }
+
+        let text = value.py_repr(self.heap, self.interns).into_owned();
         value.drop_with_heap(self.heap);
         let text_id = self.heap.allocate(HeapData::Str(Str::from(text.as_str())))?;
         Ok(PrintStringifyStep::Ready(Value::Ref(text_id)))

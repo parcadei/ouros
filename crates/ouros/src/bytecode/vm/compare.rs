@@ -182,6 +182,13 @@ impl<T: ResourceTracker, P: PrintWriter, Tr: VmTracer> VM<'_, T, P, Tr> {
             rhs.drop_with_heap(self.heap);
             return Ok(CallResult::Push(Value::Bool(check(ordering))));
         }
+        // Set/frozenset comparisons are partial orders. When neither operand is a
+        // subset/superset of the other, Python returns False instead of TypeError.
+        if self.is_set_like_value(&lhs) && self.is_set_like_value(&rhs) {
+            lhs.drop_with_heap(self.heap);
+            rhs.drop_with_heap(self.heap);
+            return Ok(CallResult::Push(Value::Bool(false)));
+        }
         let lhs_type = lhs.py_type(self.heap);
         let rhs_type = rhs.py_type(self.heap);
         lhs.drop_with_heap(self.heap);
@@ -322,6 +329,14 @@ impl<T: ResourceTracker, P: PrintWriter, Tr: VmTracer> VM<'_, T, P, Tr> {
                 ))
             }
         }
+    }
+
+    /// Returns whether this value is a `set` or `frozenset`.
+    fn is_set_like_value(&self, value: &Value) -> bool {
+        let Value::Ref(id) = value else {
+            return false;
+        };
+        matches!(self.heap.get(*id), HeapData::Set(_) | HeapData::FrozenSet(_))
     }
 
     fn finish_compare_result(&mut self, kind: PendingCompareKind, result: CallResult) -> Result<CallResult, RunError> {
