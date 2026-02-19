@@ -917,7 +917,8 @@ impl<T: ResourceTracker, P: PrintWriter, Tr: VmTracer> VM<'_, T, P, Tr> {
                             }
                         }
                         let getitem_id: StringId = StaticStrings::DunderGetitem.into();
-                        if self.lookup_type_dunder(arg_id, getitem_id).is_some() {
+                        let getitem_name = self.interns.get_str(getitem_id);
+                        if self.type_mro_has_attr(arg_id, getitem_name) {
                             let arg_val = self.pop();
                             return self.list_build_continue(arg_val, Vec::new());
                         }
@@ -1014,7 +1015,8 @@ impl<T: ResourceTracker, P: PrintWriter, Tr: VmTracer> VM<'_, T, P, Tr> {
                 }
 
                 let getitem_id: StringId = StaticStrings::DunderGetitem.into();
-                if self.lookup_type_dunder(*iter_id, getitem_id).is_some() {
+                let getitem_name = self.interns.get_str(getitem_id);
+                if self.type_mro_has_attr(*iter_id, getitem_name) {
                     return self.list_build_continue(iterator, Vec::new());
                 }
             }
@@ -6197,34 +6199,45 @@ impl<T: ResourceTracker, P: PrintWriter, Tr: VmTracer> VM<'_, T, P, Tr> {
     /// Generator inputs are materialized through VM-driven iteration before
     /// building the dict so generator frames can suspend/resume correctly.
     fn call_dict_type_builtin(&mut self, args: ArgValues) -> Result<CallResult, RunError> {
-        let value = args.get_zero_one_arg("dict", self.heap)?;
-        match value {
-            None => {
-                let result = Type::Dict.call(self.heap, ArgValues::Empty, self.interns)?;
+        match args {
+            ArgValues::One(iterable) => self.call_dict_type_builtin_one(iterable),
+            ArgValues::ArgsKargs { args, kwargs } => {
+                if kwargs.is_empty() && args.len() == 1 {
+                    kwargs.drop_with_heap(self.heap);
+                    let iterable = args.into_iter().next().expect("len checked");
+                    return self.call_dict_type_builtin_one(iterable);
+                }
+                let result = Type::Dict.call(self.heap, ArgValues::ArgsKargs { args, kwargs }, self.interns)?;
                 Ok(CallResult::Push(result))
             }
-            Some(iterable) => {
-                if let Value::Ref(iter_id) = &iterable
-                    && matches!(self.heap.get(*iter_id), HeapData::Generator(_))
-                {
-                    match self.list_build_from_iterator(iterable)? {
-                        CallResult::Push(list_value) => {
-                            let dict_value = Type::Dict.call(self.heap, ArgValues::One(list_value), self.interns)?;
-                            Ok(CallResult::Push(dict_value))
-                        }
-                        CallResult::FramePushed => {
-                            self.pending_builtin_from_list.push(PendingBuiltinFromList {
-                                kind: PendingBuiltinFromListKind::Dict,
-                            });
-                            Ok(CallResult::FramePushed)
-                        }
-                        other => Ok(other),
-                    }
-                } else {
-                    let result = Type::Dict.call(self.heap, ArgValues::One(iterable), self.interns)?;
-                    Ok(CallResult::Push(result))
-                }
+            other => {
+                let result = Type::Dict.call(self.heap, other, self.interns)?;
+                Ok(CallResult::Push(result))
             }
+        }
+    }
+
+    /// Calls `dict(...)` for one positional argument, preserving generator suspension semantics.
+    fn call_dict_type_builtin_one(&mut self, iterable: Value) -> Result<CallResult, RunError> {
+        if let Value::Ref(iter_id) = &iterable
+            && matches!(self.heap.get(*iter_id), HeapData::Generator(_))
+        {
+            match self.list_build_from_iterator(iterable)? {
+                CallResult::Push(list_value) => {
+                    let dict_value = Type::Dict.call(self.heap, ArgValues::One(list_value), self.interns)?;
+                    Ok(CallResult::Push(dict_value))
+                }
+                CallResult::FramePushed => {
+                    self.pending_builtin_from_list.push(PendingBuiltinFromList {
+                        kind: PendingBuiltinFromListKind::Dict,
+                    });
+                    Ok(CallResult::FramePushed)
+                }
+                other => Ok(other),
+            }
+        } else {
+            let result = Type::Dict.call(self.heap, ArgValues::One(iterable), self.interns)?;
+            Ok(CallResult::Push(result))
         }
     }
 
@@ -6786,6 +6799,16 @@ impl<T: ResourceTracker, P: PrintWriter, Tr: VmTracer> VM<'_, T, P, Tr> {
             return self.call_class_instantiate(heap_id, callable, args);
         }
 
+        // `csv.Sniffer` compatibility: allow calling the object like a zero-arg constructor.
+        if matches!(self.heap.get(heap_id), HeapData::StdlibObject(StdlibObject::CsvSniffer)) {
+            args.check_zero_args("Sniffer", self.heap)?;
+            callable.drop_with_heap(self.heap);
+            let sniffer_id = self
+                .heap
+                .allocate(HeapData::StdlibObject(StdlibObject::new_csv_sniffer()))?;
+            return Ok(CallResult::Push(Value::Ref(sniffer_id)));
+        }
+
         // Callable contextlib helper objects implemented as StdlibObject variants.
         if matches!(self.heap.get(heap_id), HeapData::StdlibObject(_)) {
             enum ContextlibCallable {
@@ -6966,8 +6989,10 @@ impl<T: ResourceTracker, P: PrintWriter, Tr: VmTracer> VM<'_, T, P, Tr> {
 
             let dunder_enter: StringId = StaticStrings::DunderEnter.into();
             let dunder_exit: StringId = StaticStrings::DunderExit.into();
-            let has_sync_decorator_protocol = self.lookup_type_dunder(heap_id, dunder_enter).is_some()
-                && self.lookup_type_dunder(heap_id, dunder_exit).is_some();
+            let dunder_enter_name = self.interns.get_str(dunder_enter);
+            let dunder_exit_name = self.interns.get_str(dunder_exit);
+            let has_sync_decorator_protocol =
+                self.type_mro_has_attr(heap_id, dunder_enter_name) && self.type_mro_has_attr(heap_id, dunder_exit_name);
             let has_async_decorator_protocol = if let HeapData::Instance(instance) = self.heap.get(heap_id) {
                 let class_id = instance.class_id();
                 if let HeapData::ClassObject(cls) = self.heap.get(class_id) {
@@ -10600,6 +10625,21 @@ impl<T: ResourceTracker, P: PrintWriter, Tr: VmTracer> VM<'_, T, P, Tr> {
     // Dunder Protocol Dispatch
     // ========================================================================
 
+    /// Returns whether an instance's class MRO provides an attribute.
+    ///
+    /// This is intended for existence checks that do not need to materialize the
+    /// method value, avoiding temporary refcount ownership from `mro_lookup_attr`.
+    pub(super) fn type_mro_has_attr(&self, instance_heap_id: HeapId, attr_name: &str) -> bool {
+        let class_id = match self.heap.get(instance_heap_id) {
+            HeapData::Instance(inst) => inst.class_id(),
+            _ => return false,
+        };
+        match self.heap.get(class_id) {
+            HeapData::ClassObject(cls) => cls.mro_has_attr(attr_name, class_id, self.heap, self.interns),
+            _ => false,
+        }
+    }
+
     /// Looks up a dunder method on an instance's TYPE (not the instance itself).
     ///
     /// This implements the Python semantic that dunder methods are looked up on the
@@ -10821,7 +10861,7 @@ impl<T: ResourceTracker, P: PrintWriter, Tr: VmTracer> VM<'_, T, P, Tr> {
                 (&lhs_candidate, &rhs_candidate)
             {
                 rhs_class_id != lhs_class_id
-                    && self.is_strict_subclass_for_binary(*rhs_class_id, *lhs_class_id)
+                    && self.is_strict_subclass(*rhs_class_id, *lhs_class_id)
                     && rhs_owner_id != lhs_owner_id
             } else {
                 false
@@ -10930,16 +10970,6 @@ impl<T: ResourceTracker, P: PrintWriter, Tr: VmTracer> VM<'_, T, P, Tr> {
         let (method, owner_id) = class_obj.mro_lookup_attr(dunder_name, class_id, self.heap, self.interns)?;
         method.drop_with_heap(self.heap);
         Some((*instance_id, class_id, owner_id))
-    }
-
-    fn is_strict_subclass_for_binary(&self, candidate_subclass: HeapId, candidate_base: HeapId) -> bool {
-        if candidate_subclass == candidate_base {
-            return false;
-        }
-        match self.heap.get(candidate_subclass) {
-            HeapData::ClassObject(cls) => cls.is_subclass_of(candidate_subclass, candidate_base),
-            _ => false,
-        }
     }
 
     /// Returns `None` when a binary dunder returned `NotImplemented`.

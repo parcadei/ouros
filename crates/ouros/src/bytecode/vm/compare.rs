@@ -406,7 +406,12 @@ impl<T: ResourceTracker, P: PrintWriter, Tr: VmTracer> VM<'_, T, P, Tr> {
                     && rhs_cand.owner_id != lhs_cand.owner_id;
                 if rhs_subclass_priority {
                     (Some(rhs_cand.step), Some(lhs_cand.step))
-                } else if lhs_cand.class_id == rhs_cand.class_id {
+                } else if lhs_cand.class_id == rhs_cand.class_id
+                    && matches!(
+                        kind,
+                        PendingCompareKind::Eq | PendingCompareKind::NePrimary | PendingCompareKind::NeEqFallback
+                    )
+                {
                     (Some(lhs_cand.step), None)
                 } else {
                     (Some(lhs_cand.step), Some(rhs_cand.step))
@@ -488,7 +493,7 @@ impl<T: ResourceTracker, P: PrintWriter, Tr: VmTracer> VM<'_, T, P, Tr> {
         }
     }
 
-    fn is_strict_subclass(&self, candidate_subclass: HeapId, candidate_base: HeapId) -> bool {
+    pub(super) fn is_strict_subclass(&self, candidate_subclass: HeapId, candidate_base: HeapId) -> bool {
         if candidate_subclass == candidate_base {
             return false;
         }
@@ -644,7 +649,8 @@ impl<T: ResourceTracker, P: PrintWriter, Tr: VmTracer> VM<'_, T, P, Tr> {
             }
 
             let getitem_id: StringId = StaticStrings::DunderGetitem.into();
-            if self.lookup_type_dunder(*container_id, getitem_id).is_some() {
+            let getitem_name = self.interns.get_str(getitem_id);
+            if self.type_mro_has_attr(*container_id, getitem_name) {
                 let list_result = self.list_build_from_iterator(container.clone_with_heap(self.heap));
                 return match list_result {
                     Ok(CallResult::Push(materialized)) => {
