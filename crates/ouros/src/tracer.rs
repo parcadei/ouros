@@ -90,6 +90,16 @@ pub enum TraceEvent {
         /// Number of default argument values.
         defaults_count: usize,
     },
+    /// An exception was pushed onto the exception stack (handler entered).
+    ExceptionPush {
+        /// Exception stack depth after the push.
+        depth: usize,
+    },
+    /// An exception was popped from the exception stack (handler exited).
+    ExceptionPop {
+        /// Exception stack depth after the pop.
+        depth: usize,
+    },
 }
 
 /// Trait for VM execution tracing.
@@ -301,6 +311,20 @@ impl VmTracer for StderrTracer {
             eprintln!("  +++ MAKE FUNCTION defaults={defaults_count}");
         }
     }
+
+    fn on_exception_push(&mut self, depth: usize) {
+        if self.stopped {
+            return;
+        }
+        eprintln!("  !!! EXC PUSH            depth={depth}");
+    }
+
+    fn on_exception_pop(&mut self, depth: usize) {
+        if self.stopped {
+            return;
+        }
+        eprintln!("  !!! EXC POP             depth={depth}");
+    }
 }
 
 // ============================================================================
@@ -314,6 +338,7 @@ impl VmTracer for StderrTracer {
 /// - Total instruction count
 /// - Maximum call stack depth reached
 /// - Total number of function calls
+/// - Exception push/pop counts (exception handlers entered/exited)
 ///
 /// Retrieve results via [`ProfilingTracer::report`] after execution.
 #[derive(Debug)]
@@ -330,6 +355,10 @@ pub struct ProfilingTracer {
     total_cell_loads: u64,
     /// Total number of cell stores.
     total_cell_stores: u64,
+    /// Total number of exceptions pushed (handlers entered).
+    exception_push_count: u64,
+    /// Total number of exceptions popped (handlers exited).
+    exception_pop_count: u64,
 }
 
 /// Summary report from a profiling trace.
@@ -347,6 +376,10 @@ pub struct ProfilingReport {
     pub total_cell_loads: u64,
     /// Total number of cell stores.
     pub total_cell_stores: u64,
+    /// Total number of exceptions pushed (exception handlers entered).
+    pub exception_push_count: u64,
+    /// Total number of exceptions popped (exception handlers exited).
+    pub exception_pop_count: u64,
 }
 
 impl ProfilingTracer {
@@ -360,6 +393,8 @@ impl ProfilingTracer {
             total_calls: 0,
             total_cell_loads: 0,
             total_cell_stores: 0,
+            exception_push_count: 0,
+            exception_pop_count: 0,
         }
     }
 
@@ -377,6 +412,8 @@ impl ProfilingTracer {
             total_calls: self.total_calls,
             total_cell_loads: self.total_cell_loads,
             total_cell_stores: self.total_cell_stores,
+            exception_push_count: self.exception_push_count,
+            exception_pop_count: self.exception_pop_count,
         }
     }
 }
@@ -408,6 +445,14 @@ impl VmTracer for ProfilingTracer {
 
     fn on_cell_store(&mut self, _slot: u16, _cells_len: usize) {
         self.total_cell_stores += 1;
+    }
+
+    fn on_exception_push(&mut self, _depth: usize) {
+        self.exception_push_count += 1;
+    }
+
+    fn on_exception_pop(&mut self, _depth: usize) {
+        self.exception_pop_count += 1;
     }
 }
 
@@ -594,6 +639,20 @@ impl VmTracer for RecordingTracer {
             defaults_count,
         });
     }
+
+    fn on_exception_push(&mut self, depth: usize) {
+        if self.at_limit() {
+            return;
+        }
+        self.events.push(TraceEvent::ExceptionPush { depth });
+    }
+
+    fn on_exception_pop(&mut self, depth: usize) {
+        if self.at_limit() {
+            return;
+        }
+        self.events.push(TraceEvent::ExceptionPop { depth });
+    }
 }
 
 impl std::fmt::Display for ProfilingReport {
@@ -604,6 +663,8 @@ impl std::fmt::Display for ProfilingReport {
         writeln!(f, "Max call depth:     {}", self.max_depth)?;
         writeln!(f, "Cell loads:         {}", self.total_cell_loads)?;
         writeln!(f, "Cell stores:        {}", self.total_cell_stores)?;
+        writeln!(f, "Exception pushes:   {}", self.exception_push_count)?;
+        writeln!(f, "Exception pops:     {}", self.exception_pop_count)?;
         writeln!(f)?;
         writeln!(f, "--- Opcode Frequency ---")?;
         for (opcode, count) in &self.opcode_counts {
@@ -611,5 +672,91 @@ impl std::fmt::Display for ProfilingReport {
             writeln!(f, "  {opcode:<20?} {count:>10}  ({pct:>5.1}%)")?;
         }
         Ok(())
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn recording_tracer_captures_exception_events() {
+        let mut tracer = RecordingTracer::new();
+
+        // Simulate exception push at depth 1
+        tracer.on_exception_push(1);
+        // Simulate exception pop at depth 0 (after pop)
+        tracer.on_exception_pop(0);
+
+        let events = tracer.events();
+        assert_eq!(events.len(), 2);
+
+        assert!(
+            matches!(events[0], TraceEvent::ExceptionPush { depth: 1 }),
+            "First event should be ExceptionPush with depth 1"
+        );
+        assert!(
+            matches!(events[1], TraceEvent::ExceptionPop { depth: 0 }),
+            "Second event should be ExceptionPop with depth 0"
+        );
+    }
+
+    #[test]
+    fn recording_tracer_nested_exceptions() {
+        let mut tracer = RecordingTracer::new();
+
+        // Inner exception caught, then outer
+        tracer.on_exception_push(1); // Inner handler entered
+        tracer.on_exception_push(2); // Outer handler entered (nested)
+        tracer.on_exception_pop(1); // Outer handler exited
+        tracer.on_exception_pop(0); // Inner handler exited
+
+        let events = tracer.events();
+        assert_eq!(events.len(), 4);
+
+        assert!(matches!(events[0], TraceEvent::ExceptionPush { depth: 1 }));
+        assert!(matches!(events[1], TraceEvent::ExceptionPush { depth: 2 }));
+        assert!(matches!(events[2], TraceEvent::ExceptionPop { depth: 1 }));
+        assert!(matches!(events[3], TraceEvent::ExceptionPop { depth: 0 }));
+    }
+
+    #[test]
+    fn profiling_tracer_counts_exceptions() {
+        let mut tracer = ProfilingTracer::new();
+
+        tracer.on_exception_push(1);
+        tracer.on_exception_push(2);
+        tracer.on_exception_pop(1);
+        tracer.on_exception_push(2);
+        tracer.on_exception_pop(1);
+        tracer.on_exception_pop(0);
+
+        let report = tracer.report();
+        assert_eq!(report.exception_push_count, 3);
+        assert_eq!(report.exception_pop_count, 3);
+    }
+
+    #[test]
+    fn recording_tracer_with_limit() {
+        let mut tracer = RecordingTracer::with_limit(2);
+
+        tracer.on_exception_push(1);
+        tracer.on_exception_push(2);
+        tracer.on_exception_push(3); // Should not be recorded (at limit)
+        tracer.on_exception_pop(2); // Should not be recorded (at limit)
+
+        let events = tracer.events();
+        assert_eq!(events.len(), 2);
+        assert!(matches!(events[0], TraceEvent::ExceptionPush { depth: 1 }));
+        assert!(matches!(events[1], TraceEvent::ExceptionPush { depth: 2 }));
+    }
+
+    #[test]
+    fn trace_event_cloneable() {
+        // Verify TraceEvent is Clone (important for some use cases)
+        let event = TraceEvent::ExceptionPush { depth: 5 };
+        let cloned = event.clone();
+
+        assert!(matches!(cloned, TraceEvent::ExceptionPush { depth: 5 }));
     }
 }

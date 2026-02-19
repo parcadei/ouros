@@ -8912,12 +8912,14 @@ impl<'a, T: ResourceTracker, P: PrintWriter, Tr: VmTracer> VM<'a, T, P, Tr> {
             .expect("exception handler entered without stack exception value");
         self.exception_stack.push(exc_value);
         self.exception_stack_positions.push(stack_pos);
+        self.tracer.on_exception_push(self.exception_stack.len());
     }
 
     /// Pops the current active exception context, if any.
     pub(super) fn pop_exception_context(&mut self) -> Option<Value> {
         let exc = self.exception_stack.pop()?;
         let _ = self.exception_stack_positions.pop();
+        self.tracer.on_exception_pop(self.exception_stack.len());
         Some(exc)
     }
 
