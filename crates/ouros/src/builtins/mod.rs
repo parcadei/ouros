@@ -42,9 +42,9 @@ use strum::{Display, EnumString, FromRepr, IntoStaticStr};
 use crate::{
     args::ArgValues,
     defer_drop,
-    exception_private::{ExcType, RunResult, SimpleException},
+    exception_private::{ExcType, RunError, RunResult, SimpleException},
     fstring::{ParsedFormatSpec, format_with_spec},
-    heap::{DropWithHeap, Heap, HeapData},
+    heap::{DropWithHeap, Heap, HeapData, HeapId},
     intern::{Interns, StaticStrings},
     io::PrintWriter,
     resource::ResourceTracker,
@@ -173,6 +173,20 @@ fn call_type_method(
     match ty {
         Type::Str => {
             defer_drop!(instance, heap);
+            if matches!(method, StaticStrings::DunderNew) {
+                let cls_is_valid_type = match instance {
+                    Value::Ref(class_id) => class_is_builtin_subclass(*class_id, Type::Str, heap),
+                    Value::Builtin(Builtins::Type(builtin_ty)) => *builtin_ty == Type::Str,
+                    _ => false,
+                };
+                if !cls_is_valid_type {
+                    rest_args.drop_with_heap(heap);
+                    return Err(ExcType::type_error(
+                        "str.__new__(X): X is not a type object".to_string(),
+                    ));
+                }
+                return Type::Str.call(heap, rest_args, interns);
+            }
             // Get the string value and call the method
             match instance {
                 Value::InternString(s) => {
@@ -284,6 +298,7 @@ fn call_type_method(
                 StaticStrings::DunderSetattr
                     | StaticStrings::DunderGetattribute
                     | StaticStrings::DunderDelattr
+                    | StaticStrings::DunderInit
                     | StaticStrings::DunderInitSubclass
             ) {
                 rest_args.drop_with_heap(heap);
@@ -326,6 +341,27 @@ fn call_type_method(
                     return Err(ExcType::type_error(format!(
                         "{class_name}.__init_subclass__() takes no keyword arguments"
                     )));
+                }
+                positional.drop_with_heap(heap);
+                kwargs.drop_with_heap(heap);
+                return Ok(Value::None);
+            }
+
+            if method == StaticStrings::DunderInit {
+                let (positional, kwargs) = rest_args.into_parts();
+                if !kwargs.is_empty() {
+                    positional.drop_with_heap(heap);
+                    kwargs.drop_with_heap(heap);
+                    return Err(ExcType::type_error(
+                        "object.__init__() takes no keyword arguments".to_string(),
+                    ));
+                }
+                if positional.len() > 0 {
+                    positional.drop_with_heap(heap);
+                    kwargs.drop_with_heap(heap);
+                    return Err(ExcType::type_error(
+                        "object.__init__() takes exactly one argument (the instance to initialize)".to_string(),
+                    ));
                 }
                 positional.drop_with_heap(heap);
                 kwargs.drop_with_heap(heap);
@@ -434,6 +470,57 @@ fn call_type_method(
 
             Ok(Value::None)
         }
+        Type::List | Type::Dict | Type::Set => {
+            defer_drop!(instance, heap);
+            if !matches!(method, StaticStrings::DunderInit) {
+                rest_args.drop_with_heap(heap);
+                return Err(ExcType::type_error(format!(
+                    "descriptor '{method_name}' not implemented for type '{ty}'"
+                )));
+            }
+
+            let is_valid_instance = match instance {
+                Value::Ref(id) => match heap.get(*id) {
+                    HeapData::List(_) => ty == Type::List,
+                    HeapData::Dict(_) => ty == Type::Dict,
+                    HeapData::Set(_) => ty == Type::Set,
+                    HeapData::Instance(inst) => class_is_builtin_subclass(inst.class_id(), ty, heap),
+                    _ => false,
+                },
+                _ => false,
+            };
+            if !is_valid_instance {
+                rest_args.drop_with_heap(heap);
+                return Err(ExcType::type_error(format!(
+                    "descriptor '{method_name}' requires a '{ty}' object"
+                )));
+            }
+
+            let init_result = ty.call(heap, rest_args, interns)?;
+            init_result.drop_with_heap(heap);
+            Ok(Value::None)
+        }
+        Type::Int | Type::Str | Type::Tuple => {
+            defer_drop!(instance, heap);
+            if !matches!(method, StaticStrings::DunderNew) {
+                rest_args.drop_with_heap(heap);
+                return Err(ExcType::type_error(format!(
+                    "descriptor '{method_name}' not implemented for type '{ty}'"
+                )));
+            }
+
+            let cls_is_valid_type = match instance {
+                Value::Ref(class_id) => class_is_builtin_subclass(*class_id, ty, heap),
+                Value::Builtin(Builtins::Type(builtin_ty)) => *builtin_ty == ty,
+                _ => false,
+            };
+            if !cls_is_valid_type {
+                rest_args.drop_with_heap(heap);
+                return Err(ExcType::type_error(format!("{ty}.__new__(X): X is not a type object")));
+            }
+
+            ty.call(heap, rest_args, interns)
+        }
         _ => {
             rest_args.drop_with_heap(heap);
             instance.drop_with_heap(heap);
@@ -442,6 +529,20 @@ fn call_type_method(
             )))
         }
     }
+}
+
+/// Returns whether `class_id` is a class whose MRO contains the given builtin type.
+///
+/// Builtin classes are represented by heap-allocated `ClassObject` wrappers, so
+/// descriptor checks for builtin methods need this helper to accept user classes
+/// that subclass builtin types (e.g., `class MyList(list): ...`).
+fn class_is_builtin_subclass(class_id: HeapId, builtin_ty: Type, heap: &Heap<impl ResourceTracker>) -> bool {
+    let HeapData::ClassObject(cls) = heap.get(class_id) else {
+        return false;
+    };
+    cls.mro()
+        .iter()
+        .any(|mro_id| heap.builtin_type_for_class_id(*mro_id) == Some(builtin_ty))
 }
 
 impl FromStr for Builtins {
@@ -613,7 +714,7 @@ pub enum BuiltinsFunctions {
     Super,
     // tuple - handled by Type enum
     Type,
-    // Vars,
+    Vars,
     Zip,
     Eval,
     // __import__ - not planned
@@ -670,6 +771,7 @@ impl BuiltinsFunctions {
             Self::Sorted => sorted::builtin_sorted(heap, args, interns),
             Self::Sum => sum::builtin_sum(heap, args, interns),
             Self::Type => type_::builtin_type(heap, args, interns),
+            Self::Vars => builtin_vars(heap, args, interns),
             Self::Zip => zip::builtin_zip(heap, args, interns),
             Self::Eval => builtin_eval(heap, args, interns),
             Self::Super => {
@@ -727,6 +829,36 @@ fn builtin_int_bit_length(heap: &mut Heap<impl ResourceTracker>, args: ArgValues
     };
     value.drop_with_heap(heap);
     result
+}
+
+/// Implements `vars([object])` for sandboxed execution.
+///
+/// CPython resolves `vars()` (no arguments) to `locals()`. Ouros intentionally
+/// does not expose ambient locals in sandboxed code, so the zero-argument form
+/// raises `TypeError`. The one-argument form mirrors CPython by returning
+/// `object.__dict__` or raising `TypeError` when unavailable.
+fn builtin_vars(heap: &mut Heap<impl ResourceTracker>, args: ArgValues, interns: &Interns) -> RunResult<Value> {
+    let Some(value) = args.get_zero_one_arg("vars", heap)? else {
+        return Err(ExcType::type_error(
+            "vars() without arguments is not supported in this sandbox".to_string(),
+        ));
+    };
+    defer_drop!(value, heap);
+
+    let dict_attr_id = StaticStrings::DunderDictAttr.into();
+    match value.py_getattr(dict_attr_id, heap, interns) {
+        Ok(crate::types::AttrCallResult::Value(dict_value)) => Ok(dict_value),
+        Ok(other) => {
+            crate::modules::json::drop_non_value_attr_result(other, heap);
+            Err(ExcType::type_error(
+                "vars() argument must have __dict__ attribute".to_string(),
+            ))
+        }
+        Err(RunError::Exc(exc)) if exc.exc.exc_type() == ExcType::AttributeError => Err(ExcType::type_error(
+            "vars() argument must have __dict__ attribute".to_string(),
+        )),
+        Err(err) => Err(err),
+    }
 }
 
 /// Minimal `exec(source[, globals[, locals]])` runtime hook used by parity tests.

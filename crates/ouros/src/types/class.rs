@@ -1800,9 +1800,12 @@ impl PyTrait for SuperProxy {
     ) -> RunResult<Option<AttrCallResult>> {
         let attr_name = interns.get_str(attr_id);
 
-        // Get the instance's class to find the MRO
+        // Get the lookup class to find the MRO.
+        // For normal methods this is the instance's class. For `super()` used in
+        // `__new__`/classmethods, `__self__` can be the class object itself.
         let instance_class_id = match heap.get(self.instance_id) {
             HeapData::Instance(inst) => inst.class_id(),
+            HeapData::ClassObject(_) => self.instance_id,
             _ => return Err(ExcType::type_error("super(): __self__ is not an instance".to_string())),
         };
 
@@ -1842,7 +1845,7 @@ impl PyTrait for SuperProxy {
                 }
                 return Ok(Some(AttrCallResult::Value(value.clone_with_heap(heap))));
             }
-            if let Some(value) = builtin_exception_method_for_attr(class_id, attr_name, heap) {
+            if let Some(value) = builtin_super_method_for_attr(class_id, attr_name, heap) {
                 return Ok(Some(AttrCallResult::Value(value)));
             }
         }
@@ -1869,6 +1872,42 @@ fn builtin_exception_method_for_attr(
         "__init__" => Some(Value::Builtin(Builtins::TypeMethod {
             ty: Type::Exception(exc_type),
             method: StaticStrings::DunderInit,
+        })),
+        _ => None,
+    }
+}
+
+/// Returns synthesized methods exposed by builtin classes when resolving via `super()`.
+///
+/// Builtin class wrappers are represented as `ClassObject`s with empty namespaces.
+/// `super()` therefore needs explicit synthetic fallback methods for parity with
+/// CPython's descriptor lookup over real builtin types.
+pub(crate) fn builtin_super_method_for_attr(
+    class_id: HeapId,
+    attr_name: &str,
+    heap: &Heap<impl ResourceTracker>,
+) -> Option<Value> {
+    if let Some(value) = builtin_exception_method_for_attr(class_id, attr_name, heap) {
+        return Some(value);
+    }
+
+    let builtin_ty = heap.builtin_type_for_class_id(class_id)?;
+    match (builtin_ty, attr_name) {
+        (Type::Object, "__init__") => Some(Value::Builtin(Builtins::TypeMethod {
+            ty: Type::Object,
+            method: StaticStrings::DunderInit,
+        })),
+        (Type::Object, "__init_subclass__") => Some(Value::Builtin(Builtins::TypeMethod {
+            ty: Type::Object,
+            method: StaticStrings::DunderInitSubclass,
+        })),
+        (Type::List | Type::Dict | Type::Set, "__init__") => Some(Value::Builtin(Builtins::TypeMethod {
+            ty: builtin_ty,
+            method: StaticStrings::DunderInit,
+        })),
+        (Type::Int | Type::Str | Type::Tuple, "__new__") => Some(Value::Builtin(Builtins::TypeMethod {
+            ty: builtin_ty,
+            method: StaticStrings::DunderNew,
         })),
         _ => None,
     }

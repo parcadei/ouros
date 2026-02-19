@@ -37,7 +37,7 @@ use crate::{
         AttrCallResult, Bytes, ClassObject, Dict, ExitCallback, Instance, List, OurosIter, PyTrait, StdlibObject, Str,
         Type, UserProperty, allocate_tuple,
         bytes::{bytes_fromhex, bytes_maketrans, call_bytes_method},
-        class::PropertyAccessorKind,
+        class::{PropertyAccessorKind, builtin_super_method_for_attr},
         dict::dict_fromkeys,
         iter::advance_on_heap,
         make_generic_alias,
@@ -10692,8 +10692,6 @@ impl<T: ResourceTracker, P: PrintWriter, Tr: VmTracer> VM<'_, T, P, Tr> {
 
         // Search for method in classes after current_class_id
         let mut method_value = None;
-        let init_id: StringId = StaticStrings::DunderInit.into();
-        let init_subclass_id: StringId = StaticStrings::DunderInitSubclass.into();
         for &class_id in &mro[start_idx..] {
             if let HeapData::ClassObject(cls) = self.heap.get(class_id)
                 && let Some(value) = cls.namespace().get_by_str(method_name, self.heap, self.interns)
@@ -10701,22 +10699,8 @@ impl<T: ResourceTracker, P: PrintWriter, Tr: VmTracer> VM<'_, T, P, Tr> {
                 method_value = Some(value.clone_with_heap(self.heap));
                 break;
             }
-            if method_name_id == init_id
-                && let Some(Type::Exception(exc_type)) = self.heap.builtin_type_for_class_id(class_id)
-            {
-                method_value = Some(Value::Builtin(Builtins::TypeMethod {
-                    ty: Type::Exception(exc_type),
-                    method: StaticStrings::DunderInit,
-                }));
-                break;
-            }
-            if method_name_id == init_subclass_id
-                && matches!(self.heap.builtin_type_for_class_id(class_id), Some(Type::Object))
-            {
-                method_value = Some(Value::Builtin(Builtins::TypeMethod {
-                    ty: Type::Object,
-                    method: StaticStrings::DunderInitSubclass,
-                }));
+            if let Some(value) = builtin_super_method_for_attr(class_id, method_name, self.heap) {
+                method_value = Some(value);
                 break;
             }
         }
@@ -10771,11 +10755,17 @@ impl<T: ResourceTracker, P: PrintWriter, Tr: VmTracer> VM<'_, T, P, Tr> {
             return Err(ExcType::attribute_error("super", method_name));
         };
 
-        // Prepend instance as self argument
+        let new_id: StringId = StaticStrings::DunderNew.into();
+        if method_name_id == new_id && matches!(self.heap.get(instance_id), HeapData::ClassObject(_)) {
+            // `super().__new__(cls, ...)` should not inject an extra implicit first
+            // argument. The explicit `cls` argument is already provided by the caller.
+            return self.call_function(method_value, args);
+        }
+
+        // Prepend instance as self argument for regular instance-method `super()` calls.
         self.heap.inc_ref(instance_id);
         let self_arg = Value::Ref(instance_id);
-
-        let new_args = match args {
+        let call_args = match args {
             ArgValues::Empty => ArgValues::One(self_arg),
             ArgValues::One(a) => ArgValues::Two(self_arg, a),
             ArgValues::Two(a, b) => ArgValues::ArgsKargs {
@@ -10792,7 +10782,7 @@ impl<T: ResourceTracker, P: PrintWriter, Tr: VmTracer> VM<'_, T, P, Tr> {
             }
         };
 
-        self.call_function(method_value, new_args)
+        self.call_function(method_value, call_args)
     }
 
     /// Handles `super().__new__(metaclass, name, bases, namespace)` fallback.
