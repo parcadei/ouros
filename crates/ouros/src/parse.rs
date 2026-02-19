@@ -1,4 +1,4 @@
-use std::{borrow::Cow, fmt};
+use std::{any::Any, borrow::Cow, fmt};
 
 use num_bigint::BigInt;
 use ruff_python_ast::{
@@ -164,15 +164,67 @@ pub struct ParseResult {
     pub interner: InternerBuilder,
 }
 
+/// Stack size for the dedicated parser thread.
+///
+/// Both ruff's recursive descent parser and Ouros's AST-walking pass can
+/// overflow the default 2 MiB Linux stack on deeply nested input. Running
+/// the entire parse pipeline on an explicit 8 MiB thread avoids
+/// process-killing aborts and lets depth checks return clean `SyntaxError`.
+const PARSER_THREAD_STACK_SIZE: usize = 8 * 1024 * 1024;
+
+/// Runs the full parse pipeline (ruff lexing/parsing + Ouros AST walk) on a
+/// dedicated thread with an explicit 8 MiB stack.
+///
+/// This prevents stack overflow on deeply nested Python input regardless of
+/// the caller's thread stack size. Both phases recurse proportionally to
+/// nesting depth, so both must run on the larger stack.
+fn parse_on_dedicated_thread(
+    code: &str,
+    filename: &str,
+    interner: Option<InternerBuilder>,
+) -> Result<ParseResult, ParseError> {
+    let code = code.to_owned();
+    let filename = filename.to_owned();
+    let handle = std::thread::Builder::new()
+        .stack_size(PARSER_THREAD_STACK_SIZE)
+        .spawn(move || {
+            let mut parser = match interner {
+                Some(i) => Parser::new_with_interner(&code, &filename, i),
+                None => Parser::new(&code, &filename),
+            };
+            let parsed =
+                parse_module(&code).map_err(|e| ParseError::syntax(e.to_string(), parser.convert_range(e.range())))?;
+            let module = parsed.into_syntax();
+            let nodes = parser.parse_statements(module.body)?;
+            Ok(ParseResult {
+                nodes,
+                interner: parser.interner,
+            })
+        })
+        .map_err(|e| ParseError::syntax(format!("failed to spawn parser thread: {e}"), CodeRange::default()))?;
+
+    match handle.join() {
+        Ok(result) => result,
+        Err(payload) => Err(ParseError::syntax(
+            format!("parser thread panicked: {}", panic_payload_message(&payload)),
+            CodeRange::default(),
+        )),
+    }
+}
+
+/// Extracts a displayable message from a panic payload.
+fn panic_payload_message(payload: &Box<dyn Any + Send + 'static>) -> String {
+    if let Some(message) = payload.downcast_ref::<&str>() {
+        (*message).to_owned()
+    } else if let Some(message) = payload.downcast_ref::<String>() {
+        message.clone()
+    } else {
+        "unknown panic payload".to_owned()
+    }
+}
+
 pub(crate) fn parse(code: &str, filename: &str) -> Result<ParseResult, ParseError> {
-    let mut parser = Parser::new(code, filename);
-    let parsed = parse_module(code).map_err(|e| ParseError::syntax(e.to_string(), parser.convert_range(e.range())))?;
-    let module = parsed.into_syntax();
-    let nodes = parser.parse_statements(module.body)?;
-    Ok(ParseResult {
-        nodes,
-        interner: parser.interner,
-    })
+    parse_on_dedicated_thread(code, filename, None)
 }
 
 /// Parses code using an existing interner state.
@@ -185,14 +237,7 @@ pub(crate) fn parse_with_interner(
     filename: &str,
     interner: InternerBuilder,
 ) -> Result<ParseResult, ParseError> {
-    let mut parser = Parser::new_with_interner(code, filename, interner);
-    let parsed = parse_module(code).map_err(|e| ParseError::syntax(e.to_string(), parser.convert_range(e.range())))?;
-    let module = parsed.into_syntax();
-    let nodes = parser.parse_statements(module.body)?;
-    Ok(ParseResult {
-        nodes,
-        interner: parser.interner,
-    })
+    parse_on_dedicated_thread(code, filename, Some(interner))
 }
 
 /// Parser for converting ruff AST to Ouros's intermediate ParseNode representation.

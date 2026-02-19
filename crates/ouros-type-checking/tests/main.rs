@@ -122,8 +122,8 @@ result = add(1, '2')
 }
 
 #[test]
-fn missing_stdlib_datetime() {
-    let code = "import datetime\nprint(datetime.datetime.now())";
+fn missing_stdlib_module() {
+    let code = "import tkinter\nprint(tkinter.Tk())";
 
     let result = type_check(&SourceFile::new(code, "main.py"), None).unwrap();
     assert!(result.is_some());
@@ -132,7 +132,7 @@ fn missing_stdlib_datetime() {
     let error_diagnostics = failure.to_string();
     assert_eq!(
         error_diagnostics,
-        "main.py:1:8: error[unresolved-import] Cannot resolve imported module `datetime`\n"
+        "main.py:1:8: error[unresolved-import] Cannot resolve imported module `tkinter`\n"
     );
     let dbg = format!("{failure:?}");
     assert!(dbg.starts_with("TypeCheckingDiagnostics:"), "got: {dbg}");
