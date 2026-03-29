@@ -181,8 +181,6 @@ pub struct ReplSession {
     name_map: AHashMap<String, NamespaceId>,
     /// Current size of the global namespace.
     namespace_size: usize,
-    /// Number of external function slots at the start of the namespace.
-    external_function_count: usize,
     /// Script name used in parse/runtime error reporting.
     script_name: String,
     /// VM snapshot waiting to be resumed after an interactive yield.
@@ -250,7 +248,6 @@ impl ReplSession {
             namespaces: Namespaces::new(namespace_values),
             name_map,
             namespace_size,
-            external_function_count: external_function_ids.len(),
             script_name: script_name.to_string(),
             pending_snapshot: None,
             pending_resume_state: None,
@@ -327,7 +324,6 @@ impl ReplSession {
                 *self.namespaces.get_mut(GLOBAL_NS_IDX).get_mut(slot) = Value::ExtFunction(ext_func_id);
             }
         }
-        self.external_function_count = self.external_functions.len();
         Ok(collisions)
     }
 
@@ -366,7 +362,6 @@ impl ReplSession {
             namespaces: self.namespaces.deep_clone(),
             name_map: self.name_map.clone(),
             namespace_size: self.namespace_size,
-            external_function_count: self.external_function_count,
             script_name: self.script_name.clone(),
             pending_snapshot: None,
             pending_resume_state: None,
@@ -410,7 +405,7 @@ impl ReplSession {
             namespaces_bytes,
             name_map: self.name_map.iter().map(|(k, v)| (k.clone(), *v)).collect(),
             namespace_size: self.namespace_size,
-            external_function_count: self.external_function_count,
+            external_function_count: self.external_functions.len(),
             script_name: self.script_name.clone(),
         };
 
@@ -457,7 +452,6 @@ impl ReplSession {
             namespaces,
             name_map,
             namespace_size: snapshot.namespace_size,
-            external_function_count: snapshot.external_function_count,
             script_name: snapshot.script_name,
             pending_snapshot: None,
             pending_resume_state: None,

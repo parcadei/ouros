@@ -972,6 +972,13 @@ impl SessionManager {
     ) -> Result<Vec<String>, SessionError> {
         let sid = resolve_session_id(session_id);
         let entry = self.get_session_mut(sid)?;
+
+        if entry.pending_call_id.is_some() {
+            return Err(SessionError::InvalidState(
+                "cannot register external functions while a call is pending".to_owned(),
+            ));
+        }
+
         let collisions = entry.session.register_external_functions(external_functions)?;
         entry.external_functions = entry.session.external_function_names().to_vec();
         Ok(collisions)
