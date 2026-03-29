@@ -972,7 +972,7 @@ impl SessionManager {
     ) -> Result<Vec<String>, SessionError> {
         let sid = resolve_session_id(session_id);
         let entry = self.get_session_mut(sid)?;
-        let collisions = entry.session.register_external_functions(external_functions);
+        let collisions = entry.session.register_external_functions(external_functions)?;
         entry.external_functions = entry.session.external_function_names().to_vec();
         Ok(collisions)
     }

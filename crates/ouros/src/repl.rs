@@ -5,7 +5,7 @@
 
 use std::time::Instant;
 
-use ahash::AHashMap;
+use ahash::{AHashMap, AHashSet};
 use num_bigint::BigInt;
 
 use crate::{
@@ -205,6 +205,8 @@ pub struct ReplSession {
     /// `ResolveFutures` is returned to the host, and stored in
     /// `PendingFuturesState` for incremental resolution.
     future_metadata: AHashMap<u32, PendingFutureInfo>,
+    /// O(1) membership set mirroring `external_functions` for name checks.
+    external_function_set: AHashSet<String>,
 }
 
 impl ReplSession {
@@ -238,6 +240,7 @@ impl ReplSession {
         }
 
         let namespace_size = namespace_values.len();
+        let external_function_set: AHashSet<String> = external_functions.iter().cloned().collect();
 
         Self {
             interner: InternerBuilder::new(""),
@@ -254,6 +257,7 @@ impl ReplSession {
             pending_futures_state: None,
             capabilities: None,
             future_metadata: AHashMap::new(),
+            external_function_set,
         }
     }
 
@@ -270,10 +274,7 @@ impl ReplSession {
 
     /// Returns `true` if `name` is a registered external function.
     fn is_external_function_name(&self, name: &str) -> bool {
-        let Some(&slot) = self.name_map.get(name) else {
-            return false;
-        };
-        matches!(self.namespaces.get(GLOBAL_NS_IDX).get(slot), Value::ExtFunction(_))
+        self.external_function_set.contains(name)
     }
 
     /// Returns the list of registered external function names.
@@ -293,30 +294,41 @@ impl ReplSession {
     /// callable from subsequent `execute()` calls.
     ///
     /// Returns the names that were skipped due to collision with user variables.
-    pub fn register_external_functions(&mut self, new_functions: Vec<String>) -> Vec<String> {
+    pub fn register_external_functions(&mut self, new_functions: Vec<String>) -> Result<Vec<String>, ReplError> {
+        self.ensure_not_waiting_for_resume()?;
         let mut collisions = Vec::new();
         for function_name in new_functions {
-            if self.is_external_function_name(&function_name) {
+            if self.external_function_set.contains(&function_name) {
                 continue;
             }
 
-            // Reject if a user variable already occupies this name.
-            if self.name_map.contains_key(&function_name) {
-                collisions.push(function_name);
-                continue;
+            // Check if a name_map entry exists.
+            if let Some(&existing_slot) = self.name_map.get(&function_name) {
+                let value = self.namespaces.get(GLOBAL_NS_IDX).get(existing_slot);
+                if !matches!(value, Value::Undefined) {
+                    // Live user variable -- reject to preserve state.
+                    collisions.push(function_name);
+                    continue;
+                }
+                // Tombstoned slot (Value::Undefined) -- reuse it.
+                let ext_func_id = ExtFunctionId::new(self.external_functions.len());
+                self.external_functions.push(function_name.clone());
+                self.external_function_set.insert(function_name);
+                *self.namespaces.get_mut(GLOBAL_NS_IDX).get_mut(existing_slot) = Value::ExtFunction(ext_func_id);
+            } else {
+                let ext_func_id = ExtFunctionId::new(self.external_functions.len());
+                self.external_functions.push(function_name.clone());
+                self.external_function_set.insert(function_name.clone());
+
+                let slot = NamespaceId::new(self.namespace_size);
+                self.namespace_size += 1;
+                self.namespaces.grow_global(self.namespace_size);
+                self.name_map.insert(function_name, slot);
+                *self.namespaces.get_mut(GLOBAL_NS_IDX).get_mut(slot) = Value::ExtFunction(ext_func_id);
             }
-
-            let ext_func_id = ExtFunctionId::new(self.external_functions.len());
-            self.external_functions.push(function_name.clone());
-
-            let slot = NamespaceId::new(self.namespace_size);
-            self.namespace_size += 1;
-            self.namespaces.grow_global(self.namespace_size);
-            self.name_map.insert(function_name, slot);
-            *self.namespaces.get_mut(GLOBAL_NS_IDX).get_mut(slot) = Value::ExtFunction(ext_func_id);
         }
         self.external_function_count = self.external_functions.len();
-        collisions
+        Ok(collisions)
     }
 
     /// Returns the current capability set, if any.
@@ -361,6 +373,7 @@ impl ReplSession {
             pending_futures_state: None,
             capabilities: self.capabilities.clone(),
             future_metadata: AHashMap::new(),
+            external_function_set: self.external_function_set.clone(),
         }
     }
 
@@ -434,6 +447,7 @@ impl ReplSession {
         );
 
         let name_map: AHashMap<String, NamespaceId> = snapshot.name_map.into_iter().collect();
+        let external_function_set: AHashSet<String> = snapshot.external_functions.iter().cloned().collect();
 
         Ok(Self {
             interner,
@@ -450,6 +464,7 @@ impl ReplSession {
             pending_futures_state: None,
             capabilities: None,
             future_metadata: AHashMap::new(),
+            external_function_set,
         })
     }
 
