@@ -964,7 +964,8 @@ impl SessionManager {
     ///
     /// # Errors
     ///
-    /// Returns `SessionError::NotFound` if the session does not exist.
+    /// Returns `SessionError::NotFound` if the session does not exist, or
+    /// `SessionError::InvalidState` if the session has a pending external call.
     pub fn register_external_functions(
         &mut self,
         session_id: Option<&str>,
