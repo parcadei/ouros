@@ -268,6 +268,50 @@ impl ReplSession {
         self.capabilities = capabilities;
     }
 
+    /// Returns `true` if `name` is a registered external function.
+    fn is_external_function_name(&self, name: &str) -> bool {
+        self.external_functions.iter().any(|f| f == name)
+    }
+
+    /// Returns the list of registered external function names.
+    #[must_use]
+    pub fn external_function_names(&self) -> &[String] {
+        &self.external_functions
+    }
+
+    /// Registers additional external functions on an existing session without
+    /// clearing state.
+    ///
+    /// Functions that are already registered (by name) are silently skipped.
+    /// New functions are added at the end of the namespace and are immediately
+    /// callable from subsequent `execute()` calls.
+    pub fn register_external_functions(&mut self, new_functions: Vec<String>) {
+        for function_name in new_functions {
+            if self.is_external_function_name(&function_name) {
+                continue;
+            }
+
+            let ext_func_id = ExtFunctionId::new(self.external_functions.len());
+            self.external_functions.push(function_name.clone());
+
+            // If a user variable already occupies this name, replace it.
+            if let Some(&existing_slot) = self.name_map.get(&function_name) {
+                let old = std::mem::replace(
+                    self.namespaces.get_mut(GLOBAL_NS_IDX).get_mut(existing_slot),
+                    Value::ExtFunction(ext_func_id),
+                );
+                old.drop_with_heap(&mut self.heap);
+            } else {
+                let slot = NamespaceId::new(self.namespace_size);
+                self.namespace_size += 1;
+                self.namespaces.grow_global(self.namespace_size);
+                self.name_map.insert(function_name, slot);
+                *self.namespaces.get_mut(GLOBAL_NS_IDX).get_mut(slot) = Value::ExtFunction(ext_func_id);
+            }
+        }
+        self.external_function_count = self.external_functions.len();
+    }
+
     /// Returns the current capability set, if any.
     #[must_use]
     pub fn capabilities(&self) -> Option<&CapabilitySet> {
@@ -671,7 +715,7 @@ impl ReplSession {
         let mut vars = Vec::new();
 
         for (name, &slot) in &self.name_map {
-            if slot.index() < self.external_function_count {
+            if self.is_external_function_name(name) {
                 continue;
             }
             let value = global.get(slot);
@@ -691,7 +735,7 @@ impl ReplSession {
     #[must_use]
     pub fn get_variable(&self, name: &str) -> Option<Object> {
         let &slot = self.name_map.get(name)?;
-        if slot.index() < self.external_function_count {
+        if self.is_external_function_name(name) {
             return None;
         }
 
@@ -719,7 +763,7 @@ impl ReplSession {
 
         // First check if the variable exists
         let &slot = self.name_map.get(name)?;
-        if slot.index() < self.external_function_count {
+        if self.is_external_function_name(name) {
             return None;
         }
 
@@ -791,7 +835,7 @@ impl ReplSession {
         let new_value = value.to_value(&mut self.heap, &interns)?;
 
         if let Some(&existing_slot) = self.name_map.get(name) {
-            if existing_slot.index() < self.external_function_count {
+            if self.is_external_function_name(name) {
                 new_value.drop_with_heap(&mut self.heap);
                 return Err(InvalidInputError::invalid_type("cannot overwrite external function"));
             }
@@ -834,7 +878,7 @@ impl ReplSession {
             return Ok(false);
         };
 
-        if slot.index() < self.external_function_count {
+        if self.is_external_function_name(name) {
             return Err(InvalidInputError::invalid_type("cannot delete external function"));
         }
 

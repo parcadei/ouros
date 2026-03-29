@@ -337,6 +337,21 @@ impl PySessionManager {
         Ok(())
     }
 
+    /// Register external functions on an existing session without clearing state.
+    ///
+    /// Functions already registered are silently skipped. Existing variables
+    /// and history are preserved.
+    #[pyo3(signature = (external_functions, *, session_id=None))]
+    fn set_external_functions(
+        &mut self,
+        external_functions: Vec<String>,
+        session_id: Option<&str>,
+    ) -> PyResult<()> {
+        self.inner
+            .set_external_functions(session_id, external_functions)
+            .map_err(session_err_to_py)
+    }
+
     // -------------------------------------------------------------------------
     // Persistence
     // -------------------------------------------------------------------------
