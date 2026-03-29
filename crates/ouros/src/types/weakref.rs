@@ -219,7 +219,7 @@ impl PyTrait for WeakRef {
         let self_ptr = std::ptr::from_ref::<Self>(self) as usize;
         if let Some(target) = &self.direct_target {
             let target_type = target.py_type(heap);
-            return write!(f, "<weakref at 0x{self_ptr:x}; to '{target_type}' at 0x0>",);
+            return write!(f, "<weakref at 0x{self_ptr:x}; to '{target_type}' at 0x0>");
         }
         if let Some(target_id) = self.target {
             let target_type = heap

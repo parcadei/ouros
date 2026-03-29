@@ -2616,14 +2616,12 @@ impl Value {
         interns: &Interns,
     ) -> RunResult<AttrCallResult> {
         match self {
-            Self::Int(_) | Self::Bool(_) => {
-                if interns.get_str(name_id) == "bit_length" {
-                    let bound_id = heap.allocate(HeapData::BoundMethod(crate::types::BoundMethod::new(
-                        Self::Builtin(Builtins::Function(BuiltinsFunctions::IntBitLength)),
-                        self.copy_for_extend(),
-                    )))?;
-                    return Ok(AttrCallResult::Value(Self::Ref(bound_id)));
-                }
+            Self::Int(_) | Self::Bool(_) if interns.get_str(name_id) == "bit_length" => {
+                let bound_id = heap.allocate(HeapData::BoundMethod(crate::types::BoundMethod::new(
+                    Self::Builtin(Builtins::Function(BuiltinsFunctions::IntBitLength)),
+                    self.copy_for_extend(),
+                )))?;
+                return Ok(AttrCallResult::Value(Self::Ref(bound_id)));
             }
             Self::Ref(heap_id) => {
                 if interns.get_str(name_id) == "bit_length" && matches!(heap.get(*heap_id), HeapData::LongInt(_)) {
@@ -3078,14 +3076,13 @@ impl Value {
                 let exception_type_value = Self::Builtin(Builtins::Type(Type::Exception(*exc_type)));
                 return exception_type_value.py_getattr(name_id, heap, interns);
             }
-            Self::ModuleFunction(module_function) => {
+            Self::ModuleFunction(module_function)
                 if matches!(module_function, ModuleFunctions::Itertools(ItertoolsFunctions::Chain))
-                    && interns.get_str(name_id) == "from_iterable"
-                {
-                    return Ok(AttrCallResult::Value(Self::ModuleFunction(ModuleFunctions::Itertools(
-                        ItertoolsFunctions::ChainFromIterable,
-                    ))));
-                }
+                    && interns.get_str(name_id) == "from_iterable" =>
+            {
+                return Ok(AttrCallResult::Value(Self::ModuleFunction(ModuleFunctions::Itertools(
+                    ItertoolsFunctions::ChainFromIterable,
+                ))));
             }
             Self::DefFunction(f_id) => {
                 let func = interns.get_function(*f_id);

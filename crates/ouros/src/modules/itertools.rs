@@ -350,7 +350,7 @@ fn itertools_chain(heap: &mut Heap<impl ResourceTracker>, interns: &Interns, arg
         iter.drop_with_heap(heap);
 
         // items contains owned values - transfer ownership to result
-        result.extend(items.into_iter());
+        result.extend(items);
     }
     // pos is fully consumed above
 

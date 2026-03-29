@@ -951,6 +951,39 @@ impl SessionManager {
         entry.history.clear();
         Ok(())
     }
+
+    /// Registers additional external functions on an existing session without
+    /// clearing state.
+    ///
+    /// Functions already registered are silently skipped. Names that collide
+    /// with existing user variables are skipped (returned in the result vec).
+    /// New functions are appended and become immediately callable. Existing
+    /// variables and execution history are preserved.
+    ///
+    /// Returns the names that were skipped due to collision with user variables.
+    ///
+    /// # Errors
+    ///
+    /// Returns `SessionError::NotFound` if the session does not exist, or
+    /// `SessionError::InvalidState` if the session has a pending external call.
+    pub fn register_external_functions(
+        &mut self,
+        session_id: Option<&str>,
+        external_functions: Vec<String>,
+    ) -> Result<Vec<String>, SessionError> {
+        let sid = resolve_session_id(session_id);
+        let entry = self.get_session_mut(sid)?;
+
+        if entry.pending_call_id.is_some() {
+            return Err(SessionError::InvalidState(
+                "cannot register external functions while a call is pending".to_owned(),
+            ));
+        }
+
+        let collisions = entry.session.register_external_functions(external_functions)?;
+        entry.external_functions = entry.session.external_function_names().to_vec();
+        Ok(collisions)
+    }
 }
 
 // =============================================================================
