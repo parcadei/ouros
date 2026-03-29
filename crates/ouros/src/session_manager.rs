@@ -972,7 +972,6 @@ impl SessionManager {
         entry.external_functions = entry.session.external_function_names().to_vec();
         Ok(())
     }
-
 }
 
 // =============================================================================
