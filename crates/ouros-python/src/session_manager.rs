@@ -337,14 +337,18 @@ impl PySessionManager {
         Ok(())
     }
 
-    /// Register external functions on an existing session without clearing state.
+    /// Register additional external functions without clearing session state.
     ///
-    /// Functions already registered are silently skipped. Existing variables
-    /// and history are preserved.
+    /// Functions already registered are silently skipped. Names that collide
+    /// with existing user variables are skipped and returned.
     #[pyo3(signature = (external_functions, *, session_id=None))]
-    fn set_external_functions(&mut self, external_functions: Vec<String>, session_id: Option<&str>) -> PyResult<()> {
+    fn register_external_functions(
+        &mut self,
+        external_functions: Vec<String>,
+        session_id: Option<&str>,
+    ) -> PyResult<Vec<String>> {
         self.inner
-            .set_external_functions(session_id, external_functions)
+            .register_external_functions(session_id, external_functions)
             .map_err(session_err_to_py)
     }
 
@@ -553,22 +557,44 @@ fn progress_to_dict<'py>(py: Python<'py>, progress: &ReplProgress) -> PyResult<B
             dict.set_item("result", json_to_py(py, &json_val)?)?;
         }
         ReplProgress::FunctionCall {
-            function_name, call_id, ..
+            function_name,
+            call_id,
+            args,
+            kwargs,
         } => {
             dict.set_item("status", "function_call")?;
             dict.set_item("function_name", function_name)?;
             dict.set_item("call_id", call_id)?;
+            let py_args: PyResult<Vec<Py<PyAny>>> = args.iter().map(|a| json_to_py(py, &a.to_json_value())).collect();
+            dict.set_item("args", PyList::new(py, py_args?)?)?;
+            let kw_dict = PyDict::new(py);
+            for (k, v) in kwargs {
+                let key = json_to_py(py, &k.to_json_value())?;
+                let val = json_to_py(py, &v.to_json_value())?;
+                kw_dict.set_item(key, val)?;
+            }
+            dict.set_item("kwargs", kw_dict)?;
         }
         ReplProgress::ProxyCall {
             proxy_id,
             method,
             call_id,
-            ..
+            args,
+            kwargs,
         } => {
             dict.set_item("status", "proxy_call")?;
             dict.set_item("proxy_id", proxy_id)?;
             dict.set_item("method", method)?;
             dict.set_item("call_id", call_id)?;
+            let py_args: PyResult<Vec<Py<PyAny>>> = args.iter().map(|a| json_to_py(py, &a.to_json_value())).collect();
+            dict.set_item("args", PyList::new(py, py_args?)?)?;
+            let kw_dict = PyDict::new(py);
+            for (k, v) in kwargs {
+                let key = json_to_py(py, &k.to_json_value())?;
+                let val = json_to_py(py, &v.to_json_value())?;
+                kw_dict.set_item(key, val)?;
+            }
+            dict.set_item("kwargs", kw_dict)?;
         }
         ReplProgress::ResolveFutures { pending_call_ids, .. } => {
             dict.set_item("status", "resolve_futures")?;

@@ -270,7 +270,10 @@ impl ReplSession {
 
     /// Returns `true` if `name` is a registered external function.
     fn is_external_function_name(&self, name: &str) -> bool {
-        self.external_functions.iter().any(|f| f == name)
+        let Some(&slot) = self.name_map.get(name) else {
+            return false;
+        };
+        matches!(self.namespaces.get(GLOBAL_NS_IDX).get(slot), Value::ExtFunction(_))
     }
 
     /// Returns the list of registered external function names.
@@ -282,34 +285,38 @@ impl ReplSession {
     /// Registers additional external functions on an existing session without
     /// clearing state.
     ///
-    /// Functions that are already registered (by name) are silently skipped.
+    /// Functions that are already registered as external functions are silently
+    /// skipped. Names that collide with existing user variables are also skipped
+    /// to avoid destroying session state.
+    ///
     /// New functions are added at the end of the namespace and are immediately
     /// callable from subsequent `execute()` calls.
-    pub fn register_external_functions(&mut self, new_functions: Vec<String>) {
+    ///
+    /// Returns the names that were skipped due to collision with user variables.
+    pub fn register_external_functions(&mut self, new_functions: Vec<String>) -> Vec<String> {
+        let mut collisions = Vec::new();
         for function_name in new_functions {
             if self.is_external_function_name(&function_name) {
+                continue;
+            }
+
+            // Reject if a user variable already occupies this name.
+            if self.name_map.contains_key(&function_name) {
+                collisions.push(function_name);
                 continue;
             }
 
             let ext_func_id = ExtFunctionId::new(self.external_functions.len());
             self.external_functions.push(function_name.clone());
 
-            // If a user variable already occupies this name, replace it.
-            if let Some(&existing_slot) = self.name_map.get(&function_name) {
-                let old = std::mem::replace(
-                    self.namespaces.get_mut(GLOBAL_NS_IDX).get_mut(existing_slot),
-                    Value::ExtFunction(ext_func_id),
-                );
-                old.drop_with_heap(&mut self.heap);
-            } else {
-                let slot = NamespaceId::new(self.namespace_size);
-                self.namespace_size += 1;
-                self.namespaces.grow_global(self.namespace_size);
-                self.name_map.insert(function_name, slot);
-                *self.namespaces.get_mut(GLOBAL_NS_IDX).get_mut(slot) = Value::ExtFunction(ext_func_id);
-            }
+            let slot = NamespaceId::new(self.namespace_size);
+            self.namespace_size += 1;
+            self.namespaces.grow_global(self.namespace_size);
+            self.name_map.insert(function_name, slot);
+            *self.namespaces.get_mut(GLOBAL_NS_IDX).get_mut(slot) = Value::ExtFunction(ext_func_id);
         }
         self.external_function_count = self.external_functions.len();
+        collisions
     }
 
     /// Returns the current capability set, if any.

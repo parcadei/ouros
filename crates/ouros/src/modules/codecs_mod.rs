@@ -2235,7 +2235,7 @@ fn decode_utf16_ex(data: &[u8], errors: &str, byteorder: i64, final_flag: bool) 
     }
 
     let mut out = String::new();
-    for decoded in char::decode_utf16(units.into_iter()) {
+    for decoded in char::decode_utf16(units) {
         match decoded {
             Ok(ch) => out.push(ch),
             Err(_) => match errors {
@@ -2430,7 +2430,7 @@ fn decode_utf7(data: &[u8], errors: &str, _final_flag: bool) -> RunResult<(Strin
                 units.push(u16::from_be_bytes([decoded_bytes[j], decoded_bytes[j + 1]]));
                 j += 2;
             }
-            for ch in char::decode_utf16(units.into_iter()) {
+            for ch in char::decode_utf16(units) {
                 match ch {
                     Ok(ch) => out.push(ch),
                     Err(_) => match errors {

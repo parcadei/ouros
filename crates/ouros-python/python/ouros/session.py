@@ -126,9 +126,12 @@ class Session:
         """Reset this session to a fresh state."""
         self._manager._native.reset(session_id=self._id, external_functions=external_functions)
 
-    def set_external_functions(self, external_functions: list[str]) -> None:
-        """Register external functions without clearing session state."""
-        self._manager.set_external_functions(external_functions, session_id=self._id)
+    def register_external_functions(self, external_functions: list[str]) -> list[str]:
+        """Register additional external functions without clearing session state.
+
+        Returns names skipped due to collision with existing user variables.
+        """
+        return self._manager.register_external_functions(external_functions, session_id=self._id)
 
     def __repr__(self) -> str:
         return f'Session(id={self._id!r})'
@@ -268,14 +271,17 @@ class SessionManager:
         """Reset a session to a fresh state."""
         self._native.reset(session_id=session_id, external_functions=external_functions)
 
-    def set_external_functions(
+    def register_external_functions(
         self,
         external_functions: list[str],
         *,
         session_id: str | None = None,
-    ) -> None:
-        """Register external functions on an existing session without clearing state."""
-        self._native.set_external_functions(external_functions, session_id=session_id)
+    ) -> list[str]:
+        """Register additional external functions without clearing session state.
+
+        Returns names skipped due to collision with existing user variables.
+        """
+        return self._native.register_external_functions(external_functions, session_id=session_id)
 
     # -- Cross-session pipeline ------------------------------------------------
 

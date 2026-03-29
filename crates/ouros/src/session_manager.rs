@@ -952,25 +952,29 @@ impl SessionManager {
         Ok(())
     }
 
-    /// Registers external functions on an existing session without clearing state.
+    /// Registers additional external functions on an existing session without
+    /// clearing state.
     ///
-    /// Functions already registered (by name) are silently skipped. New functions
-    /// are appended and become immediately callable. Existing variables and
-    /// execution history are preserved.
+    /// Functions already registered are silently skipped. Names that collide
+    /// with existing user variables are skipped (returned in the result vec).
+    /// New functions are appended and become immediately callable. Existing
+    /// variables and execution history are preserved.
+    ///
+    /// Returns the names that were skipped due to collision with user variables.
     ///
     /// # Errors
     ///
     /// Returns `SessionError::NotFound` if the session does not exist.
-    pub fn set_external_functions(
+    pub fn register_external_functions(
         &mut self,
         session_id: Option<&str>,
         external_functions: Vec<String>,
-    ) -> Result<(), SessionError> {
+    ) -> Result<Vec<String>, SessionError> {
         let sid = resolve_session_id(session_id);
         let entry = self.get_session_mut(sid)?;
-        entry.session.register_external_functions(external_functions);
+        let collisions = entry.session.register_external_functions(external_functions);
         entry.external_functions = entry.session.external_function_names().to_vec();
-        Ok(())
+        Ok(collisions)
     }
 }
 
