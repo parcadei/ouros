@@ -8702,10 +8702,7 @@ impl<'a, T: ResourceTracker, P: PrintWriter, Tr: VmTracer> VM<'a, T, P, Tr> {
     /// This releases the extra reference held for the receiver when the
     /// `__getattribute__` frame completes normally.
     fn drop_pending_getattr_for_frame(&mut self, frame_depth: usize) {
-        if let Some(pending) = self.pending_getattr_fallback.last()
-            && pending.frame_depth == frame_depth
-        {
-            let pending = self.pending_getattr_fallback.pop().expect("checked pending entry");
+        if let Some(pending) = self.pending_getattr_fallback.pop_if(|p| p.frame_depth == frame_depth) {
             Value::Ref(pending.obj_id).drop_with_heap(self.heap);
         }
     }
@@ -8784,10 +8781,7 @@ impl<'a, T: ResourceTracker, P: PrintWriter, Tr: VmTracer> VM<'a, T, P, Tr> {
     /// This releases held operand references when a dunder frame exits via
     /// exception unwinding before the protocol completes.
     fn drop_pending_binary_dunder_for_frame(&mut self, frame_depth: usize) {
-        if let Some(pending) = self.pending_binary_dunder.last()
-            && pending.frame_depth == frame_depth
-        {
-            let pending = self.pending_binary_dunder.pop().expect("checked pending binary dunder");
+        if let Some(pending) = self.pending_binary_dunder.pop_if(|p| p.frame_depth == frame_depth) {
             pending.lhs.drop_with_heap(self.heap);
             pending.rhs.drop_with_heap(self.heap);
         }
@@ -8806,13 +8800,7 @@ impl<'a, T: ResourceTracker, P: PrintWriter, Tr: VmTracer> VM<'a, T, P, Tr> {
     /// This releases held operand references when a compare dunder frame exits via
     /// exception unwinding before the protocol completes.
     fn drop_pending_compare_dunder_for_frame(&mut self, frame_depth: usize) {
-        if let Some(pending) = self.pending_compare_dunder.last()
-            && pending.frame_depth == frame_depth
-        {
-            let pending = self
-                .pending_compare_dunder
-                .pop()
-                .expect("checked pending compare dunder");
+        if let Some(pending) = self.pending_compare_dunder.pop_if(|p| p.frame_depth == frame_depth) {
             pending.lhs.drop_with_heap(self.heap);
             pending.rhs.drop_with_heap(self.heap);
         }
@@ -8837,10 +8825,7 @@ impl<'a, T: ResourceTracker, P: PrintWriter, Tr: VmTracer> VM<'a, T, P, Tr> {
     }
 
     fn drop_pending_print_call_for_frame(&mut self, frame_depth: usize) {
-        if let Some(pending) = self.pending_print_call.last()
-            && pending.frame_depth == frame_depth
-        {
-            let pending = self.pending_print_call.pop().expect("checked pending print call");
+        if let Some(pending) = self.pending_print_call.pop_if(|p| p.frame_depth == frame_depth) {
             self.drop_pending_print_call_values(pending);
         }
     }
