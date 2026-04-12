@@ -371,12 +371,17 @@ impl CodeLoc {
     /// Lines and columns numbers are 1-indexed for display, hence `+1`
     ///
     /// # Panics
-    /// Panics if the line or column number overflows `u16`.
+    /// Panics if the line or column number + 1 does not fit in `u32`.
     #[must_use]
     pub fn new(line: usize, column: usize) -> Self {
-        Self {
-            line: u32::try_from(line).expect("Line number overflow") + 1,
-            column: u32::try_from(column).expect("Column number overflow") + 1,
-        }
+        let line = line
+            .checked_add(1)
+            .and_then(|v| u32::try_from(v).ok())
+            .expect("Line number overflow");
+        let column = column
+            .checked_add(1)
+            .and_then(|v| u32::try_from(v).ok())
+            .expect("Column number overflow");
+        Self { line, column }
     }
 }
