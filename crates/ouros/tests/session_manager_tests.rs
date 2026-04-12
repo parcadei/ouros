@@ -120,6 +120,21 @@ fn set_variable_via_expression() {
     assert_eq!(val.json_value, serde_json::json!([1, 2, 3]));
 }
 
+/// Regression: setting a variable to a very long single-line string literal
+/// used to panic because the parser's `CodeLoc` stored column as `u16`,
+/// which overflows at 65 536 characters.
+#[test]
+fn set_variable_large_string_does_not_overflow_column() {
+    let mut mgr = SessionManager::new("test.py");
+    // 100k chars — well past the old u16::MAX (65 535) limit
+    let big = "x".repeat(100_000);
+    let expr = format!("'{big}'");
+    mgr.set_variable(None, "context", &expr).unwrap();
+
+    let val = mgr.get_variable(None, "context").unwrap();
+    assert_eq!(val.json_value, serde_json::json!(big));
+}
+
 #[test]
 fn delete_variable() {
     let mut mgr = SessionManager::new("test.py");

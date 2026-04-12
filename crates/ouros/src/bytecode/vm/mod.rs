@@ -9596,7 +9596,7 @@ impl<'a, T: ResourceTracker, P: PrintWriter, Tr: VmTracer> VM<'a, T, P, Tr> {
     /// 3. Move namespace values back to the generator
     /// 4. Mark the generator as Suspended and store the suspension line number
     /// 5. Push the yielded value onto the stack for the caller
-    fn suspend_generator_frame(&mut self, generator_id: HeapId, yielded_value: Value, suspended_lineno: u16) {
+    fn suspend_generator_frame(&mut self, generator_id: HeapId, yielded_value: Value, suspended_lineno: u32) {
         // Pop the generator frame
         let frame = self.frames.pop().expect("no generator frame to suspend");
         let saved_ip = frame.ip;

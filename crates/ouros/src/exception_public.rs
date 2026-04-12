@@ -354,9 +354,9 @@ impl StackFrame {
 #[derive(Debug, Clone, Copy, Eq, PartialEq, Hash, serde::Serialize, serde::Deserialize)]
 pub struct CodeLoc {
     /// Line number (1-based).
-    pub line: u16,
+    pub line: u32,
     /// Column number (1-based).
-    pub column: u16,
+    pub column: u32,
 }
 
 impl Default for CodeLoc {
@@ -375,8 +375,8 @@ impl CodeLoc {
     #[must_use]
     pub fn new(line: usize, column: usize) -> Self {
         Self {
-            line: u16::try_from(line).expect("Line number overflow") + 1,
-            column: u16::try_from(column).expect("Column number overflow") + 1,
+            line: u32::try_from(line).expect("Line number overflow") + 1,
+            column: u32::try_from(column).expect("Column number overflow") + 1,
         }
     }
 }

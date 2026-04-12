@@ -155,7 +155,7 @@ impl Code {
     ///
     /// Useful for locating the first executable line inside a compound statement body.
     #[must_use]
-    pub(crate) fn first_location_after_line(&self, line: u16) -> Option<CodeRange> {
+    pub(crate) fn first_location_after_line(&self, line: u32) -> Option<CodeRange> {
         let mut best: Option<CodeRange> = None;
         for entry in &self.location_table {
             let range = entry.range();

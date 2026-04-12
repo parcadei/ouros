@@ -3250,7 +3250,7 @@ impl Value {
     /// The proxy exposes only the fields used by parity checks: `f_code` and `f_lineno`.
     fn new_generator_frame_proxy(
         func_id: FunctionId,
-        lineno: u16,
+        lineno: u32,
         heap: &mut Heap<impl ResourceTracker>,
         interns: &Interns,
     ) -> RunResult<Self> {
