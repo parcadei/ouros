@@ -1,6 +1,7 @@
 [package]
 name = "ouros-js"
 description = "TypeScript/JavaScript bindings for the Ouros sandboxed Python interpreter"
+publish = false
 readme = "README.md"
 version = { workspace = true }
 rust-version = { workspace = true }

@@ -22,6 +22,8 @@
     "index.js",
     "wrapper.js",
     "wrapper.d.ts",
+    "session.js",
+    "session.d.ts",
     "browser.js"
   ],
   "napi": {
