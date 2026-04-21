@@ -38,7 +38,7 @@ Source = "https://github.com/parcadei/ouros"
 [tool.maturin]
 python-source = "python"
 module-name = "ouros._ouros"
-features = ["pyo3/extension-module", "pyo3/abi3-py310"]
+features = ["pyo3/extension-module"]
 
 [dependency-groups]
 dev = [

@@ -8,26 +8,18 @@ on:
 permissions:
   contents: write
 
-env:
-  PYTHON_VERSION: "3.10"
-
 jobs:
-  # ── PyPI wheels ───────────────────���──────────────────────────
+  # ── PyPI wheels ──────────────────────────────────────────────
   build-python:
     strategy:
       fail-fast: false
       matrix:
-        include:
-          - os: ubuntu-latest
-            target: x86_64
-          - os: ubuntu-latest
-            target: aarch64
-          - os: macos-14
-            target: x86_64
-          - os: macos-14
-            target: aarch64
+        os: [ubuntu-latest, macos-14, windows-latest]
+        target: [x86_64, aarch64]
+        python: ["3.10", "3.11", "3.12", "3.13"]
+        exclude:
           - os: windows-latest
-            target: x86_64
+            target: aarch64
     runs-on: ${{ matrix.os }}
 
     steps:
@@ -36,18 +28,18 @@ jobs:
       - uses: actions/setup-python@v6
         if: matrix.target != 'aarch64' || matrix.os != 'ubuntu-latest'
         with:
-          python-version: ${{ env.PYTHON_VERSION }}
+          python-version: ${{ matrix.python }}
 
       - uses: PyO3/maturin-action@v1
         with:
           target: ${{ matrix.target }}
-          args: --release --out dist -i python${{ env.PYTHON_VERSION }}
+          args: --release --out dist -i python${{ matrix.python }}
           manylinux: auto
           working-directory: crates/ouros-python
 
       - uses: actions/upload-artifact@v4
         with:
-          name: wheels-python-${{ matrix.os }}-${{ matrix.target }}
+          name: wheels-python-${{ matrix.os }}-${{ matrix.target }}-${{ matrix.python }}
           path: crates/ouros-python/dist
 
   # Source distribution (for pip install from source)
