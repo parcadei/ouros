@@ -166,8 +166,7 @@ jobs:
 
   # ── GitHub Release ───────────────────────────────────────────
   github-release:
-    needs: [publish-pypi]
-    if: always() && needs.publish-pypi.result == 'success'
+    needs: [build-python, build-sdist]
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v6
