@@ -3208,8 +3208,8 @@ impl<T: ResourceTracker, P: PrintWriter, Tr: VmTracer> VM<'_, T, P, Tr> {
     }
 
     /// Loads a single source line for warning formatting and strips leading whitespace.
-    fn warning_source_line(filename: &str, line_number: u16) -> Option<String> {
-        let line_index = usize::from(line_number.saturating_sub(1));
+    fn warning_source_line(filename: &str, line_number: u32) -> Option<String> {
+        let line_index = line_number.saturating_sub(1) as usize;
         fs::read_to_string(filename)
             .ok()?
             .lines()

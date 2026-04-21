@@ -64,7 +64,7 @@ pub(crate) struct Generator {
     /// This tracks `gi_frame.f_lineno` while the generator is suspended.
     /// `None` means no suspension line has been recorded yet.
     #[serde(default)]
-    pub saved_lineno: Option<u16>,
+    pub saved_lineno: Option<u32>,
 }
 
 impl Generator {
