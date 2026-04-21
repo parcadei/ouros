@@ -162,10 +162,12 @@ jobs:
         working-directory: crates/ouros-js
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
   # ── GitHub Release ───────────────────────────────────────────
   github-release:
-    needs: [publish-pypi, publish-npm]
+    needs: [publish-pypi]
+    if: always() && needs.publish-pypi.result == 'success'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v6
