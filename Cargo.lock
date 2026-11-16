@@ -1767,7 +1767,7 @@ dependencies = [
 
 [[package]]
 name = "ouros"
-version = "0.0.4"
+version = "0.0.6"
 dependencies = [
  "ahash",
  "chrono",
@@ -1811,7 +1811,7 @@ dependencies = [
 
 [[package]]
 name = "ouros-cli"
-version = "0.0.4"
+version = "0.0.6"
 dependencies = [
  "ouros",
  "ouros_type_checking",
@@ -1819,7 +1819,7 @@ dependencies = [
 
 [[package]]
 name = "ouros-js"
-version = "0.0.4"
+version = "0.0.6"
 dependencies = [
  "napi",
  "napi-build",
@@ -1834,7 +1834,7 @@ dependencies = [
 
 [[package]]
 name = "ouros-mcp"
-version = "0.0.4"
+version = "0.0.6"
 dependencies = [
  "ouros",
  "serde",
@@ -1844,7 +1844,7 @@ dependencies = [
 
 [[package]]
 name = "ouros-python"
-version = "0.0.4"
+version = "0.0.6"
 dependencies = [
  "indexmap",
  "num-bigint",
@@ -1859,7 +1859,7 @@ dependencies = [
 
 [[package]]
 name = "ouros_type_checking"
-version = "0.0.4"
+version = "0.0.6"
 dependencies = [
  "ouros_typeshed",
  "pretty_assertions",
@@ -1873,7 +1873,7 @@ dependencies = [
 
 [[package]]
 name = "ouros_typeshed"
-version = "0.0.4"
+version = "0.0.6"
 dependencies = [
  "path-slash",
  "ruff_db",
